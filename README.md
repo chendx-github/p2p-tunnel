@@ -1,0 +1,88 @@
+<!--
+ * @Author: snltty
+ * @Date: 2021-08-22 14:09:03
+ * @LastEditors: snltty
+ * @LastEditTime: 2022-05-15 23:31:01
+ * @version: v1.0.0
+ * @Descripttion: 功能说明
+ * @FilePath: \client.service.ui.webd:\Desktop\desktop\opens\p2p-tunnel\README.md
+-->
+## p2p-tunnel
+
+1. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>
+2. <a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>
+3. 可执行程序目录<br>客户端client/client.service/public/<br>服务端server/server.service/public/<br>publish需要安装.NET环境，  publish-single单文件自包含环境
+4. 自己开通的网络更容易打洞，当使用租房的房东网络时，打洞比较困难
+5. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
+6. <a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
+
+## 几个通信线路
+1. p2p、A<---->B
+2. 中继、A<---->server<---->B（免费打洞服务器不开启）
+3. 服务器代理、server<---->A（免费打洞服务器不开启）
+
+## 几个通信模式
+1. **tcp转发**1对1，不支持像ftp这样的多通道
+2. **http1.1代理**多对多，支持ftp
+3. **socks5代理**多对多，支持ftp
+
+## 几个通信流程
+1. A <--tcp转发-->B<---->内网服务
+2. server <--tcp转发-->A<---->内网服务
+3. A <--http1.1代理-->B<---->内网或外网服务
+4. A <--http1.1代理-->server<---->内网或外网服务
+5. A <--socks5代理-->B<---->内网或外网服务
+6. A <--socks5代理-->server<---->内网或外网服务
+  
+## 几个要点
+- [x] .NET6 跨平台，小尺寸，小内存<br><a href="https://github.com/neuecc/MessagePack-CSharp" target="_blank">MessagePack 序列化</a>，<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
+- [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
+- [x] p2p 打洞、tcp、udp
+- [x] tcp转发(不支持ftp)
+- [x] http代理(支持ftp(被动模式))
+- [x] socks5代理(仅tcp，不实现bind，支持ftp(被动模式))
+- [x] 简单易用的客户端web管理页面
+- [ ] 服务端web管理页面
+- [x] 支持通信数据加密
+- [x] 可扩展的插件式
+- [x] 免费的打洞服务器
+- [x] 高效的打包解包，序列化->打包->粘包解析->解包->反序列化 整个流程时间
+<p><img src="./public/screenshot/speed.png" width="400"></p>
+<p><img src="./public/screenshot/file-speed.png" width="400"></p>
+
+## 几个QQ群
+有啥兴趣，有啥想了解的，尽可进群
+<p><img src="./public/screenshot/qrcode.jpg" style="border:1px solid #ddd;" width="400"></p>
+
+## 几个项目
+1. client
+    1. client 客户端公共内容
+    2. client.service **客户端**
+    3. plugins
+        1. client.service.ui //客户端的ui管理界面项目
+            1. client.service.ui.api  //接口定义， 这样可以在开发别的插件的时候也使用ui配置
+            2. client.service.ui.api.manager    //服务器管理接口，与服务器端对应
+            3. client.service.ui.api.service //服务
+            4. client.service.ui.api.webrtc
+            5. client.service.ui.web //web界面
+        2. client.service.ftp 客户端服务的  文件服务插件
+        3. client.service.logger  日志记录的web展示
+        4. client.service.socks5  socks5代理客户端及服务端
+        5. client.service.tcpforward tcp转发，及 http代理
+    4. client.service.web 客户端管理界面
+2. common 一些公共的功能
+    1. common.libs 一些公共的功能
+    2. common.server 服务器
+    3. common.socks5 socks5代理(仅  tcp，不实现bind)
+    4. common.tcpforward tcp转发公共定义
+3. server
+    1. plugins
+        1. server.service.manager 服务端管理接口
+        2. server.service.manager.models 服务端管理接口定义
+        3. server.service.socks5 socks5代理服务端
+        4. server.service.tcpforward 服务端代理转发，实现内网穿透
+        5. server.service.webrtc webrtc
+        6. server.service.webrtc.models
+    2. server //打洞服务端定义
+    3. server.service **服务端**
+

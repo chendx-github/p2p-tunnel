@@ -1,0 +1,57 @@
+{
+    "name": "client.service.ui.webrtc.electron",
+    "desc": "webrtc远程桌面",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve1": "vue-cli-service serve",
+        "build1": "vue-cli-service build",
+        "build": "vue-cli-service electron:build",
+        "serve": "vue-cli-service electron:serve",
+        "postinstall": "electron-builder install-app-deps",
+        "postuninstall": "electron-builder install-app-deps"
+    },
+    "main": "background.js",
+    "iohook": {
+        "targets": [
+            "electron-87"
+        ],
+        "platforms": [
+            "win32",
+            "darwin",
+            "linux"
+        ],
+        "arches": [
+            "x64",
+            "ia32"
+        ]
+    },
+    "dependencies": {
+        "@element-plus/icons": "^0.0.11",
+        "bindings": "^1.5.0",
+        "core-js": "^3.6.5",
+        "element-plus": "^2.1.11",
+        "vue": "^3.0.0",
+        "vue-router": "^4.0.0-0",
+        "vuex": "^4.0.0-0"
+    },
+    "devDependencies": {
+        "@vue/cli-plugin-babel": "~4.5.13",
+        "@vue/cli-plugin-router": "~4.5.13",
+        "@vue/cli-plugin-vuex": "~4.5.13",
+        "@vue/cli-service": "~4.5.13",
+        "@vue/compiler-sfc": "^3.0.0",
+        "electron": "^12.0.0",
+        "electron-devtools-installer": "^3.1.0",
+        "native-ext-loader": "^2.3.0",
+        "node-abi": "^3.15.0",
+        "stylus": "^0.54.7",
+        "stylus-loader": "^3.0.2",
+        "vue-cli-plugin-electron-builder": "~2.1.1"
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead"
+    ]
+}

@@ -1,0 +1,11 @@
+﻿{
+  "web": {
+    "Port": 5411,
+    "Root": "./public/web",
+    "UseIpv6": false
+  },
+  "websocket": {
+    "Port": 59411,
+    "UseIpv6": false
+  }
+}
