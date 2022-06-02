@@ -1,11 +1,8 @@
 ﻿using common.libs;
 using common.libs.extends;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +14,8 @@ namespace common.server.servers.beginend
         private Socket socket;
         private CancellationTokenSource cancellationTokenSource;
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
+
+        public SimpleSubPushHandler<IConnection> OnDisconnect { get; } = new SimpleSubPushHandler<IConnection>();
 
         public void SetBufferSize(int bufferSize = 8 * 1024)
         {
@@ -55,7 +54,7 @@ namespace common.server.servers.beginend
             try
             {
                 Socket client = listenSocket.EndAccept(result);
-                BindReceive(client, null, bufferSize);
+                BindReceive(client, bufferSize);
 
                 result = listenSocket.BeginAccept(ProcessAccept, listenSocket);
                 if (result.CompletedSynchronously)
@@ -70,14 +69,13 @@ namespace common.server.servers.beginend
         }
 
 
-        public IConnection BindReceive(Socket socket, Action<SocketError> errorCallback = null, int bufferSize = 8192)
+        public IConnection BindReceive(Socket socket, int bufferSize = 8192)
         {
             AsyncUserToken token = new AsyncUserToken
             {
                 Buffer = new byte[bufferSize],
                 Connection = CreateConnection(socket),
                 Socket = socket,
-                ErrorCallback = errorCallback,
             };
             IAsyncResult result = socket.BeginReceive(token.Buffer, 0, token.Buffer.Length, SocketFlags.None, ProcessReceive, token);
             if (result.CompletedSynchronously)
@@ -165,13 +163,11 @@ namespace common.server.servers.beginend
         public short SyncCount { get; set; } = 0;
         public IConnection Connection { get; set; }
         public Socket Socket { get; set; }
-        public Action<SocketError> ErrorCallback { get; set; }
         public byte[] Buffer { get; set; }
         public ReceiveDataBuffer DataBuffer { get; set; } = new ReceiveDataBuffer();
 
         public void Clear()
         {
-            ErrorCallback = null;
             Socket?.SafeClose();
             Socket = null;
 

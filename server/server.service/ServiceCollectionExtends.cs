@@ -87,6 +87,12 @@ namespace server.service
             MessengerResolver messengerResolver = services.GetService<MessengerResolver>();
             MessengerSender messengerSender = services.GetService<MessengerSender>();
 
+            var server = services.GetService<ITcpServer>();
+            server.OnDisconnect.Sub((IConnection connection) =>
+            {
+                Console.WriteLine(connection.ConnectId);
+            });
+
             clientRegisterCache.OnChanged.SubAsync(async (changeClient) =>
             {
                 List<ClientsClientInfo> clients = clientRegisterCache.GetAll().Where(c => c.GroupId == changeClient.GroupId && c.TcpConnection != null).Select(c => new ClientsClientInfo

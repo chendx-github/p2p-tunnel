@@ -15,6 +15,7 @@ namespace common.server.servers.iocp
         private CancellationTokenSource cancellationTokenSource;
 
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
+        public SimpleSubPushHandler<IConnection> OnDisconnect { get; } = new SimpleSubPushHandler<IConnection>();
 
         public TcpServer() { }
 
@@ -89,17 +90,16 @@ namespace common.server.servers.iocp
         }
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
-            BindReceive(e.AcceptSocket, null, bufferSize);
+            BindReceive(e.AcceptSocket, bufferSize);
             StartAccept(e);
         }
 
-        public IConnection BindReceive(Socket socket, Action<SocketError> errorCallback = null, int bufferSize = 8 * 1024)
+        public IConnection BindReceive(Socket socket, int bufferSize = 8 * 1024)
         {
             this.bufferSize = bufferSize;
             AsyncUserToken userToken = new AsyncUserToken
             {
                 Socket = socket,
-                ErrorCallback = errorCallback,
                 Connection = CreateConnection(socket),
             };
             SocketAsyncEventArgs readEventArgs = new SocketAsyncEventArgs
@@ -141,7 +141,7 @@ namespace common.server.servers.iocp
                             }
                             else
                             {
-                                token.ErrorCallback?.Invoke(SocketError.SocketError);
+                                token.Connection.SocketError = SocketError.SocketError;
                                 CloseClientSocket(e);
                                 return;
                             }
@@ -151,7 +151,7 @@ namespace common.server.servers.iocp
 
                     if (!token.Socket.Connected)
                     {
-                        token.ErrorCallback?.Invoke(SocketError.SocketError);
+                        token.Connection.SocketError = SocketError.SocketError;
                         CloseClientSocket(e);
                         return;
                     }
@@ -162,14 +162,14 @@ namespace common.server.servers.iocp
                 }
                 else
                 {
-                    token.ErrorCallback?.Invoke(e.SocketError);
+                    token.Connection.SocketError = e.SocketError;
                     CloseClientSocket(e);
                 }
             }
             catch (Exception ex)
             {
-                token.ErrorCallback?.Invoke(SocketError.SocketError);
-                token.Clear();
+                token.Connection.SocketError = SocketError.SocketError;
+                CloseClientSocket(e);
                 Logger.Instance.DebugError(ex);
             }
         }
@@ -210,6 +210,7 @@ namespace common.server.servers.iocp
             AsyncUserToken token = e.UserToken as AsyncUserToken;
             token.Clear();
             e.Dispose();
+            OnDisconnect.Push(token.Connection);
         }
 
         public IConnection CreateConnection(Socket socket)
@@ -226,10 +227,8 @@ namespace common.server.servers.iocp
 
     public class AsyncUserToken
     {
-        public short SyncCount { get; set; } = 0;
         public IConnection Connection { get; set; }
         public Socket Socket { get; set; }
-        public Action<SocketError> ErrorCallback { get; set; }
         public ReceiveDataBuffer DataBuffer { get; set; } = new ReceiveDataBuffer();
 
         public byte[] PoolBuffer { get; set; }
@@ -241,7 +240,6 @@ namespace common.server.servers.iocp
                 ArrayPool<byte>.Shared.Return(PoolBuffer);
             }
 
-            ErrorCallback = null;
             Socket?.SafeClose();
             Socket = null;
 

@@ -79,6 +79,14 @@ namespace client.messengers.register
 
             OnRegisterStateChange.Push(false);
 
+            if(TcpConnection != null)
+            {
+                TcpConnection.Disponse();
+            }
+            if (UdpConnection != null)
+            {
+                UdpConnection.Disponse();
+            }
         }
         public void Online(ulong id, string ip,int udpPort, int tcpPort)
         {

@@ -23,7 +23,7 @@ namespace server.service.socks5
         {
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Info("socks5已加载");
-            common.socks5.Config config = services.GetService<common.socks5.Config>();
+            Config config = services.GetService<Config>();
             if (config.ConnectEnable)
             {
                 Logger.Instance.Debug($"socks5已允许连接");

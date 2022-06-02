@@ -20,6 +20,8 @@ namespace common.server
         public void EncodeEnable(ICrypto crypto);
         public void EncodeDisable();
 
+        public SocketError SocketError { get; set; }
+
         public IPEndPoint Address { get; }
 
         public ServerType ServerType { get; }
@@ -59,6 +61,8 @@ namespace common.server
         {
             Crypto = null;
         }
+
+        public SocketError SocketError { get; set; } = SocketError.Success;
 
         public IPEndPoint Address { get; protected set; }
         public virtual ServerType ServerType => ServerType.UDP;

@@ -43,6 +43,13 @@ namespace client.service.messengers.register
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => _ = Exit();
             Console.CancelKeyPress += (s, e) => _ = Exit();
+            tcpServer.OnDisconnect.Sub((IConnection connection) =>
+            {
+                Task.Run(async () =>
+                {
+                    await ExitAndAutoReg().ConfigureAwait(false);
+                });
+            });
         }
 
         public async Task AutoReg()
@@ -156,11 +163,7 @@ namespace client.service.messengers.register
             {
                 registerState.LocalInfo.Mac = NetworkHelper.GetMacAddress(registerState.LocalInfo.LocalIp);
             }
-            registerState.TcpConnection = tcpServer.BindReceive(tcpSocket, async (socketError) =>
-            {
-                //Logger.Instance.DebugError(socketError.ToString());
-                await ExitAndAutoReg().ConfigureAwait(false);
-            }, config.Client.TcpBufferSize);
+            registerState.TcpConnection = tcpServer.BindReceive(tcpSocket, config.Client.TcpBufferSize);
         }
         private async Task SwapCryptoTcp()
         {
