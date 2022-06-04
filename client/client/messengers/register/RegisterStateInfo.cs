@@ -82,10 +82,12 @@ namespace client.messengers.register
             if(TcpConnection != null)
             {
                 TcpConnection.Disponse();
+                TcpConnection = null;
             }
             if (UdpConnection != null)
             {
                 UdpConnection.Disponse();
+                UdpConnection = null;
             }
         }
         public void Online(ulong id, string ip,int udpPort, int tcpPort)

@@ -1,7 +1,6 @@
 ﻿using common.libs;
 using LiteNetLib;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 
@@ -23,8 +22,8 @@ namespace common.server.servers.rudp
             server = new NetManager(listener);
             server.NatPunchEnabled = true;
             server.UnsyncedEvents = true;
-            server.PingInterval = 500000;
-            server.DisconnectTimeout = 2000000;
+            server.PingInterval = 5000;
+            server.DisconnectTimeout = 20000;
             server.MaxConnectAttempts = 1;
             server.Start(port);
 
@@ -50,9 +49,15 @@ namespace common.server.servers.rudp
             };
             listener.NetworkReceiveEvent += (NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod) =>
             {
-                IConnection connection = peer.Tag as IConnection;
-                connection.ReceiveData = reader.RawData.AsMemory(reader.UserDataOffset, reader.UserDataSize);
-                OnPacket.Push(connection);
+                try
+                {
+                    IConnection connection = peer.Tag as IConnection;
+                    connection.ReceiveData = reader.RawData.AsMemory(reader.UserDataOffset, reader.UserDataSize);
+                    OnPacket.Push(connection);
+                }
+                catch (Exception ex)
+                {
+                }
             };
         }
 
@@ -77,10 +82,9 @@ namespace common.server.servers.rudp
         {
             maxNumberConnectings.WaitOne();
             maxNumberConnectingNumberSpace.Increment();
-
-            var peer = server.Connect(address, string.Empty);
             try
             {
+                var peer = server.Connect(address, string.Empty);
                 while (peer.ConnectionState == ConnectionState.Outgoing)
                 {
                     Thread.Sleep(10);

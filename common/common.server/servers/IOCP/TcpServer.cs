@@ -208,9 +208,12 @@ namespace common.server.servers.iocp
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
-            token.Clear();
-            e.Dispose();
-            OnDisconnect.Push(token.Connection);
+            if (token.Socket != null)
+            {
+                token.Clear();
+                e.Dispose();
+                OnDisconnect.Push(token.Connection);
+            }
         }
 
         public IConnection CreateConnection(Socket socket)

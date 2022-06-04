@@ -27,7 +27,6 @@ namespace client.service.messengers.register
             RegisterMessengerSender registerMessageHelper, HeartMessengerSender heartMessengerSender,
             ITcpServer tcpServer, IUdpServer udpServer,
             Config config, RegisterStateInfo registerState,
-            WheelTimer<object> wheelTimer,
             CryptoSwap cryptoSwap
         )
         {
@@ -38,8 +37,6 @@ namespace client.service.messengers.register
             this.registerState = registerState;
             this.heartMessengerSender = heartMessengerSender;
             this.cryptoSwap = cryptoSwap;
-
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 5000, true);
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => _ = Exit();
             Console.CancelKeyPress += (s, e) => _ = Exit();
@@ -54,7 +51,7 @@ namespace client.service.messengers.register
 
         public async Task AutoReg()
         {
-            if (config.Client.AutoReg)
+            if (config.Client.AutoReg && !registerState.LocalInfo.IsConnecting)
             {
                 Logger.Instance.Info("开始自动注册");
                 while (true)
@@ -68,7 +65,7 @@ namespace client.service.messengers.register
                     {
                         Logger.Instance.Error(result.ErrorMsg);
                     }
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
                 Logger.Instance.Warning("已自动注册");
             }
@@ -100,6 +97,11 @@ namespace client.service.messengers.register
                 registerState.LocalInfo.Mac = string.Empty;
 
                 UdpBind(serverAddress);
+                if (registerState.UdpConnection == null)
+                {
+                    await Exit().ConfigureAwait(false);
+                    return new CommonTaskResponseInfo<bool> { Data = false };
+                }
                 TcpBind(serverAddress);
 
                 //交换密钥
@@ -212,23 +214,6 @@ namespace client.service.messengers.register
             else
             {
                 Logger.Instance.Error("通知上线信息失败");
-            }
-        }
-
-        private async void Heart(WheelTimerTimeout<object> timeout)
-        {
-            if (registerState.UdpOnline)
-            {
-                long time = DateTimeHelper.GetTimeStamp();
-                if (registerState.UdpConnection.IsTimeout(time))
-                {
-                    await ExitAndAutoReg().ConfigureAwait(false);
-
-                }
-                else if (registerState.UdpConnection.IsNeedHeart(time))
-                {
-                    await heartMessengerSender.Heart(registerState.UdpConnection).ConfigureAwait(false);
-                }
             }
         }
     }

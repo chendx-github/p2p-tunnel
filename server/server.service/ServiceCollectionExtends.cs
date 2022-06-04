@@ -90,7 +90,7 @@ namespace server.service
             var server = services.GetService<ITcpServer>();
             server.OnDisconnect.Sub((IConnection connection) =>
             {
-                Console.WriteLine(connection.ConnectId);
+                clientRegisterCache.Remove(connection.ConnectId);
             });
 
             clientRegisterCache.OnChanged.SubAsync(async (changeClient) =>

@@ -23,22 +23,17 @@ namespace client.service.messengers.clients
         private readonly IPunchHoleTcp punchHoleTcp;
         private readonly RegisterStateInfo registerState;
         private readonly IClientInfoCaching clientInfoCaching;
-        private readonly HeartMessengerSender heartMessengerSender;
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
-        private readonly ClientsMessengerSender clientsMessengerSender;
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
-            IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp,
-            HeartMessengerSender heartMessengerSender, IClientInfoCaching clientInfoCaching,
-            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender,
-            WheelTimer<object> wheelTimer
+            IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp,IClientInfoCaching clientInfoCaching,
+            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender
         )
         {
             this.punchHoleUdp = punchHoleUdp;
             this.punchHoleTcp = punchHoleTcp;
             this.registerState = registerState;
             this.clientInfoCaching = clientInfoCaching;
-            this.heartMessengerSender = heartMessengerSender;
 
             punchHoleUdp.OnStep1Handler.Sub((e) => clientInfoCaching.Connecting(e.RawData.FromId, true, ServerType.UDP));
             punchHoleUdp.OnStep2FailHandler.Sub((e) => clientInfoCaching.Offline(e.RawData.FromId, ServerType.UDP));
@@ -55,12 +50,8 @@ namespace client.service.messengers.clients
             punchHoleMessengerSender.OnReverse.Sub(OnReverse);
             //本客户端注册状态
             registerState.OnRegisterStateChange.Sub(OnRegisterStateChange);
-
-            this.clientsMessengerSender = clientsMessengerSender;
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
-
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 5000, true);
 
             Task.Run(() =>
             {
@@ -221,25 +212,6 @@ namespace client.service.messengers.clients
             catch (Exception ex)
             {
                 Logger.Instance.Error(ex);
-            }
-        }
-
-        private async void Heart(WheelTimerTimeout<object> timeout)
-        {
-            long time = DateTimeHelper.GetTimeStamp();
-            foreach (ClientInfo client in clientInfoCaching.All())
-            {
-                if (client.UdpConnection != null)
-                {
-                    if (client.UdpConnection.IsTimeout(time))
-                    {
-                        clientInfoCaching.Offline(client.Id);
-                    }
-                    else if (client.UdpConnected && client.UdpConnection.IsNeedHeart(time))
-                    {
-                        await heartMessengerSender.Heart(client.UdpConnection).ConfigureAwait(false);
-                    }
-                }
             }
         }
     }
