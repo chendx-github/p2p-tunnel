@@ -126,18 +126,18 @@ namespace common.server
                 {
                     return;
                 }
-                if (plugin.IsTask && !plugin.IsTaskResult)
-                {
-                    return;
-                }
 
                 object resultObject = null;
                 if (plugin.IsTask)
                 {
-                    await resultAsync.ConfigureAwait(false);
                     if (plugin.IsTaskResult)
                     {
+                        await resultAsync.ConfigureAwait(false);
                         resultObject = resultAsync.Result;
+                    }
+                    else
+                    {
+                        return;
                     }
                 }
                 else
