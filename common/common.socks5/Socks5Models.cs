@@ -14,6 +14,8 @@ namespace common.socks5
         [Key(2)]
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
 
+        public byte[] Response { get; set; } = new byte[1];
+
         public byte[] ToBytes()
         {
             var idBytes = BitConverter.GetBytes(Id);

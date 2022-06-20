@@ -2,9 +2,10 @@
   "NumConnections": 1000, //支持连接数
   "ListenEnable": false, //是否开启监听
   "ListenPort": 5412, //监听端口
+  "ListenUdpPort": 5413, //监听Udp端口,为0则表示不支持udp代理转发
   "BufferSize": 8192,
   "IsCustomPac": false, //是否自定义pac
-  "IsPac": false,//是否设置pac
+  "IsPac": false, //是否设置pac
   "TargetName": "", //连接目标客户端名，为空表示代理到服务器
   "TunnelType": 8, //数据通道，2只tcp 4只udp 8优先tcp 16优先udp
   "ConnectEnable": false, //是否允许被连接

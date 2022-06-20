@@ -18,42 +18,46 @@ namespace common.socks5
         public void Request(IConnection connection)
         {
             Socks5Info socks5Info = new Socks5Info();
+            connection.State = socks5Info;
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleRequest(connection, socks5Info);
         }
         public void RequestResponse(IConnection connection)
         {
             (ulong id, Memory<byte> data) = Socks5Info.Read(connection.ReceiveRequestWrap.Memory);
-            socks5ClientListener.RequestResponse(id, (Socks5EnumAuthType)data.Span[0]);
+            Socks5EnumAuthType type = (Socks5EnumAuthType)data.Span[0];
+            socks5ClientListener.RequestResponse(id, type);
         }
 
         public void Auth(IConnection connection)
         {
-            Socks5Info socks5Info = new Socks5Info();
+            Socks5Info socks5Info = connection.State as Socks5Info;
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleAuth(connection, socks5Info);
         }
         public void AuthResponse(IConnection connection)
         {
             (ulong id, Memory<byte> data) = Socks5Info.Read(connection.ReceiveRequestWrap.Memory);
-            socks5ClientListener.AuthResponse(id, (Socks5EnumAuthState)data.Span[0]);
+            Socks5EnumAuthState state = (Socks5EnumAuthState)data.Span[0];
+            socks5ClientListener.AuthResponse(id, state);
         }
 
         public void Command(IConnection connection)
         {
-            Socks5Info socks5Info = new Socks5Info();
+            Socks5Info socks5Info = connection.State as Socks5Info;
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleCommand(connection, socks5Info);
         }
         public void CommandResponse(IConnection connection)
         {
             (ulong id, Memory<byte> data) = Socks5Info.Read(connection.ReceiveRequestWrap.Memory);
-            socks5ClientListener.CommandResponse(id, (Socks5EnumResponseCommand)data.Span[0]);
+            Socks5EnumResponseCommand command = (Socks5EnumResponseCommand)data.Span[0];
+            socks5ClientListener.CommandResponse(id, command);
         }
 
         public void Forward(IConnection connection)
         {
-            Socks5Info socks5Info = new Socks5Info();
+            Socks5Info socks5Info = connection.State as Socks5Info;
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HndleForward(connection, socks5Info);
         }

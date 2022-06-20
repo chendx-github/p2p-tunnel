@@ -14,6 +14,7 @@ namespace common.server
         public ulong ConnectId { get; set; }
         public bool Connected { get; }
         public bool Relay { get; set; }
+        public object State { get; set; }
 
         public bool EncodeEnabled { get; }
         public ICrypto Crypto { get; }
@@ -50,6 +51,7 @@ namespace common.server
         public ulong ConnectId { get; set; } = 0;
         public virtual bool Connected => false;
         public bool Relay { get; set; } = false;
+        public object State { get; set; }
 
         public bool EncodeEnabled => Crypto != null;
         public ICrypto Crypto { get; private set; }
@@ -100,6 +102,7 @@ namespace common.server
 
         public virtual void Disponse()
         {
+            State = null;
             Address = null;
             LastTime = 0;
             ReceiveRequestWrap = null;
@@ -215,7 +218,6 @@ namespace common.server
             return clone;
         }
     }
-
 
     public class TcpConnection : Connection
     {

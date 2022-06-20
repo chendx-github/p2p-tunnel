@@ -29,12 +29,13 @@ namespace common.socks5
         {
             if (!config.ConnectEnable)
             {
-                data.Data = new byte[] { (byte)Socks5EnumAuthType.NotSupported };
+                data.Response[0] = (byte)Socks5EnumAuthType.NotSupported;
             }
             else
             {
-                data.Data = new byte[] { (byte)Socks5EnumAuthType.NoAuth };
+                data.Response[0] = (byte)Socks5EnumAuthType.NoAuth;
             }
+            data.Data = data.Response;
             socks5MessengerSender.RequestResponse(data, connection);
         }
 
@@ -42,12 +43,13 @@ namespace common.socks5
         {
             if (!config.ConnectEnable)
             {
-                data.Data = new byte[] { (byte)Socks5EnumAuthState.UnKnow };
+                data.Response[0] = (byte)Socks5EnumAuthState.UnKnow;
             }
             else
             {
-                data.Data = new byte[] { (byte)Socks5EnumAuthState.Success };
+                data.Response[0] = (byte)Socks5EnumAuthState.Success;
             }
+            data.Data = data.Response;
             socks5MessengerSender.RequestResponse(data, connection);
         }
 
@@ -72,10 +74,10 @@ namespace common.socks5
 
         public void HandleCommand(IConnection connection, Socks5Info data)
         {
+            data.Response[0] = 0xff;
             if (!config.ConnectEnable)
             {
-                data.Data = new byte[] { (byte)Socks5EnumResponseCommand.Unknow };
-                socks5MessengerSender.CommandResponse(data, connection);
+                data.Response[0] = (byte)Socks5EnumResponseCommand.Unknow;
             }
             else
             {
@@ -85,8 +87,7 @@ namespace common.socks5
                     IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data.Span);
                     if (!config.LanConnectEnable && NetworkHelper.IsLan(remoteEndPoint))
                     {
-                        data.Data = new byte[] { (byte)Socks5EnumResponseCommand.NetworkError };
-                        socks5MessengerSender.CommandResponse(data, connection);
+                        data.Response[0] = (byte)Socks5EnumResponseCommand.NetworkError;
                     }
                     else
                     {
@@ -95,19 +96,21 @@ namespace common.socks5
                 }
                 else if (command == Socks5EnumRequestCommand.Bind)
                 {
-                    data.Data = new byte[] { (byte)Socks5EnumResponseCommand.CommandNotAllow };
-                    socks5MessengerSender.CommandResponse(data, connection);
+                    data.Response[0] = (byte)Socks5EnumResponseCommand.CommandNotAllow;
                 }
                 else if (command == Socks5EnumRequestCommand.UdpAssociate)
                 {
-                    data.Data = new byte[] { (byte)Socks5EnumResponseCommand.CommandNotAllow };
-                    socks5MessengerSender.CommandResponse(data, connection);
+                    data.Response[0] = (byte)Socks5EnumResponseCommand.CommandNotAllow;
                 }
                 else
                 {
-                    data.Data = new byte[] { (byte)Socks5EnumResponseCommand.CommandNotAllow };
-                    socks5MessengerSender.CommandResponse(data, connection);
+                    data.Response[0] = (byte)Socks5EnumResponseCommand.CommandNotAllow;
                 }
+            }
+            if (data.Response[0] != 0xff)
+            {
+                data.Data = data.Response;
+                socks5MessengerSender.CommandResponse(data, connection);
             }
         }
         private void Connect(IConnection connection, Socks5Info data, IPEndPoint remoteEndPoint)
@@ -194,7 +197,8 @@ namespace common.socks5
             }
             finally
             {
-                token.Data.Data = new byte[] { (byte)command };
+                token.Data.Response[0] = (byte)command;
+                token.Data.Data = token.Data.Response;
                 socks5MessengerSender.CommandResponse(token.Data, token.Connection);
             }
         }
