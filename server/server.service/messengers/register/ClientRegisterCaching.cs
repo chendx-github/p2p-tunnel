@@ -21,7 +21,7 @@ namespace server.service.messengers.register
 
         public ClientRegisterCaching(WheelTimer<object> wheelTimer)
         {
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
+            //wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
         }
         private async void TimeoutCallback(WheelTimerTimeout<object> timeout)
         {

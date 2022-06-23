@@ -27,7 +27,17 @@ namespace client.service.tcpforward
 
         public async Task<string> Save(string jsonStr)
         {
-            config = jsonStr.DeJson<common.tcpforward.Config>();
+            var _config = jsonStr.DeJson<common.tcpforward.Config>();
+
+            config. ConnectEnable = _config.ConnectEnable;
+            config.NumConnections = _config.NumConnections;
+            config.BufferSize = _config.BufferSize;
+            config.WebListens = _config.WebListens;
+            config.TunnelListenRange = _config.TunnelListenRange;
+            config.PortWhiteList = _config.PortWhiteList;
+            config.PortBlackList = _config.PortBlackList;
+            config.LanConnectEnable = _config.LanConnectEnable;
+
             await config.SaveConfig().ConfigureAwait(false);
             return string.Empty;
         }

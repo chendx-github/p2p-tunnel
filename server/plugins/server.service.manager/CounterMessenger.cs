@@ -33,10 +33,10 @@ namespace server.service.manager
                     Cpu = ProcessHelper.GetCpu(proc),
                     Memory = ProcessHelper.GetMemory(proc),
                     RunTime = (int)(DateTime.Now - startTime).TotalSeconds,
-                    TcpSendBytes = clients.Sum(c => (decimal)c.TcpConnection.SendBytes),
-                    TcpReceiveBytes = clients.Sum(c => (decimal)c.TcpConnection.ReceiveBytes),
-                    UdpSendBytes = clients.Sum(c => (decimal)c.UdpConnection.SendBytes),
-                    UdpReceiveBytes = clients.Sum(c => (decimal)c.UdpConnection.ReceiveBytes),
+                    TcpSendBytes = clients.Sum(c => (decimal)(c.TcpConnection?.SendBytes ?? 0)),
+                    TcpReceiveBytes = clients.Sum(c => (decimal)(c.TcpConnection?.ReceiveBytes ?? 0)),
+                    UdpSendBytes = clients.Sum(c => (decimal)(c.UdpConnection?.SendBytes ?? 0)),
+                    UdpReceiveBytes = clients.Sum(c => (decimal)(c.UdpConnection?.ReceiveBytes ?? 0)),
                 }
             };
         }

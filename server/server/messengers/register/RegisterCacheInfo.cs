@@ -1,23 +1,29 @@
 ﻿using common.server;
 using common.server.model;
 using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 
 namespace server.messengers.register
 {
     public class RegisterCacheInfo
     {
+        [JsonIgnore]
         public IConnection TcpConnection { get; private set; } = null;
+        [JsonIgnore]
         public IConnection UdpConnection { get; private set; } = null;
 
         public ulong Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
 
         public string GroupId { get; set; } = string.Empty;
+        [JsonIgnore]
         public string OriginGroupId { get; set; } = string.Empty;
 
+        [JsonIgnore]
         public long LastTime { get; set; }
-
+        [JsonIgnore]
         public string LocalIps { get; set; } = string.Empty;
+        [JsonIgnore]
         public string Mac { get; set; } = string.Empty;
 
         public void UpdateUdpInfo(UpdateUdpParamsInfo model)

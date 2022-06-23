@@ -6,6 +6,7 @@ using client.messengers.register;
 using client.service.messengers.heart;
 using client.service.messengers.punchHole;
 using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using System;
@@ -66,7 +67,12 @@ namespace client.service.messengers.clients
                 ConnectClient(client);
             }
         }
+
         public void ConnectClient(ClientInfo info)
+        {
+            ConnectClient(info,true);
+        }
+        public void ConnectClient(ClientInfo info, bool tryreverse = true)
         {
             if (info.Id == registerState.ConnectId)
             {
@@ -77,11 +83,11 @@ namespace client.service.messengers.clients
             {
                 if (info.UdpConnecting == false && info.UdpConnected == false)
                 {
-                    await ConnectUdp(info).ConfigureAwait(false);
+                    await ConnectUdp(info, tryreverse).ConfigureAwait(false);
                 }
                 if (info.TcpConnecting == false && info.TcpConnected == false)
                 {
-                    await ConnectTcp(info).ConfigureAwait(false);
+                    await ConnectTcp(info, tryreverse).ConfigureAwait(false);
                 }
             });
         }
@@ -98,7 +104,8 @@ namespace client.service.messengers.clients
             punchHoleTcp.SendStep2Stop(id);
         }
 
-        private async Task ConnectUdp(ClientInfo info)
+       
+        private async Task ConnectUdp(ClientInfo info, bool tryreverse = true)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.UDP);
             var result = await punchHoleUdp.Send(new ConnectParams
@@ -120,10 +127,14 @@ namespace client.service.messengers.clients
                 {
                     Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
                     clientInfoCaching.Offline(info.Id, ServerType.UDP);
+                    if (tryreverse)
+                    {
+                        ConnectReverse(info.Id);
+                    }
                 }
             }
         }
-        private async Task ConnectTcp(ClientInfo info)
+        private async Task ConnectTcp(ClientInfo info,bool tryreverse = true)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.TCP);
             var result = await punchHoleTcp.Send(new ConnectParams
@@ -144,6 +155,10 @@ namespace client.service.messengers.clients
                 {
                     Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
                     clientInfoCaching.Offline(info.Id, ServerType.TCP);
+                    if (tryreverse)
+                    {
+                        ConnectReverse(info.Id);
+                    }
                 }
             }
         }
@@ -152,7 +167,7 @@ namespace client.service.messengers.clients
         {
             if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
             {
-                ConnectClient(client);
+                ConnectClient(client,false);
             }
         }
 

@@ -42,10 +42,13 @@ namespace client.service.messengers.register
             Console.CancelKeyPress += (s, e) => _ = Exit();
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                Task.Run(async () =>
+                if (connection.ConnectId == registerState.TcpConnection.ConnectId)
                 {
-                    await ExitAndAutoReg().ConfigureAwait(false);
-                });
+                    Task.Run(async () =>
+                    {
+                        await ExitAndAutoReg().ConfigureAwait(false);
+                    });
+                }
             });
         }
 

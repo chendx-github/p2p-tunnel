@@ -122,8 +122,6 @@ namespace common.server.servers.rudp
                 maxNumberConnectings.Release();
             }
         }
-
-
     }
 
     class WaitPeer

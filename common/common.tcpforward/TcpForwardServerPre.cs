@@ -200,9 +200,9 @@ namespace common.tcpforward
                     CloseClientSocket(e);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Logger.Instance.DebugError(ex);
+                Logger.Instance.DebugError(ex);
             }
         }
 
