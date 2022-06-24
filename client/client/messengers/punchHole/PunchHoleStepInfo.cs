@@ -111,6 +111,9 @@ namespace client.messengers.punchHole
 
         [Key(3)]
         public byte Step { get; set; } = 0;
+
+        [Key(4)]
+        public bool TryReverse { get; set; } = false;
     }
 
     [MessagePackObject]

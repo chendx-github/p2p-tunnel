@@ -10,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using client.service.messengers.register;
 
 namespace client.service.messengers.punchHole
 {
@@ -20,12 +23,14 @@ namespace client.service.messengers.punchHole
         private readonly MessengerSender messengerSender;
         private readonly RegisterStateInfo registerState;
         private readonly ServiceProvider serviceProvider;
+        private readonly RegisterMessengerSender registerMessengerSender;
 
-        public PunchHoleMessengerSender(MessengerSender messengerSender, RegisterStateInfo registerState, ServiceProvider serviceProvider)
+        public PunchHoleMessengerSender(MessengerSender messengerSender, RegisterStateInfo registerState, ServiceProvider serviceProvider, RegisterMessengerSender registerMessengerSender)
         {
             this.messengerSender = messengerSender;
             this.registerState = registerState;
             this.serviceProvider = serviceProvider;
+            this.registerMessengerSender = registerMessengerSender;
         }
 
         public void LoadPlugins(Assembly[] assemblys)
@@ -66,19 +71,24 @@ namespace client.service.messengers.punchHole
                     PunchStep = msg.Step,
                     PunchType = (byte)msg.PunchType,
                     ToId = arg.ToId,
-                    TunnelName = arg.TunnelName
+                    TunnelName = arg.TunnelName,
+                    GuessPort = arg.GuessPort
                 }
             }).ConfigureAwait(false);
         }
+        public async Task<int> GetGuessPort(ServerType serverType)
+        {
+            return await registerMessengerSender.GetGuessPort(serverType);
+        }
 
         public SimpleSubPushHandler<OnPunchHoleArg> OnReverse { get; } = new SimpleSubPushHandler<OnPunchHoleArg>();
-        public async Task SendReverse(ulong toid)
+        public async Task SendReverse(ulong toid, bool tryreverse = false)
         {
             await Send(new SendPunchHoleArg<PunchHoleReverseInfo>
             {
                 Connection = registerState.TcpConnection,
                 ToId = toid,
-                Data = new PunchHoleReverseInfo { }
+                Data = new PunchHoleReverseInfo { TryReverse = tryreverse }
             }).ConfigureAwait(false);
         }
 
@@ -98,6 +108,8 @@ namespace client.service.messengers.punchHole
         public IConnection Connection { get; set; }
 
         public ulong ToId { get; set; }
+        public int GuessPort { get; set; } = 0;
+
         public string TunnelName { get; set; }
 
         public T Data { get; set; }

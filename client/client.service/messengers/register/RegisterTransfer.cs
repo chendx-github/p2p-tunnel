@@ -194,7 +194,7 @@ namespace client.service.messengers.register
                 LocalUdpPort = registerState.LocalInfo.UdpPort,
                 LocalTcpPort = registerState.LocalInfo.TcpPort,
                 Mac = registerState.LocalInfo.Mac,
-                LocalIps = string.Join(Helper.SeparatorString, new List<string> { config.Client.LoopbackIp.ToString(), registerState.LocalInfo.LocalIp }),
+              //  LocalIps = string.Join(Helper.SeparatorString, new List<string> { config.Client.LoopbackIp.ToString(), registerState.LocalInfo.LocalIp }),
                 Key = config.Client.Key,
                 Timeout = 5 * 1000
             }).ConfigureAwait(false);

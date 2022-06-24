@@ -46,6 +46,13 @@ namespace common.server.model
         /// </summary>
         [Key(7)]
         public byte PunchStep { get; set; } = 0;
+
+        /// <summary>
+        /// 猜想的端口
+        /// </summary>
+        [Key(8)]
+        public int GuessPort { get; set; } = 0;
+
     }
 
     [Flags]
@@ -75,7 +82,10 @@ namespace common.server.model
 
         [Key(5)]
         public bool IsDefault { get; set; } = false;
+
+        [Key(6)]
+        public int GuessPort { get; set; } = 0;
     }
 
-   
+
 }

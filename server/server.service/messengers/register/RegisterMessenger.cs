@@ -2,7 +2,6 @@
 using common.server;
 using common.server.model;
 using server.messengers.register;
-using System;
 using System.Threading.Tasks;
 
 namespace server.service.messengers.register
@@ -38,22 +37,13 @@ namespace server.service.messengers.register
         }
         private RegisterResultInfo Udp(IConnection connection, RegisterParamsInfo model)
         {
-            if (clientRegisterCache.GetBySameGroup(model.GroupId, model.Name) != null)
+            (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
+            if (verify != null)
             {
-                return new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.SAME_NAMES };
+                return verify;
             }
-            RegisterCacheInfo client = new()
-            {
-                Name = model.Name,
-                OriginGroupId = model.GroupId,
-                LocalIps = model.LocalIps,
-                Mac = model.Mac,
-                Id = 0
-            };
-            clientRegisterCache.Add(client);
 
-            client.UpdateUdpInfo(new UpdateUdpParamsInfo { Connection = connection });
-
+            client.UpdateUdpInfo(connection);
             client.AddTunnel(new TunnelRegisterCacheInfo
             {
                 Port = connection.Address.Port,
@@ -75,15 +65,13 @@ namespace server.service.messengers.register
         }
         private RegisterResultInfo Tcp(IConnection connection, RegisterParamsInfo model)
         {
-            if (!clientRegisterCache.Get(model.Id, out RegisterCacheInfo client))
+            (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
+            if (verify != null)
             {
-                return new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.VERIFY };
+                return verify;
             }
 
-            client.UpdateTcpInfo(new UpdateTcpParamsInfo
-            {
-                Connection = connection
-            });
+            client.UpdateTcpInfo(connection);
             client.AddTunnel(new TunnelRegisterCacheInfo
             {
                 Port = connection.Address.Port,
@@ -102,6 +90,50 @@ namespace server.service.messengers.register
                 GroupId = model.GroupId,
                 Relay = config.Relay
             };
+        }
+        private (RegisterResultInfo, RegisterCacheInfo) VerifyAndAdd(RegisterParamsInfo model)
+        {
+            RegisterResultInfo verify = null;
+            RegisterCacheInfo client = null;
+            //不是第一次注册
+            if (model.Id > 0)
+            {
+                if (!clientRegisterCache.Get(model.Id, out client))
+                {
+                    verify = new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.VERIFY };
+                }
+            }
+            else
+            {
+                //第一次注册，检查有没有重名
+                client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name);
+                if (client == null)
+                {
+                    client = new()
+                    {
+                        Name = model.Name,
+                        OriginGroupId = model.GroupId,
+                        LocalIps = model.LocalIps,
+                        Mac = model.Mac,
+                        Id = 0
+                    };
+                    clientRegisterCache.Add(client);
+                }
+                else
+                {
+                    verify = new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.SAME_NAMES };
+                }
+            }
+            return (verify, client);
+        }
+
+        public byte[] Ip(IConnection connection)
+        {
+            return connection.Address.Address.GetAddressBytes();
+        }
+        public byte[] Port(IConnection connection)
+        {
+            return connection.Address.Port.ToBytes();
         }
 
         public async Task Notify(IConnection connection)

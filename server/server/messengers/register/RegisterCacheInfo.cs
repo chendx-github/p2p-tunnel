@@ -26,21 +26,15 @@ namespace server.messengers.register
         [JsonIgnore]
         public string Mac { get; set; } = string.Empty;
 
-        public void UpdateUdpInfo(UpdateUdpParamsInfo model)
+        public void UpdateUdpInfo(IConnection connection)
         {
-            if (model.Connection != null)
-            {
-                UdpConnection = model.Connection;
-                UdpConnection.ConnectId = Id;
-            }
+            UdpConnection = connection;
+            UdpConnection.ConnectId = Id;
         }
-        public void UpdateTcpInfo(UpdateTcpParamsInfo model)
+        public void UpdateTcpInfo(IConnection connection)
         {
-            if (model.Connection != null)
-            {
-                TcpConnection = model.Connection;
-                TcpConnection.ConnectId = Id;
-            }
+            TcpConnection = connection;
+            TcpConnection.ConnectId = Id;
         }
 
         private ConcurrentDictionary<string, TunnelRegisterCacheInfo> tunnels = new ConcurrentDictionary<string, TunnelRegisterCacheInfo>();

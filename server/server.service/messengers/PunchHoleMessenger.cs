@@ -43,7 +43,8 @@ namespace server.service.messengers
                                 LocalIps = source.LocalIps,
                                 LocalPort = tunnel.LocalPort,
                                 Port = tunnel.Port,
-                                IsDefault = tunnel.IsDefault
+                                IsDefault = tunnel.IsDefault,
+                                GuessPort = model.GuessPort
                             }.ToBytes();
                         }
 

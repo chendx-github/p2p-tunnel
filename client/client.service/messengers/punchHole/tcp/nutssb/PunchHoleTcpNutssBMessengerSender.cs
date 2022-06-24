@@ -212,11 +212,13 @@ namespace client.service.messengers.punchHole.tcp.nutssb
 
         private async Task SendStep2Retry(ulong toid, string tunnelName)
         {
+            int port = 0;//await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2TryInfo>
             {
                 TunnelName = tunnelName,
                 Connection = TcpServer,
                 ToId = toid,
+                GuessPort = port,
                 Data = new PunchHoleStep2TryInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_TRY, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
         }
@@ -226,13 +228,27 @@ namespace client.service.messengers.punchHole.tcp.nutssb
             OnStep2RetryHandler.Push(e);
             await Task.Run(() =>
             {
-                IPEndPoint target = new IPEndPoint(IPAddress.Parse(e.Data.Ip), e.Data.Port);
-                using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                targetSocket.Ttl = (short)(RouteLevel + 2);
-                targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
-                targetSocket.ConnectAsync(target);
-                targetSocket.SafeClose();
+                int startPort = e.Data.Port;
+                int endPort = e.Data.Port;
+                if (e.Data.GuessPort > 0)
+                {
+                    startPort = e.Data.GuessPort;
+                    endPort = startPort + 20;
+                }
+                if (endPort > 65535)
+                {
+                    endPort = 65535;
+                }
+                for (int i = startPort; i <= endPort; i++)
+                {
+                    IPEndPoint target = new IPEndPoint(IPAddress.Parse(e.Data.Ip), i);
+                    using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    targetSocket.Ttl = (short)(RouteLevel + 2);
+                    targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
+                    _ = targetSocket.ConnectAsync(target);
+                    targetSocket.SafeClose();
+                }
             }).ConfigureAwait(false);
         }
 

@@ -4,6 +4,8 @@ using common.libs.extends;
 using common.server;
 using common.server.model;
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using static common.server.model.RegisterResultInfo;
 
@@ -13,11 +15,18 @@ namespace client.service.messengers.register
     {
         private readonly MessengerSender messengerSender;
         private readonly RegisterStateInfo registerState;
+        private readonly Config config;
+        private readonly ITcpServer tcpServer;
+        private readonly IUdpServer udpServer;
 
-        public RegisterMessengerSender(MessengerSender messengerSender, RegisterStateInfo registerState)
+
+        public RegisterMessengerSender(MessengerSender messengerSender, RegisterStateInfo registerState, Config config, ITcpServer tcpServer, IUdpServer udpServer)
         {
             this.messengerSender = messengerSender;
             this.registerState = registerState;
+            this.config = config;
+            this.tcpServer = tcpServer;
+            this.udpServer = udpServer;
         }
 
         public async Task Exit()
@@ -43,7 +52,7 @@ namespace client.service.messengers.register
                     Mac = param.Mac,
                     LocalTcpPort = param.LocalTcpPort,
                     LocalUdpPort = param.LocalUdpPort,
-                    Key = param.Key,
+                    Key = param.Key
                 },
                 Timeout = param.Timeout,
             }).ConfigureAwait(false);
@@ -90,6 +99,42 @@ namespace client.service.messengers.register
                 Data = Helper.EmptyArray,
                 Path = "register/notify"
             }).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetGuessPort(ServerType serverType)
+        {
+            var connection = GetConnection(serverType);
+
+            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            {
+                Connection = connection,
+                Path = "register/port",
+                Data = Helper.EmptyArray,
+            }).ConfigureAwait(false);
+
+            //connection.Disponse();
+            if (result.Code != MessageResponeCodes.OK)
+            {
+                return 0;
+            }
+            return result.Data.Span.ToInt32();
+        }
+        private IConnection GetConnection(ServerType serverType)
+        {
+            IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
+            if (serverType == ServerType.TCP)
+            {
+                IPEndPoint endpoint = new IPEndPoint(serverAddress, config.Server.TcpPort);
+                Socket tcpSocket = new(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                tcpSocket.KeepAlive();
+                tcpSocket.Connect(endpoint);
+                return tcpServer.BindReceive(tcpSocket, config.Client.TcpBufferSize);
+            }
+            else
+            {
+                IPEndPoint endpoint = new IPEndPoint(serverAddress, config.Server.UdpPort);
+                return udpServer.CreateConnection(endpoint);
+            }
         }
 
         public async Task<TunnelRegisterInfo> TunnelInfo(IConnection connection)

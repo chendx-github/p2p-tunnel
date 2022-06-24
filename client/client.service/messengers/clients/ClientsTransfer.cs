@@ -3,7 +3,6 @@ using client.messengers.punchHole;
 using client.messengers.punchHole.tcp;
 using client.messengers.punchHole.udp;
 using client.messengers.register;
-using client.service.messengers.heart;
 using client.service.messengers.punchHole;
 using common.libs;
 using common.libs.extends;
@@ -27,7 +26,7 @@ namespace client.service.messengers.clients
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
-            IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp,IClientInfoCaching clientInfoCaching,
+            IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
             RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender
         )
         {
@@ -67,12 +66,11 @@ namespace client.service.messengers.clients
                 ConnectClient(client);
             }
         }
-
         public void ConnectClient(ClientInfo info)
         {
-            ConnectClient(info,true);
+            ConnectClient(info, true);
         }
-        public void ConnectClient(ClientInfo info, bool tryreverse = true)
+        public void ConnectClient(ClientInfo info, bool tryreverse = false)
         {
             if (info.Id == registerState.ConnectId)
             {
@@ -91,10 +89,25 @@ namespace client.service.messengers.clients
                 }
             });
         }
+
         public void ConnectReverse(ulong id)
         {
-            punchHoleMessengerSender.SendReverse(id).ConfigureAwait(false);
+            ConnectReverse(id, false);
         }
+        private void ConnectReverse(ulong id, bool tryreverse)
+        {
+            punchHoleMessengerSender.SendReverse(id, tryreverse).ConfigureAwait(false);
+        }
+
+        private void OnReverse(OnPunchHoleArg arg)
+        {
+            if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
+            {
+                PunchHoleReverseInfo model = arg.Data.Data.DeBytes<PunchHoleReverseInfo>();
+                ConnectClient(client, model.TryReverse);
+            }
+        }
+
         public void Reset(ulong id)
         {
             punchHoleMessengerSender.SendReset(id).ConfigureAwait(false);
@@ -104,8 +117,7 @@ namespace client.service.messengers.clients
             punchHoleTcp.SendStep2Stop(id);
         }
 
-       
-        private async Task ConnectUdp(ClientInfo info, bool tryreverse = true)
+        private async Task ConnectUdp(ClientInfo info, bool tryreverse = false)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.UDP);
             var result = await punchHoleUdp.Send(new ConnectParams
@@ -134,7 +146,7 @@ namespace client.service.messengers.clients
                 }
             }
         }
-        private async Task ConnectTcp(ClientInfo info,bool tryreverse = true)
+        private async Task ConnectTcp(ClientInfo info, bool tryreverse = false)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.TCP);
             var result = await punchHoleTcp.Send(new ConnectParams
@@ -160,14 +172,6 @@ namespace client.service.messengers.clients
                         ConnectReverse(info.Id);
                     }
                 }
-            }
-        }
-
-        private void OnReverse(OnPunchHoleArg arg)
-        {
-            if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
-            {
-                ConnectClient(client,false);
             }
         }
 
@@ -218,7 +222,14 @@ namespace client.service.messengers.clients
                     clientInfoCaching.Add(client);
                     if (firstClients.Get())
                     {
-                        ConnectClient(client);
+                        if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort)
+                        {
+                            ConnectClient(client);
+                        }
+                        else
+                        {
+                            ConnectReverse(client.Id, true);
+                        }
                     }
                 }
 
