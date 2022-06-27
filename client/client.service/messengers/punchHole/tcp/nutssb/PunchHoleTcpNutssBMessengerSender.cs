@@ -89,12 +89,13 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
                 targetSocket.SafeClose();
             }
-
+            int port = 0;// await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
             {
                 TunnelName = arg.RawData.TunnelName,
                 Connection = TcpServer,
                 ToId = arg.RawData.FromId,
+                GuessPort = port,
                 Data = new PunchHoleStep2Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
         }
@@ -115,7 +116,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
 
 
             bool success = false;
-            int length = cache.TryTimes, index = 0, interval = 0;
+            int length = cache.TryTimes, index = 0, interval = 0, port = 0;
             while (length > 0)
             {
                 if (cache.Canceled)
@@ -129,7 +130,11 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
 
                 Tuple<string, int> ip = index >= ips.Count ? ips[^1] : ips[index];
-                IPEndPoint targetEndpoint = new IPEndPoint(IPAddress.Parse(ip.Item1), ip.Item2);
+                if (port == 0)
+                {
+                    port = ip.Item2;
+                }
+                IPEndPoint targetEndpoint = new IPEndPoint(IPAddress.Parse(ip.Item1), port);
 
                 Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
@@ -178,6 +183,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         targetSocket.SafeClose();
                         interval = 300;
                         await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                        //port = arg.Data.GuessPort + index;
                         length--;
                     }
                 }
@@ -194,6 +200,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     {
                         interval = 100;
                         await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                        // port = arg.Data.GuessPort + index;
                         length--;
                     }
                 }
@@ -212,7 +219,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
 
         private async Task SendStep2Retry(ulong toid, string tunnelName)
         {
-            int port = 0;//await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+            int port = 0;// await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2TryInfo>
             {
                 TunnelName = tunnelName,
@@ -241,14 +248,32 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
                 for (int i = startPort; i <= endPort; i++)
                 {
+                    //IPEndPoint localEndPoint = new IPEndPoint(config.Client.BindIp, ClientTcpPort);
+                    //var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    //socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    //socket.Bind(localEndPoint);
+                    //socket.Listen(int.MaxValue);
+
+                    //Task.Run(() =>
+                    //{
+                    //    while (true)
+                    //    {
+                    //        var client = socket.Accept();
+                    //        Console.WriteLine($"收到连接：{client.RemoteEndPoint}");
+                    //    }
+                    //});
+
                     IPEndPoint target = new IPEndPoint(IPAddress.Parse(e.Data.Ip), i);
                     using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     targetSocket.Ttl = (short)(RouteLevel + 2);
                     targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                     targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
                     _ = targetSocket.ConnectAsync(target);
-                    targetSocket.SafeClose();
+                    // targetSocket.SafeClose();
                 }
+
+
+
             }).ConfigureAwait(false);
         }
 

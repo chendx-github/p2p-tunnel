@@ -42,7 +42,7 @@ namespace client.service.messengers.register
             Console.CancelKeyPress += (s, e) => _ = Exit();
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                if (connection.ConnectId == registerState.TcpConnection.ConnectId)
+                if (registerState.TcpConnection != null && connection.ConnectId == registerState.TcpConnection.ConnectId)
                 {
                     Task.Run(async () =>
                     {
@@ -103,7 +103,7 @@ namespace client.service.messengers.register
                 if (registerState.UdpConnection == null)
                 {
                     await Exit().ConfigureAwait(false);
-                    return new CommonTaskResponseInfo<bool> { Data = false };
+                    return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = "udp连接失败" };
                 }
                 TcpBind(serverAddress);
 
@@ -194,7 +194,7 @@ namespace client.service.messengers.register
                 LocalUdpPort = registerState.LocalInfo.UdpPort,
                 LocalTcpPort = registerState.LocalInfo.TcpPort,
                 Mac = registerState.LocalInfo.Mac,
-              //  LocalIps = string.Join(Helper.SeparatorString, new List<string> { config.Client.LoopbackIp.ToString(), registerState.LocalInfo.LocalIp }),
+                //  LocalIps = string.Join(Helper.SeparatorString, new List<string> { config.Client.LoopbackIp.ToString(), registerState.LocalInfo.LocalIp }),
                 Key = config.Client.Key,
                 Timeout = 5 * 1000
             }).ConfigureAwait(false);
