@@ -49,15 +49,17 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 Tcs = tcs,
                 TunnelName = param.TunnelName,
             });
+
+            int port = 0;
+            //port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep1Info>
             {
                 TunnelName = param.TunnelName,
                 Connection = TcpServer,
                 ToId = param.Id,
+                GuessPort = port,
                 Data = new PunchHoleStep1Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_1, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
-
-            //OnSendHandler.Push(param);
 
             return await tcs.Task.ConfigureAwait(false);
         }
@@ -80,7 +82,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 using Socket targetSocket = new(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {
-                    targetSocket.Ttl = (short)(RouteLevel + 2);
+                    targetSocket.Ttl = (short)(RouteLevel + 5);
                     targetSocket.ReuseBind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
                     _ = targetSocket.ConnectAsync(target);
                 }
@@ -89,7 +91,49 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
                 targetSocket.SafeClose();
             }
-            int port = 0;// await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+
+            int port = 0;
+            if (arg.Data.GuessPort > 0)
+            {
+                int bindPort = NetworkHelper.GetRandomPort();
+                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+                int startPort = arg.Data.Port;
+                int endPort = arg.Data.Port;
+                if (arg.Data.GuessPort > 0)
+                {
+                    startPort = arg.Data.GuessPort;
+                    endPort = startPort + 20;
+                }
+                if (endPort > 65535)
+                {
+                    endPort = 65535;
+                }
+                for (int i = startPort; i <= endPort; i++)
+                {
+                    IPEndPoint localEndPoint = new IPEndPoint(config.Client.BindIp, bindPort);
+                    var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    socket.ReuseBind(localEndPoint);
+                    socket.Listen(int.MaxValue);
+
+                    _ = Task.Run(() =>
+                    {
+                        while (true)
+                        {
+                            var client = socket.Accept();
+                            Console.WriteLine($"收到连接：{client.RemoteEndPoint}");
+                        }
+                    });
+
+                    IPEndPoint target = new IPEndPoint(IPAddress.Parse(arg.Data.Ip), i);
+                    using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    targetSocket.Ttl = (short)(RouteLevel + 5);
+                    targetSocket.ReuseBind(localEndPoint);
+                    _ = targetSocket.ConnectAsync(target);
+
+                    targetSocket.SafeClose();
+                }
+            }
+
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
             {
                 TunnelName = arg.RawData.TunnelName,
@@ -105,10 +149,14 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         {
             OnStep2Handler.Push(arg);
 
-            List<Tuple<string, int>> ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
+            List<Tuple<string, int>> ips = new List<Tuple<string, int>>();
+            if (registerState.RemoteInfo.Ip == arg.Data.Ip)
+            {
+                ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
                 .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
-            ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
+            }
 
+            ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
             if (!connectTcpCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache))
             {
                 return;
@@ -135,7 +183,6 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     port = ip.Item2;
                 }
                 IPEndPoint targetEndpoint = new IPEndPoint(IPAddress.Parse(ip.Item1), port);
-
                 Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {
@@ -183,7 +230,11 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         targetSocket.SafeClose();
                         interval = 300;
                         await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
-                        //port = arg.Data.GuessPort + index;
+                        if (arg.Data.GuessPort > 0)
+                        {
+                            interval = 0;
+                            port = arg.Data.GuessPort + index;
+                        }
                         length--;
                     }
                 }
@@ -200,7 +251,11 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     {
                         interval = 100;
                         await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
-                        // port = arg.Data.GuessPort + index;
+                        if (arg.Data.GuessPort > 0)
+                        {
+                            interval = 0;
+                            port = arg.Data.GuessPort + index;
+                        }
                         length--;
                     }
                 }
@@ -246,34 +301,17 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 {
                     endPort = 65535;
                 }
-                for (int i = startPort; i <= endPort; i++)
+                for (int i = startPort; i <= startPort; i++)
                 {
-                    //IPEndPoint localEndPoint = new IPEndPoint(config.Client.BindIp, ClientTcpPort);
-                    //var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    //socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    //socket.Bind(localEndPoint);
-                    //socket.Listen(int.MaxValue);
-
-                    //Task.Run(() =>
-                    //{
-                    //    while (true)
-                    //    {
-                    //        var client = socket.Accept();
-                    //        Console.WriteLine($"收到连接：{client.RemoteEndPoint}");
-                    //    }
-                    //});
-
                     IPEndPoint target = new IPEndPoint(IPAddress.Parse(e.Data.Ip), i);
                     using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    targetSocket.Ttl = (short)(RouteLevel + 2);
+                    targetSocket.Ttl = (short)(RouteLevel + 5);
                     targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                     targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
                     _ = targetSocket.ConnectAsync(target);
-                    // targetSocket.SafeClose();
+
+                    targetSocket.SafeClose();
                 }
-
-
-
             }).ConfigureAwait(false);
         }
 

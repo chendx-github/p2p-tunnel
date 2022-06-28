@@ -50,6 +50,7 @@ namespace client.service.messengers
 
             //打洞
             services.AddSingleton<PunchHoleMessengerSender>();
+            //services.AddSingleton<IPunchHoleUdp, PunchHoleUdpMessengerSender>();
             services.AddSingleton<IPunchHoleUdp, PunchHoleRUdpMessengerSender>();
             services.AddSingleton<IPunchHoleTcp, PunchHoleTcpNutssBMessengerSender>();
 
