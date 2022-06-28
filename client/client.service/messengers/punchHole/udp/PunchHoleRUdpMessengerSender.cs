@@ -29,6 +29,7 @@ namespace client.service.messengers.punchHole.udp
         private IConnection connection => registerState.TcpConnection;
         private ulong ConnectId => registerState.ConnectId;
         public int RouteLevel => registerState.LocalInfo.RouteLevel;
+        private bool UseLocalPort = false;
 
         private readonly ConcurrentDictionary<ulong, ConnectCacheModel> connectCache = new();
 
@@ -84,7 +85,12 @@ namespace client.service.messengers.punchHole.udp
 
             if (arg.Data.IsDefault)
             {
-                List<Tuple<string, int>> ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0).Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
+                List<Tuple<string, int>> ips = new List<Tuple<string, int>>();
+                if (UseLocalPort && registerState.RemoteInfo.Ip == arg.Data.Ip)
+                {
+                    ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
+                    .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
+                }
                 ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
 
                 IConnection connection = null;
