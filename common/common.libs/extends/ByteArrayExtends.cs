@@ -1,22 +1,22 @@
-﻿using MessagePack;
+﻿using common.libs.messageFormatters;
+using MessagePack;
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
 
 namespace common.libs.extends
 {
     public static class ByteArrayExtends
     {
         static MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
+        static MessagePackSerializerOptions options = MessagePackSerializerOptions.Standard.WithResolver(MessageFormatterResolver.Instance);
         public static byte[] ToBytes<T>(this T obj)
         {
             if (obj is byte[] bytes)
             {
                 return bytes;
             }
-            return MessagePackSerializer.Serialize(obj);
+            return MessagePackSerializer.Serialize(obj, options);
         }
         public static byte[] ToBytesWithCompression<T>(this T obj)
         {
@@ -24,15 +24,15 @@ namespace common.libs.extends
         }
         public static T DeBytes<T>(this byte[] data)
         {
-            return MessagePackSerializer.Deserialize<T>(data);
+            return MessagePackSerializer.Deserialize<T>(data, options);
         }
         public static T DeBytes<T>(this Memory<byte> data)
         {
-            return MessagePackSerializer.Deserialize<T>(data);
+            return MessagePackSerializer.Deserialize<T>(data, options);
         }
         public static T DeBytes<T>(this ReadOnlyMemory<byte> data)
         {
-            return MessagePackSerializer.Deserialize<T>(data);
+            return MessagePackSerializer.Deserialize<T>(data, options);
         }
 
         public static T DeBytesWithCompression<T>(this byte[] data)

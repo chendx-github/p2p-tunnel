@@ -2,6 +2,7 @@
 using MessagePack;
 using System;
 using System.ComponentModel;
+using System.Net;
 
 namespace common.server.model
 {
@@ -70,13 +71,13 @@ namespace common.server.model
         public PunchHoleNotifyInfo() { }
 
         [Key(1)]
-        public string Ip { get; set; } = string.Empty;
+        public IPAddress Ip { get; set; } = IPAddress.Any;
 
         [Key(2)]
         public int Port { get; set; } = 0;
 
         [Key(3)]
-        public string LocalIps { get; set; } = string.Empty;
+        public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
         [Key(4)]
         public int LocalPort { get; set; } = 0;
 

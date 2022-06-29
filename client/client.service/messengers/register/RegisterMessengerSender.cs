@@ -188,7 +188,7 @@ namespace client.service.messengers.register
     {
         public string GroupId { get; set; } = string.Empty;
         public string ClientName { get; set; } = string.Empty;
-        public string LocalIps { get; set; } = string.Empty;
+        public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
         public string Mac { get; set; } = string.Empty;
         public int Timeout { get; set; } = 15 * 1000;
         public int LocalUdpPort { get; set; } = 0;

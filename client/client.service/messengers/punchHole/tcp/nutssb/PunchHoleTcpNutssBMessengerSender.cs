@@ -81,19 +81,17 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 OnStep1Handler.Push(arg);
             }
 
-            List<Tuple<string, int>> ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
-                .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
-            ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
+            List<IPEndPoint> ips = arg.Data.LocalIps.Select(c => new IPEndPoint(c, arg.Data.LocalPort)).ToList();
+            ips.Add(new IPEndPoint(arg.Data.Ip, arg.Data.Port));
 
-            foreach (Tuple<string, int> ip in ips)
+            foreach (IPEndPoint ip in ips)
             {
-                IPEndPoint target = new IPEndPoint(IPAddress.Parse(ip.Item1), ip.Item2);
-                using Socket targetSocket = new(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                using Socket targetSocket = new(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {
                     targetSocket.Ttl = (short)(RouteLevel);
                     targetSocket.ReuseBind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
-                    _ = targetSocket.ConnectAsync(target);
+                    _ = targetSocket.ConnectAsync(ip);
                 }
                 catch (Exception)
                 {
@@ -133,7 +131,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     //    }
                     //});
 
-                    IPEndPoint target = new IPEndPoint(IPAddress.Parse(arg.Data.Ip), i);
+                    IPEndPoint target = new IPEndPoint(arg.Data.Ip, i);
                     using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     targetSocket.Ttl = (short)(RouteLevel);
                     targetSocket.ReuseBind(localEndPoint);
@@ -158,14 +156,13 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         {
             OnStep2Handler.Push(arg);
 
-            List<Tuple<string, int>> ips = new List<Tuple<string, int>>();
+            List<Tuple<IPAddress, int>> ips = new List<Tuple<IPAddress, int>>();
             if (UseLocalPort && registerState.RemoteInfo.Ip == arg.Data.Ip)
             {
-                ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
-                .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
+                ips = arg.Data.LocalIps.Select(c => new Tuple<IPAddress, int>(c, arg.Data.LocalPort)).ToList();
             }
 
-            ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
+            ips.Add(new Tuple<IPAddress, int>(arg.Data.Ip, arg.Data.Port));
             if (!connectTcpCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache))
             {
                 return;
@@ -186,12 +183,12 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     interval = 0;
                 }
 
-                Tuple<string, int> ip = index >= ips.Count ? ips[^1] : ips[index];
+                Tuple<IPAddress, int> ip = index >= ips.Count ? ips[^1] : ips[index];
                 if (port == 0)
                 {
                     port = ip.Item2;
                 }
-                IPEndPoint targetEndpoint = new IPEndPoint(IPAddress.Parse(ip.Item1), port);
+                IPEndPoint targetEndpoint = new IPEndPoint(ip.Item1, port);
                 Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {
@@ -317,7 +314,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 for (int i = startPort; i <= endPort; i++)
                 {
 
-                    IPEndPoint target = new IPEndPoint(IPAddress.Parse(e.Data.Ip), i);
+                    IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
 
                     using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     targetSocket.Ttl = (short)(RouteLevel);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using common.libs.jsonConverters;
+using System;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -7,25 +8,21 @@ namespace common.libs.extends
 {
     public static class ObjectExtends
     {
+        private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(UnicodeRanges.All),
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            PropertyNameCaseInsensitive = true,
+            Converters = { new IPAddressJsonConverter(), new IPEndpointJsonConverter() }
+        };
         public static string ToJson(this object obj)
         {
-            return JsonSerializer.Serialize(obj, options: new JsonSerializerOptions
-            {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(UnicodeRanges.All),
-                AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            });
+            return JsonSerializer.Serialize(obj, options: jsonSerializerOptions);
         }
-
         public static T DeJson<T>(this string json)
         {
-            return JsonSerializer.Deserialize<T>(json, options: new JsonSerializerOptions
-            {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(UnicodeRanges.All),
-                PropertyNameCaseInsensitive = true,
-                AllowTrailingCommas = true,
-                ReadCommentHandling = JsonCommentHandling.Skip
-            });
+            return JsonSerializer.Deserialize<T>(json, options: jsonSerializerOptions);
         }
 
         public static void TryUpdateModel<T>(this object _object, T fromModel)

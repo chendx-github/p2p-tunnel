@@ -20,7 +20,8 @@ namespace common.libs.database
             string fileName = GetTableName(typeof(T));
             if (File.Exists(fileName))
             {
-                return (await File.ReadAllTextAsync(fileName).ConfigureAwait(false)).DeJson<T>();
+                string str = (await File.ReadAllTextAsync(fileName).ConfigureAwait(false));
+                return str.DeJson<T>();
             }
             return default;
         }

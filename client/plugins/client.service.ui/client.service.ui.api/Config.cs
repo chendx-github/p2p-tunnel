@@ -1,5 +1,6 @@
 ﻿using common.libs.database;
 using MessagePack;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 using System.Text.Json.Serialization;

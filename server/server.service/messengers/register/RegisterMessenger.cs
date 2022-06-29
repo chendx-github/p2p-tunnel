@@ -56,7 +56,7 @@ namespace server.service.messengers.register
             return new RegisterResultInfo
             {
                 Id = client.Id,
-                Ip = connection.Address.Address.ToString(),
+                Ip = connection.Address.Address,
                 Port = connection.Address.Port,
                 TcpPort = 0,
                 GroupId = client.OriginGroupId,
@@ -84,7 +84,7 @@ namespace server.service.messengers.register
             return new RegisterResultInfo
             {
                 Id = model.Id,
-                Ip = client.UdpConnection.Address.Address.ToString(),
+                Ip = client.UdpConnection.Address.Address,
                 Port = client.UdpConnection.Address.Port,
                 TcpPort = connection.Address.Port,
                 GroupId = model.GroupId,
@@ -94,7 +94,7 @@ namespace server.service.messengers.register
         private (RegisterResultInfo, RegisterCacheInfo) VerifyAndAdd(RegisterParamsInfo model)
         {
             RegisterResultInfo verify = null;
-            RegisterCacheInfo client = null;
+            RegisterCacheInfo client;
             //不是第一次注册
             if (model.Id > 0)
             {

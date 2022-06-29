@@ -63,11 +63,11 @@ namespace client.service.messengers.punchHole.udp
             }
 
             common.server.servers.rudp.UdpServer server = udpServer as common.server.servers.rudp.UdpServer;
-            foreach (var ip in arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0))
+            foreach (var ip in arg.Data.LocalIps)
             {
-                server.SendUnconnectedMessage(Helper.EmptyArray, new IPEndPoint(IPAddress.Parse(ip), arg.Data.Port));
+                server.SendUnconnectedMessage(Helper.EmptyArray, new IPEndPoint(ip, arg.Data.Port));
             }
-            server.SendUnconnectedMessage(Helper.EmptyArray, new IPEndPoint(IPAddress.Parse(arg.Data.Ip), arg.Data.Port));
+            server.SendUnconnectedMessage(Helper.EmptyArray, new IPEndPoint(arg.Data.Ip, arg.Data.Port));
 
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
             {
@@ -85,18 +85,17 @@ namespace client.service.messengers.punchHole.udp
 
             if (arg.Data.IsDefault)
             {
-                List<Tuple<string, int>> ips = new List<Tuple<string, int>>();
+                List<IPEndPoint> ips = new List<IPEndPoint>();
                 if (UseLocalPort && registerState.RemoteInfo.Ip == arg.Data.Ip)
                 {
-                    ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
-                    .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
+                    ips = arg.Data.LocalIps.Select(c => new IPEndPoint(c, arg.Data.LocalPort)).ToList();
                 }
-                ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
+                ips.Add(new IPEndPoint(arg.Data.Ip, arg.Data.Port));
 
                 IConnection connection = null;
-                foreach (Tuple<string, int> ip in ips)
+                foreach (IPEndPoint ip in ips)
                 {
-                    connection = udpServer.CreateConnection(new IPEndPoint(IPAddress.Parse(ip.Item1), ip.Item2));
+                    connection = udpServer.CreateConnection(ip);
                     if (connection != null)
                     {
                         break;

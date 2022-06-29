@@ -1,6 +1,7 @@
 ﻿using MessagePack;
 using System;
 using System.ComponentModel;
+using System.Net;
 
 namespace common.server.model
 {
@@ -22,7 +23,7 @@ namespace common.server.model
         public string Name { get; set; } = string.Empty;
 
         [Key(4)]
-        public string LocalIps { get; set; } = string.Empty;
+        public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
 
         [Key(5)]
         public string Mac { get; set; } = string.Empty;
@@ -49,7 +50,7 @@ namespace common.server.model
         public ulong Id { get; set; } = 0;
 
         [Key(3)]
-        public string Ip { get; set; } = string.Empty;
+        public IPAddress Ip { get; set; } = IPAddress.Any;
 
         [Key(4)]
         public int Port { get; set; } = 0;

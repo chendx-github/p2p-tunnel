@@ -1,6 +1,8 @@
 ﻿using common.server;
 using common.server.model;
+using System;
 using System.Collections.Concurrent;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace server.messengers.register
@@ -22,7 +24,7 @@ namespace server.messengers.register
         [JsonIgnore]
         public long LastTime { get; set; }
         [JsonIgnore]
-        public string LocalIps { get; set; } = string.Empty;
+        public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
         [JsonIgnore]
         public string Mac { get; set; } = string.Empty;
 

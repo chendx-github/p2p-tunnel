@@ -92,11 +92,11 @@ namespace client.service.messengers.punchHole.udp
             {
                 OnStep1Handler.Push(arg);
             }
-            foreach (var ip in arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0))
+            foreach (var ip in arg.Data.LocalIps)
             {
                 await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep21Info>
                 {
-                    Connection = udpServer.CreateConnection(new IPEndPoint(IPAddress.Parse(ip), arg.Data.Port)),
+                    Connection = udpServer.CreateConnection(new IPEndPoint(ip, arg.Data.Port)),
                     TunnelName = arg.RawData.TunnelName,
                     Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
                 }).ConfigureAwait(false);
@@ -104,7 +104,7 @@ namespace client.service.messengers.punchHole.udp
 
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep21Info>
             {
-                Connection = udpServer.CreateConnection(new IPEndPoint(IPAddress.Parse(arg.Data.Ip), arg.Data.Port)),
+                Connection = udpServer.CreateConnection(new IPEndPoint(arg.Data.Ip, arg.Data.Port)),
                 TunnelName = arg.RawData.TunnelName,
                 Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
             }).ConfigureAwait(false);
@@ -124,15 +124,14 @@ namespace client.service.messengers.punchHole.udp
             OnStep2Handler.Push(arg);
             if (arg.Data.IsDefault)
             {
-                List<Tuple<string, int>> ips = arg.Data.LocalIps.Split(Helper.SeparatorChar).Where(c => c.Length > 0)
-               .Select(c => new Tuple<string, int>(c, arg.Data.LocalPort)).ToList();
-                ips.Add(new Tuple<string, int>(arg.Data.Ip, arg.Data.Port));
+                List<IPEndPoint> ips = arg.Data.LocalIps.Select(c => new IPEndPoint(c, arg.Data.LocalPort)).ToList();
+                ips.Add(new IPEndPoint(arg.Data.Ip, arg.Data.Port));
 
-                foreach (Tuple<string, int> ip in ips)
+                foreach (IPEndPoint ip in ips)
                 {
                     await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
                     {
-                        Connection = udpServer.CreateConnection(new IPEndPoint(IPAddress.Parse(ip.Item1), ip.Item2)),
+                        Connection = udpServer.CreateConnection(ip),
                         TunnelName = arg.RawData.TunnelName,
                         Data = new PunchHoleStep3Info
                         {

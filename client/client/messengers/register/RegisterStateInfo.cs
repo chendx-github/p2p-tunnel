@@ -2,6 +2,7 @@
 using MessagePack;
 using common.server;
 using System;
+using System.Net;
 
 namespace client.messengers.register
 {
@@ -71,7 +72,7 @@ namespace client.messengers.register
             LocalInfo.UdpConnected = false;
             LocalInfo.TcpConnected = false;
 
-            RemoteInfo.Ip = string.Empty;
+            RemoteInfo.Ip = IPAddress.Any;
             RemoteInfo.UdpPort = 0;
             RemoteInfo.TcpPort = 0;
 
@@ -90,7 +91,7 @@ namespace client.messengers.register
                 UdpConnection = null;
             }
         }
-        public void Online(ulong id, string ip,int udpPort, int tcpPort)
+        public void Online(ulong id, IPAddress ip,int udpPort, int tcpPort)
         {
             LocalInfo.IsConnecting = false;
             LocalInfo.UdpConnected = true;
@@ -116,7 +117,7 @@ namespace client.messengers.register
         /// 客户端在远程的ip
         /// </summary>
         [Key(1)]
-        public string Ip { get; set; } = string.Empty;
+        public IPAddress Ip { get; set; } = IPAddress.Any;
         /// <summary>
         /// 客户端在远程的TCP端口
         /// </summary>
@@ -163,7 +164,7 @@ namespace client.messengers.register
         public int TcpPort { get; set; } = 0;
 
         [Key(5)]
-        public string LocalIp { get; set; } = string.Empty;
+        public IPAddress LocalIp { get; set; } = IPAddress.Any;
 
         /// <summary>
         /// 是否正在连接服务器

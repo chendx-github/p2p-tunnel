@@ -162,11 +162,11 @@ namespace client.service.messengers.register
             tcpSocket.ReuseBind(bindEndpoint);
             tcpSocket.Connect(new IPEndPoint(serverAddress, config.Server.TcpPort));
 #if DEBUG
-            registerState.LocalInfo.LocalIp = (tcpSocket.LocalEndPoint as IPEndPoint).Address.ToString();
+            registerState.LocalInfo.LocalIp = (tcpSocket.LocalEndPoint as IPEndPoint).Address;
 #endif
             if (config.Client.UseMac)
             {
-                registerState.LocalInfo.Mac = NetworkHelper.GetMacAddress(registerState.LocalInfo.LocalIp);
+                registerState.LocalInfo.Mac = NetworkHelper.GetMacAddress(registerState.LocalInfo.LocalIp.ToString());
             }
             registerState.TcpConnection = tcpServer.BindReceive(tcpSocket, config.Client.TcpBufferSize);
         }
@@ -194,7 +194,7 @@ namespace client.service.messengers.register
                 LocalUdpPort = registerState.LocalInfo.UdpPort,
                 LocalTcpPort = registerState.LocalInfo.TcpPort,
                 Mac = registerState.LocalInfo.Mac,
-                LocalIps = string.Join(Helper.SeparatorString, new List<string> { config.Client.LoopbackIp.ToString(), registerState.LocalInfo.LocalIp }),
+                LocalIps = new IPAddress[] { config.Client.LoopbackIp, registerState.LocalInfo.LocalIp },
                 Key = config.Client.Key,
                 Timeout = 5 * 1000
             }).ConfigureAwait(false);
