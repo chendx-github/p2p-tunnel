@@ -33,8 +33,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         private IConnection TcpServer => registerState.TcpConnection;
         private ulong ConnectId => registerState.ConnectId;
 
-        public int ClientTcpPort => registerState.LocalInfo.TcpPort;
-        public int RouteLevel => registerState.LocalInfo.RouteLevel + 2;
+        private int ClientTcpPort => registerState.LocalInfo.TcpPort;
+        private int RouteLevel => registerState.LocalInfo.RouteLevel + 2;
 #if DEBUG
         private bool UseLocalPort = false;
 #else
@@ -121,7 +121,6 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     //var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     //socket.ReuseBind(localEndPoint);
                     //socket.Listen(int.MaxValue);
-
                     //_ = Task.Run(() =>
                     //{
                     //    while (true)
@@ -157,7 +156,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
             OnStep2Handler.Push(arg);
 
             List<Tuple<IPAddress, int>> ips = new List<Tuple<IPAddress, int>>();
-            if (UseLocalPort && registerState.RemoteInfo.Ip == arg.Data.Ip)
+            if (UseLocalPort && registerState.RemoteInfo.Ip.ToString() == arg.Data.Ip.ToString())
             {
                 ips = arg.Data.LocalIps.Select(c => new Tuple<IPAddress, int>(c, arg.Data.LocalPort)).ToList();
             }

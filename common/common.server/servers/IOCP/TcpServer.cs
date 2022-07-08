@@ -37,8 +37,7 @@ namespace common.server.servers.iocp
             IPEndPoint localEndPoint = new IPEndPoint(ip, port);
 
             var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            socket.Bind(localEndPoint);
+            socket.ReuseBind(localEndPoint);
             socket.Listen(int.MaxValue);
 
             SocketAsyncEventArgs acceptEventArg = new SocketAsyncEventArgs
@@ -90,6 +89,7 @@ namespace common.server.servers.iocp
         }
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
+            if (e.AcceptSocket == null) return;
             BindReceive(e.AcceptSocket, bufferSize);
             StartAccept(e);
         }

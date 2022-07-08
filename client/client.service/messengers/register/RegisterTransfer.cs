@@ -196,7 +196,7 @@ namespace client.service.messengers.register
                 Mac = registerState.LocalInfo.Mac,
                 LocalIps = new IPAddress[] { config.Client.LoopbackIp, registerState.LocalInfo.LocalIp },
                 Key = config.Client.Key,
-                Timeout = 5 * 1000
+                Timeout = 15 * 1000
             }).ConfigureAwait(false);
             if (result.NetState.Code != MessageResponeCodes.OK)
             {

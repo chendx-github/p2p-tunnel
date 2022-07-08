@@ -74,7 +74,7 @@ namespace client.service.messengers.register
                 {
                     Id = res.Id,
                     Name = param.ClientName,
-                    GroupId = res.GroupId,
+                    GroupId = param.GroupId,
                     Mac = param.Mac,
                     LocalTcpPort = param.LocalTcpPort,
                     LocalUdpPort = param.LocalUdpPort,

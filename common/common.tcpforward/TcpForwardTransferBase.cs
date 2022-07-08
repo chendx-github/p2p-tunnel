@@ -28,13 +28,10 @@ namespace common.tcpforward
 
         private void OnRequest(TcpForwardRequestInfo request)
         {
-            if (request.Connection == null)
-            {
-                GetTarget(request);
-            }
-            else if (request.Connection.Connected == false)
+            if (request.Connection == null || !request.Connection.Connected)
             {
                 request.Connection = null;
+                GetTarget(request);
             }
 
             if (request.Connection == null)
