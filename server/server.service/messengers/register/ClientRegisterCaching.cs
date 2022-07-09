@@ -81,10 +81,15 @@ namespace server.service.messengers.register
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
+                Console.WriteLine("remove");
+
                 client.UdpConnection?.Disponse();
                 client.TcpConnection?.Disponse();
+                Console.WriteLine("remove1");
                 await OnChanged.PushAsync(client).ConfigureAwait(false);
+                Console.WriteLine("remove2");
                 await OnOffline.PushAsync(client).ConfigureAwait(false);
+                Console.WriteLine("remove3");
                 return true;
             }
             return false;

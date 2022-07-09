@@ -74,10 +74,10 @@ namespace client.service
             //自动注册
             serviceProvider.GetService<IRegisterTransfer>().AutoReg();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50,'='));
+            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
-            ThreadPool.SetMaxThreads(65535, 65535);
+            //ThreadPool.SetMaxThreads(65535, 65535);
         }
     }
 }

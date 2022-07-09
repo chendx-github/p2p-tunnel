@@ -29,9 +29,9 @@ namespace client.service.ui.api.service.clientServer.services
             return result.Data;
         }
 
-        public async Task Stop(ClientServiceParamsInfo arg)
+        public void Stop(ClientServiceParamsInfo arg)
         {
-            await registerTransfer.Exit().ConfigureAwait(false);
+            registerTransfer.Exit();
         }
 
         public RegisterInfo Info(ClientServiceParamsInfo arg)

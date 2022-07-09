@@ -61,6 +61,7 @@ namespace client.service.messengers.clients
                 }
             });
 
+            Logger.Instance.Info("获取外网距离ing...");
             registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
         }
 

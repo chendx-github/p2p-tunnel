@@ -8,6 +8,7 @@ using common.server;
 using common.server.model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -40,16 +41,13 @@ namespace client.service.messengers.register
             this.cryptoSwap = cryptoSwap;
             wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 5000, true);
 
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => _ = Exit();
-            Console.CancelKeyPress += (s, e) => _ = Exit();
+            AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit();
+            Console.CancelKeyPress += (s, e) => Exit();
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
                 if (registerState.TcpConnection != null && connection.ConnectId == registerState.TcpConnection.ConnectId)
                 {
-                    Task.Run(async () =>
-                    {
-                        await ExitAndAutoReg();
-                    });
+                    ExitAndAutoReg();
                 }
             });
         }
@@ -78,25 +76,27 @@ namespace client.service.messengers.register
                 });
             }
         }
-        public async Task Exit()
+
+        private void ExitAndAutoReg()
         {
-            await registerMessageHelper.Exit().ConfigureAwait(false);
+            Exit();
+            AutoReg();
+        }
+
+        public void Exit()
+        {
+            //await registerMessageHelper.Exit().ConfigureAwait(false);
             udpServer.Stop();
             tcpServer.Stop();
             registerState.Offline();
             GCHelper.FlushMemory();
-        }
-        private async Task ExitAndAutoReg()
-        {
-            await Exit();
-            AutoReg();
         }
 
         public async Task<CommonTaskResponseInfo<bool>> Register()
         {
             try
             {
-                await Exit();
+                Exit();
                 IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
                 registerState.LocalInfo.IsConnecting = true;
                 registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
@@ -105,7 +105,7 @@ namespace client.service.messengers.register
                 UdpBind(serverAddress);
                 if (registerState.UdpConnection == null)
                 {
-                    await Exit().ConfigureAwait(false);
+                    Exit();
                     return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = "udp连接失败" };
                 }
                 TcpBind(serverAddress);
@@ -134,7 +134,7 @@ namespace client.service.messengers.register
                 }
                 else
                 {
-                    await Exit().ConfigureAwait(false);
+                    Exit();
                     Logger.Instance.DebugError(sex);
                     return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = sex.Message };
                 }
@@ -142,7 +142,7 @@ namespace client.service.messengers.register
             catch (Exception ex)
             {
                 Logger.Instance.DebugError(ex);
-                await Exit().ConfigureAwait(false);
+                Exit();
                 return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = ex.Message };
             }
         }

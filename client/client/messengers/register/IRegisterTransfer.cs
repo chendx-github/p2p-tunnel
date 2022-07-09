@@ -6,7 +6,7 @@ namespace client.messengers.register
     public interface IRegisterTransfer
     {
         void AutoReg();
-        Task Exit();
+        void Exit();
         Task<CommonTaskResponseInfo<bool>> Register();
     }
 }
