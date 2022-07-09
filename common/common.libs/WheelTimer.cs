@@ -28,7 +28,7 @@ namespace common.libs
 
         public WheelTimer()
         {
-            tickMs = (double)(1000000 / Stopwatch.Frequency * 1000);
+            tickMs = (double)(Stopwatch.Frequency / 1000000 * 1000);
             CreateBuckets();
             Worker();
         }
