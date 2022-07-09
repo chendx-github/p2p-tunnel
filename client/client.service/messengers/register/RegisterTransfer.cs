@@ -48,31 +48,34 @@ namespace client.service.messengers.register
                 {
                     Task.Run(async () =>
                     {
-                        await ExitAndAutoReg().ConfigureAwait(false);
+                        await ExitAndAutoReg();
                     });
                 }
             });
         }
 
-        public async Task AutoReg()
+        public void AutoReg()
         {
             if (config.Client.AutoReg && !registerState.LocalInfo.IsConnecting)
             {
-                Logger.Instance.Info("开始自动注册");
-                while (true)
+                Task.Run(async () =>
                 {
-                    CommonTaskResponseInfo<bool> result = await Register().ConfigureAwait(false);
-                    if (result.Data == true)
+                    Logger.Instance.Info("开始自动注册");
+                    while (true)
                     {
-                        break;
+                        CommonTaskResponseInfo<bool> result = await Register().ConfigureAwait(false);
+                        if (result.Data == true)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Logger.Instance.Error(result.ErrorMsg);
+                        }
+                        System.Threading.Thread.Sleep(5000);
                     }
-                    else
-                    {
-                        Logger.Instance.Error(result.ErrorMsg);
-                    }
-                    await Task.Delay(5000).ConfigureAwait(false);
-                }
-                Logger.Instance.Warning("已自动注册");
+                    Logger.Instance.Warning("已自动注册");
+                });
             }
         }
         public async Task Exit()
@@ -86,7 +89,7 @@ namespace client.service.messengers.register
         private async Task ExitAndAutoReg()
         {
             await Exit();
-            await AutoReg();
+            AutoReg();
         }
 
         public async Task<CommonTaskResponseInfo<bool>> Register()

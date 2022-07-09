@@ -79,7 +79,7 @@ namespace client.service.messengers.punchHole.udp
                     Data = new PunchHoleStep1Info { Step = (byte)PunchHoleUdpSteps.STEP_1, PunchType = PunchHoleTypes.UDP }
                 }).ConfigureAwait(false);
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                System.Threading.Thread.Sleep(1000);
             }
 
             return await tcs.Task.ConfigureAwait(false);

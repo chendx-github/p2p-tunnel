@@ -120,17 +120,20 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 for (int i = startPort; i <= endPort; i++)
                 {
                     IPEndPoint localEndPoint = new IPEndPoint(config.Client.BindIp, ClientTcpPort);
-                    //var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    //socket.ReuseBind(localEndPoint);
-                    //socket.Listen(int.MaxValue);
-                    //_ = Task.Run(() =>
-                    //{
-                    //    while (true)
-                    //    {
-                    //        var client = socket.Accept();
-                    //        Console.WriteLine($"收到连接：{client.RemoteEndPoint}");
-                    //    }
-                    //});
+
+                    /*
+                    var socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    socket.ReuseBind(localEndPoint);
+                    socket.Listen(int.MaxValue);
+                    _ = Task.Run(() =>
+                    {
+                        while (true)
+                        {
+                            var client = socket.Accept();
+                            Console.WriteLine($"收到连接：{client.RemoteEndPoint}");
+                        }
+                    });
+                    */
 
                     IPEndPoint target = new IPEndPoint(arg.Data.Ip, i);
                     using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -180,7 +183,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
                 if (interval > 0)
                 {
-                    await Task.Delay(interval).ConfigureAwait(false);
+                    System.Threading.Thread.Sleep(interval);
                     interval = 0;
                 }
 
@@ -297,36 +300,33 @@ namespace client.service.messengers.punchHole.tcp.nutssb
             }).ConfigureAwait(false);
         }
         public SimpleSubPushHandler<OnStep2RetryParams> OnStep2RetryHandler { get; } = new SimpleSubPushHandler<OnStep2RetryParams>();
-        public async Task OnStep2Retry(OnStep2RetryParams e)
+        public void OnStep2Retry(OnStep2RetryParams e)
         {
             OnStep2RetryHandler.Push(e);
-            await Task.Run(() =>
+            int startPort = e.Data.Port;
+            int endPort = e.Data.Port;
+            if (e.Data.GuessPort > 0)
             {
-                int startPort = e.Data.Port;
-                int endPort = e.Data.Port;
-                if (e.Data.GuessPort > 0)
-                {
-                    startPort = e.Data.GuessPort;
-                    endPort = startPort + 20;
-                }
-                if (endPort > 65535)
-                {
-                    endPort = 65535;
-                }
-                for (int i = startPort; i <= endPort; i++)
-                {
+                startPort = e.Data.GuessPort;
+                endPort = startPort + 20;
+            }
+            if (endPort > 65535)
+            {
+                endPort = 65535;
+            }
+            for (int i = startPort; i <= endPort; i++)
+            {
 
-                    IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
+                IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
 
-                    using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    targetSocket.Ttl = (short)(RouteLevel);
-                    targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
-                    _ = targetSocket.ConnectAsync(target);
+                using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                targetSocket.Ttl = (short)(RouteLevel);
+                targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
+                _ = targetSocket.ConnectAsync(target);
 
-                    targetSocket.SafeClose();
-                }
-            }).ConfigureAwait(false);
+                targetSocket.SafeClose();
+            }
         }
 
         public SimpleSubPushHandler<ulong> OnSendStep2FailHandler => new SimpleSubPushHandler<ulong>();
@@ -359,9 +359,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
             }
         }
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; } = new SimpleSubPushHandler<OnStep2FailParams>();
-        public async Task OnStep2Fail(OnStep2FailParams arg)
+        public void OnStep2Fail(OnStep2FailParams arg)
         {
-            await Task.CompletedTask.ConfigureAwait(false);
             OnStep2FailHandler.Push(arg);
         }
         public async Task SendStep2Stop(ulong toid)
@@ -378,9 +377,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 Cancel(toid);
             }
         }
-        public async Task OnStep2Stop(OnStep2StopParams e)
+        public void OnStep2Stop(OnStep2StopParams e)
         {
-            await Task.CompletedTask.ConfigureAwait(false);
             Cancel(e.RawData.FromId);
         }
 
@@ -419,15 +417,13 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         }
 
         public SimpleSubPushHandler<OnStep4Params> OnStep4Handler { get; } = new SimpleSubPushHandler<OnStep4Params>();
-        public async Task OnStep4(OnStep4Params arg)
+        public void OnStep4(OnStep4Params arg)
         {
-            await Task.CompletedTask.ConfigureAwait(false);
             if (connectTcpCache.TryRemove(arg.Data.FromId, out ConnectCacheModel cache))
             {
                 cache.Tcs.SetResult(new ConnectResultModel { State = true });
             }
             OnStep4Handler.Push(arg);
         }
-
     }
 }

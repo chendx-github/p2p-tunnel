@@ -33,9 +33,6 @@ namespace common.tcpforward
 
         private void OnRequest(SendArg arg)
         {
-            //Logger.Instance.DebugError($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}==============================");
-            //Logger.Instance.DebugError($"serverType:{arg.Connection.ServerType},{arg.Connection.ConnectId},RequestId:{arg.Data.RequestId}");
-
             ConnectionKey key = new ConnectionKey(arg.Connection.ConnectId, arg.Data.RequestId);
             if (connections.TryGetValue(key, out ConnectUserToken token))
             {
@@ -51,7 +48,6 @@ namespace common.tcpforward
             }
             else
             {
-                //Logger.Instance.DebugError($"connect");
                 Connect(arg);
             }
         }

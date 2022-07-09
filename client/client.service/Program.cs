@@ -72,7 +72,7 @@ namespace client.service
                 .UseLoggerPlugin() //日志
                ;
             //自动注册
-            _ = serviceProvider.GetService<IRegisterTransfer>().AutoReg();
+            serviceProvider.GetService<IRegisterTransfer>().AutoReg();
 
             Logger.Instance.Warning(string.Empty.PadRight(50,'='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");

@@ -19,20 +19,20 @@ namespace client.messengers.punchHole.tcp
         public Task OnStep2(OnStep2Params e);
 
         public SimpleSubPushHandler<OnStep2RetryParams> OnStep2RetryHandler { get; }
-        public Task OnStep2Retry(OnStep2RetryParams e);
+        public void OnStep2Retry(OnStep2RetryParams e);
 
         public SimpleSubPushHandler<ulong> OnSendStep2FailHandler { get; }
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; }
-        public Task OnStep2Fail(OnStep2FailParams arg);
+        public void OnStep2Fail(OnStep2FailParams arg);
 
         public Task SendStep2Stop(ulong toid);
-        public Task OnStep2Stop(OnStep2StopParams e);
+        public void OnStep2Stop(OnStep2StopParams e);
 
         public SimpleSubPushHandler<OnStep3Params> OnStep3Handler { get; }
         public Task OnStep3(OnStep3Params arg);
 
         public SimpleSubPushHandler<OnStep4Params> OnStep4Handler { get; }
-        public Task OnStep4(OnStep4Params arg);
+        public void OnStep4(OnStep4Params arg);
     }
 
 

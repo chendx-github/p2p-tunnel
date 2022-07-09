@@ -61,10 +61,7 @@ namespace client.service.messengers.clients
                 }
             });
 
-            Task.Run(() =>
-            {
-                registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
-            });
+            registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
         }
 
         public void ConnectClient(ulong id)

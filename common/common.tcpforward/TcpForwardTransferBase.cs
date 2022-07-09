@@ -28,7 +28,6 @@ namespace common.tcpforward
 
         private void OnRequest(TcpForwardRequestInfo request)
         {
-           // Logger.Instance.DebugError($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}==============================");
             if (request.Connection == null || !request.Connection.Connected)
             {
                 request.Connection = null;
@@ -42,7 +41,6 @@ namespace common.tcpforward
             }
             else
             {
-                //Logger.Instance.DebugError($"serverType:{request.Connection.ServerType},{request.Connection.ConnectId},RequestId:{request.Msg.RequestId}");
                 request.Connection.ReceiveBytes += (ulong)request.Msg.Buffer.Length;
                 tcpForwardMessengerSender.SendRequest(new SendArg
                 {
@@ -58,8 +56,10 @@ namespace common.tcpforward
             Memory<byte> ip = Helper.EmptyArray;
 
             request.Msg.ForwardType = TcpForwardTypes.FORWARD;
+            //短链接
             if (request.Msg.AliveType == TcpForwardAliveTypes.WEB)
             {
+                //http1.1代理
                 if (HttpConnectMethodHelper.IsConnectMethod(request.Msg.Buffer.Span))
                 {
                     request.Msg.ForwardType = TcpForwardTypes.PROXY;
@@ -69,6 +69,7 @@ namespace common.tcpforward
                         ip = HttpConnectMethodHelper.GetHost(request.Msg.Buffer);
                     }
                 }
+                //正常的http请求
                 else
                 {
                     string domain = HttpParseHelper.GetHost(request.Msg.Buffer.Span).GetString();
@@ -79,6 +80,7 @@ namespace common.tcpforward
                     }
                 }
             }
+            //长连接
             else
             {
                 target = tcpForwardTargetProvider?.Get(request.SourcePort);
