@@ -1,5 +1,6 @@
 ﻿using client.messengers.clients;
 using client.messengers.register;
+using common.libs;
 using common.server;
 using common.tcpforward;
 using System;
@@ -17,6 +18,14 @@ namespace client.service.tcpforward
             this.clientInfoCaching = clientInfoCaching;
             this.tcpForwardTargetCaching = tcpForwardTargetCaching;
             this.registerStateInfo = registerStateInfo;
+            registerStateInfo.OnRegisterStateChange.Sub((state) =>
+            {
+                tcpForwardTargetCaching.ClearConnection();
+            });
+            clientInfoCaching.OnOffline.Sub((client) =>
+            {
+                tcpForwardTargetCaching.ClearConnection(client.Name);
+            });
         }
 
         public TcpForwardTargetInfo Get(string domain)
@@ -34,8 +43,7 @@ namespace client.service.tcpforward
             {
                 return new TcpForwardTargetInfo { };
             }
-
-            if (cacheInfo.Connection == null)
+            if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
             {
                 cacheInfo.Connection = SelectConnection(cacheInfo);
             }
@@ -52,8 +60,8 @@ namespace client.service.tcpforward
             {
                 return cacheInfo.TunnelType switch
                 {
-                    TcpForwardTunnelTypes.TCP_FIRST => registerStateInfo.TcpConnection != null ? registerStateInfo.TcpConnection : registerStateInfo.UdpConnection,
-                    TcpForwardTunnelTypes.UDP_FIRST => registerStateInfo.UdpConnection != null ? registerStateInfo.UdpConnection : registerStateInfo.TcpConnection,
+                    TcpForwardTunnelTypes.TCP_FIRST => registerStateInfo.TcpConnection ?? registerStateInfo.UdpConnection,
+                    TcpForwardTunnelTypes.UDP_FIRST => registerStateInfo.UdpConnection ?? registerStateInfo.TcpConnection,
                     TcpForwardTunnelTypes.TCP => registerStateInfo.TcpConnection,
                     TcpForwardTunnelTypes.UDP => registerStateInfo.UdpConnection,
                     _ => registerStateInfo.TcpConnection,
@@ -68,8 +76,8 @@ namespace client.service.tcpforward
 
             return cacheInfo.TunnelType switch
             {
-                TcpForwardTunnelTypes.TCP_FIRST => client.TcpConnection != null ? client.TcpConnection : client.UdpConnection,
-                TcpForwardTunnelTypes.UDP_FIRST => client.UdpConnection != null ? client.UdpConnection : client.TcpConnection,
+                TcpForwardTunnelTypes.TCP_FIRST => client.TcpConnection ?? client.UdpConnection,
+                TcpForwardTunnelTypes.UDP_FIRST => client.UdpConnection ?? client.TcpConnection,
                 TcpForwardTunnelTypes.TCP => client.TcpConnection,
                 TcpForwardTunnelTypes.UDP => client.UdpConnection,
                 _ => client.TcpConnection,

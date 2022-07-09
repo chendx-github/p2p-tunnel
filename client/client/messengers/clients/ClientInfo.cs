@@ -18,9 +18,9 @@ namespace client.messengers.clients
         [Key(2)]
         public bool TcpConnecting { get; set; } = false;
         [Key(3)]
-        public bool UdpConnected { get => UdpConnection != null; }
+        public bool UdpConnected { get => UdpConnection != null && UdpConnection.Connected; }
         [Key(4)]
-        public bool TcpConnected { get => TcpConnection != null; }
+        public bool TcpConnected { get => TcpConnection != null && TcpConnection.Connected; }
 
         [Key(5)]
         public string Name { get; set; } = string.Empty;

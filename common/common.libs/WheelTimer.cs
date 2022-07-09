@@ -12,6 +12,7 @@ namespace common.libs
     /// </summary>
     public class WheelTimer<T>
     {
+        double tickMs = 0;
         //流转次数，
         long ticks = 0;
         //槽数
@@ -27,6 +28,7 @@ namespace common.libs
 
         public WheelTimer()
         {
+            tickMs = (double)(1000000 / Stopwatch.Frequency * 1000);
             CreateBuckets();
             Worker();
         }
@@ -71,7 +73,7 @@ namespace common.libs
                     //执行当前槽的任务
                     ExpireTimeouts(buckets[(ticks & mask)]);
                     ticks++;
-                    ticksMore += (Stopwatch.GetTimestamp() - start) / 10000.0 - tickDurationMs;
+                    ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs - tickDurationMs;
 
                     double forwardCount = (ticksMore / tickDurationMs);
                     while (forwardCount > 1)
@@ -85,7 +87,7 @@ namespace common.libs
                         ExpireTimeouts(buckets[(ticks & mask)]);
                         ticks++;
 
-                        ticksMore += (Stopwatch.GetTimestamp() - start) / 10000.0;
+                        ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs;
 
                         forwardCount = ticksMore / tickDurationMs;
                     }
@@ -98,9 +100,9 @@ namespace common.libs
             double now = 0;
             while (now < tickDurationMs)
             {
-                double start = Stopwatch.GetTimestamp() / 10000.0;
-                Thread.Sleep(new TimeSpan(10000));
-                now += Stopwatch.GetTimestamp() / 10000.0 - start;
+                double start = Stopwatch.GetTimestamp() / tickMs;
+                Thread.Sleep(tickDurationMs);
+                now += Stopwatch.GetTimestamp() / tickMs - start;
             }
         }
         private void TransferTimeoutsToBuckets()

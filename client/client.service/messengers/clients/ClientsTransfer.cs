@@ -53,6 +53,14 @@ namespace client.service.messengers.clients
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
 
+            registerState.OnRegisterStateChange.Sub((state) =>
+            {
+                if (!state)
+                {
+                    clientInfoCaching.Clear();
+                }
+            });
+
             Task.Run(() =>
             {
                 registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();

@@ -78,5 +78,17 @@ namespace client.service.messengers.clients
                 client.Online(connection, connectType);
             }
         }
+
+        public void Clear()
+        {
+            var _clients = clients.Values;
+            foreach (var item in _clients)
+            {
+                item.Offline();
+                item.OfflineTcp();
+                OnOffline.Push(item);
+                clients.TryRemove(item.Id, out _);
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using client.messengers.register;
+﻿using client.messengers.clients;
+using client.messengers.register;
 using client.service.messengers.crypto;
 using client.service.messengers.heart;
 using common.libs;

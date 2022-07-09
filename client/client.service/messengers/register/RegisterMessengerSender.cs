@@ -33,6 +33,12 @@ namespace client.service.messengers.register
         {
             MessageResponeInfo res = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
             {
+                Connection = registerState.UdpConnection,
+                Data = Helper.EmptyArray,
+                Path = "exit/Execute"
+            }).ConfigureAwait(false);
+            res = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            {
                 Connection = registerState.TcpConnection,
                 Data = Helper.EmptyArray,
                 Path = "exit/Execute"
@@ -46,6 +52,7 @@ namespace client.service.messengers.register
                 Path = "register/Execute",
                 Data = new RegisterParamsInfo
                 {
+                    Id = registerState.ConnectId,
                     Name = param.ClientName,
                     GroupId = param.GroupId,
                     LocalIps = param.LocalIps,

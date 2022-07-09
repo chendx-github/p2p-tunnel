@@ -12,10 +12,15 @@ namespace server.service.tcpforward
         {
             this.clientRegisterCaching = clientRegisterCaching;
             this.tcpForwardTargetCaching = tcpForwardTargetCaching;
+
+            clientRegisterCaching.OnOffline.Sub((client) =>
+            {
+                tcpForwardTargetCaching.ClearConnection(client.Name);
+            });
         }
         public TcpForwardTargetInfo Get(string host)
         {
-           return GetTarget(tcpForwardTargetCaching.Get(host));
+            return GetTarget(tcpForwardTargetCaching.Get(host));
         }
         public TcpForwardTargetInfo Get(int port)
         {
@@ -28,7 +33,7 @@ namespace server.service.tcpforward
             {
                 return new TcpForwardTargetInfo { };
             }
-            if (cacheInfo.Connection == null)
+            if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
             {
                 cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.TcpConnection;
             }

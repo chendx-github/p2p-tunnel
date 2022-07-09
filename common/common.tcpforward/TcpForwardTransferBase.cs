@@ -28,6 +28,7 @@ namespace common.tcpforward
 
         private void OnRequest(TcpForwardRequestInfo request)
         {
+           // Logger.Instance.DebugError($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}==============================");
             if (request.Connection == null || !request.Connection.Connected)
             {
                 request.Connection = null;
@@ -41,6 +42,7 @@ namespace common.tcpforward
             }
             else
             {
+                //Logger.Instance.DebugError($"serverType:{request.Connection.ServerType},{request.Connection.ConnectId},RequestId:{request.Msg.RequestId}");
                 request.Connection.ReceiveBytes += (ulong)request.Msg.Buffer.Length;
                 tcpForwardMessengerSender.SendRequest(new SendArg
                 {

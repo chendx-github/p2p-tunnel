@@ -88,8 +88,15 @@ namespace server.service
             MessengerSender messengerSender = services.GetService<MessengerSender>();
 
             var server = services.GetService<ITcpServer>();
+            var udpServer = services.GetService<IUdpServer>();
             server.OnDisconnect.Sub((IConnection connection) =>
             {
+                //Logger.Instance.DebugError($"tcp OnDisconnect");
+                clientRegisterCache.Remove(connection.ConnectId);
+            });
+            udpServer.OnDisconnect.Sub((IConnection connection) =>
+            {
+                //Logger.Instance.DebugError($"udp OnDisconnect");
                 clientRegisterCache.Remove(connection.ConnectId);
             });
 

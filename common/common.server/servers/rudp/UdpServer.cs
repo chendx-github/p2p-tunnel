@@ -9,6 +9,7 @@ namespace common.server.servers.rudp
     public class UdpServer : IUdpServer
     {
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
+        public SimpleSubPushHandler<IConnection> OnDisconnect => new SimpleSubPushHandler<IConnection>();
 
         Semaphore maxNumberConnectings = new Semaphore(1, 1);
         NumberSpaceDefault maxNumberConnectingNumberSpace = new NumberSpaceDefault();
@@ -41,6 +42,7 @@ namespace common.server.servers.rudp
             {
                 if (peer.Tag is IConnection connecrtion)
                 {
+                    OnDisconnect?.Push(connecrtion);
                     connecrtion.Disponse();
                 }
             };

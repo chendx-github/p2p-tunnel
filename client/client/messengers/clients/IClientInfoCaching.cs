@@ -21,5 +21,6 @@ namespace client.messengers.clients
         public void Offline(ulong id,ServerType serverType);
         public void Online(ulong id, IConnection connection, ClientConnectTypes connectType);
         public void Remove(ulong id);
+        public void Clear();
     }
 }

@@ -10,5 +10,6 @@ namespace common.server
         public void Stop();
 
         public SimpleSubPushHandler<IConnection> OnPacket { get; }
+        public SimpleSubPushHandler<IConnection> OnDisconnect { get; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using common.libs;
 using common.libs.extends;
-using common.server.servers.iocp;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -34,6 +33,9 @@ namespace common.tcpforward
 
         private void OnRequest(SendArg arg)
         {
+            //Logger.Instance.DebugError($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}==============================");
+            //Logger.Instance.DebugError($"serverType:{arg.Connection.ServerType},{arg.Connection.ConnectId},RequestId:{arg.Data.RequestId}");
+
             ConnectionKey key = new ConnectionKey(arg.Connection.ConnectId, arg.Data.RequestId);
             if (connections.TryGetValue(key, out ConnectUserToken token))
             {
@@ -49,6 +51,7 @@ namespace common.tcpforward
             }
             else
             {
+                //Logger.Instance.DebugError($"connect");
                 Connect(arg);
             }
         }
@@ -218,6 +221,7 @@ namespace common.tcpforward
         private void Receive(SendArg arg, byte[] data, int offset, int length)
         {
             arg.Data.Buffer = data.AsMemory(offset, length);
+            //Logger.Instance.DebugError($"serverType2:{arg.Connection.ServerType},{arg.Data.RequestId},{arg.Connection.ConnectId},RequestId:{arg.Data.RequestId}");
             tcpForwardMessengerSender.SendResponse(arg).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 

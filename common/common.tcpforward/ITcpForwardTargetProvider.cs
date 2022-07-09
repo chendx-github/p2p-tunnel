@@ -38,5 +38,8 @@ namespace common.tcpforward
         IEnumerable<int> Remove(string targetName);
         bool Contains(string domain, int port);
         bool Contains(int port);
+
+        void ClearConnection();
+        void ClearConnection(string name);
     }
 }

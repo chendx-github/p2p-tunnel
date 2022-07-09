@@ -101,6 +101,29 @@ namespace common.tcpforward
         {
             return port == 80 || port == 443 ? domain : $"{domain}:{port}";
         }
+
+        public void ClearConnection()
+        {
+            foreach (var item in cacheHost.Values)
+            {
+                item.Connection = null;
+            }
+            foreach (var item in cache.Values)
+            {
+                item.Connection = null;
+            }
+        }
+        public void ClearConnection(string name)
+        {
+            foreach (var item in cacheHost.Values.Where(c => c.Name == name))
+            {
+                item.Connection = null;
+            }
+            foreach (var item in cache.Values.Where(c => c.Name == name))
+            {
+                item.Connection = null;
+            }
+        }
     }
 
     public class TcpForwardTargetCacheInfo
