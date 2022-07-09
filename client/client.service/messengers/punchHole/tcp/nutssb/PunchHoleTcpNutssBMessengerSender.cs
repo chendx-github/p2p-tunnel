@@ -36,7 +36,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         private int ClientTcpPort => registerState.LocalInfo.TcpPort;
         private int RouteLevel => registerState.LocalInfo.RouteLevel + 2;
 #if DEBUG
-        private bool UseLocalPort = true;
+        private bool UseLocalPort = false;
 #else
         private bool UseLocalPort = true;
 #endif
@@ -86,6 +86,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
 
             foreach (IPEndPoint ip in ips)
             {
+                //Logger.Instance.Warning($"ttl {ip}");
+
                 using Socket targetSocket = new(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {
@@ -188,6 +190,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     port = ip.Item2;
                 }
                 IPEndPoint targetEndpoint = new IPEndPoint(ip.Item1, port);
+                //Logger.Instance.Warning($"connect {targetEndpoint}");
                 Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try
                 {

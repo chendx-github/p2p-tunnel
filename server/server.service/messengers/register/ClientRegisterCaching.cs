@@ -21,7 +21,7 @@ namespace server.service.messengers.register
 
         public ClientRegisterCaching(WheelTimer<object> wheelTimer)
         {
-            //wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
         }
         private async void TimeoutCallback(WheelTimerTimeout<object> timeout)
         {
@@ -30,7 +30,7 @@ namespace server.service.messengers.register
                 long time = DateTimeHelper.GetTimeStamp();
                 foreach (RegisterCacheInfo item in cache.Values)
                 {
-                    if (time - item.UdpConnection.LastTime > 60 * 1000)
+                    if ((time - item.UdpConnection.LastTime) > 20 * 1000)
                     {
                         await Remove(item.Id).ConfigureAwait(false);
                     }
@@ -81,6 +81,8 @@ namespace server.service.messengers.register
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
+                client.UdpConnection?.Disponse();
+                client.TcpConnection?.Disponse();
                 await OnChanged.PushAsync(client).ConfigureAwait(false);
                 await OnOffline.PushAsync(client).ConfigureAwait(false);
                 return true;

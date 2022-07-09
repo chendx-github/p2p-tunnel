@@ -87,7 +87,7 @@ namespace server.service.messengers.register
                 Ip = client.UdpConnection.Address.Address,
                 Port = client.UdpConnection.Address.Port,
                 TcpPort = connection.Address.Port,
-                GroupId = model.GroupId,
+                GroupId = client.OriginGroupId,
                 Relay = config.Relay
             };
         }

@@ -42,10 +42,7 @@ namespace server.messengers.register
         private ConcurrentDictionary<string, TunnelRegisterCacheInfo> tunnels = new ConcurrentDictionary<string, TunnelRegisterCacheInfo>();
         public void AddTunnel(TunnelRegisterCacheInfo model)
         {
-            if (!TunnelExists(model.TunnelName))
-            {
-                tunnels.TryAdd(model.TunnelName, model);
-            }
+            tunnels.AddOrUpdate(model.TunnelName, model, (a, b) => model);
         }
         public bool TunnelExists(string tunnelName)
         {

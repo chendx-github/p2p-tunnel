@@ -28,7 +28,7 @@ namespace client.service.messengers.register
             RegisterMessengerSender registerMessageHelper, HeartMessengerSender heartMessengerSender,
             ITcpServer tcpServer, IUdpServer udpServer,
             Config config, RegisterStateInfo registerState,
-            CryptoSwap cryptoSwap
+            CryptoSwap cryptoSwap, WheelTimer<object> wheelTimer
         )
         {
             this.registerMessageHelper = registerMessageHelper;
@@ -38,6 +38,7 @@ namespace client.service.messengers.register
             this.registerState = registerState;
             this.heartMessengerSender = heartMessengerSender;
             this.cryptoSwap = cryptoSwap;
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 5000, true);
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => _ = Exit();
             Console.CancelKeyPress += (s, e) => _ = Exit();
@@ -92,14 +93,12 @@ namespace client.service.messengers.register
         {
             try
             {
-                await Exit().ConfigureAwait(false);
-
+                await Exit();
                 IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
                 registerState.LocalInfo.IsConnecting = true;
                 registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
                 registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort(new List<int> { registerState.LocalInfo.UdpPort });
                 registerState.LocalInfo.Mac = string.Empty;
-
                 UdpBind(serverAddress);
                 if (registerState.UdpConnection == null)
                 {
@@ -107,7 +106,6 @@ namespace client.service.messengers.register
                     return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = "udp连接失败" };
                 }
                 TcpBind(serverAddress);
-
                 //交换密钥
                 if (config.Server.Encode)
                 {
@@ -218,6 +216,14 @@ namespace client.service.messengers.register
             else
             {
                 Logger.Instance.Error("通知上线信息失败");
+            }
+        }
+
+        private void Heart(object state)
+        {
+            if (registerState.UdpConnection != null && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp()))
+            {
+                _ = heartMessengerSender.Heart(registerState.UdpConnection);
             }
         }
     }

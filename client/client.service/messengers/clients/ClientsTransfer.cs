@@ -119,6 +119,7 @@ namespace client.service.messengers.clients
         public void Reset(ulong id)
         {
             punchHoleMessengerSender.SendReset(id).ConfigureAwait(false);
+
         }
         public void ConnectStop(ulong id)
         {
