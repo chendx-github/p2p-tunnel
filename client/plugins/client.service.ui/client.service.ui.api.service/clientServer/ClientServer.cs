@@ -96,7 +96,10 @@ namespace client.service.ui.api.service.clientServer
                 };
                 socket.OnMessage = message =>
                 {
-                    socket.Send((OnMessage(message.DeJson<ClientServiceRequestInfo>(), socket).Result).ToJson());
+                    Task.Run(async () =>
+                    {
+                        await socket.Send((await OnMessage(message.DeJson<ClientServiceRequestInfo>(), socket)).ToJson());
+                    });
                 };
             });
         }

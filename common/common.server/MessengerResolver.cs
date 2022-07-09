@@ -30,7 +30,7 @@ namespace common.server
 
             this.tcpserver.OnPacket.Sub((IConnection connection) =>
             {
-                InputData(connection).Wait();
+                InputData(connection).ConfigureAwait(false);
             });
             this.udpserver.OnPacket.Sub((IConnection connection) =>
             {
@@ -79,7 +79,7 @@ namespace common.server
                 messengerSender.Response(responseWrap);
                 return;
             }
-          
+
 
             requestWrap.FromArray(receive);
             if (connection.EncodeEnabled)
