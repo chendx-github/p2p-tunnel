@@ -89,8 +89,10 @@ namespace common.server.servers.iocp
         }
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
-            if (e.AcceptSocket == null) return;
-            BindReceive(e.AcceptSocket, bufferSize);
+            if (e.AcceptSocket != null)
+            {
+                BindReceive(e.AcceptSocket, bufferSize);
+            }
             StartAccept(e);
         }
 
@@ -225,6 +227,7 @@ namespace common.server.servers.iocp
         {
             cancellationTokenSource?.Cancel();
             socket?.SafeClose();
+            socket = null;
         }
     }
 

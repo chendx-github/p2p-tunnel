@@ -157,132 +157,132 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         public async Task OnStep2(OnStep2Params arg)
         {
             await Task.Run(async () =>
-              {
-                  OnStep2Handler.Push(arg);
+            {
+                OnStep2Handler.Push(arg);
 
-                  List<Tuple<IPAddress, int>> ips = new List<Tuple<IPAddress, int>>();
-                  if (UseLocalPort && registerState.RemoteInfo.Ip.ToString() == arg.Data.Ip.ToString())
-                  {
-                      ips = arg.Data.LocalIps.Select(c => new Tuple<IPAddress, int>(c, arg.Data.LocalPort)).ToList();
-                  }
+                List<Tuple<IPAddress, int>> ips = new List<Tuple<IPAddress, int>>();
+                if (UseLocalPort && registerState.RemoteInfo.Ip.ToString() == arg.Data.Ip.ToString())
+                {
+                    ips = arg.Data.LocalIps.Select(c => new Tuple<IPAddress, int>(c, arg.Data.LocalPort)).ToList();
+                }
 
-                  ips.Add(new Tuple<IPAddress, int>(arg.Data.Ip, arg.Data.Port));
-                  if (!connectTcpCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache))
-                  {
-                      return;
-                  }
-
-
-                  bool success = false;
-                  int length = cache.TryTimes, index = 0, interval = 0, port = 0;
-                  while (length > 0)
-                  {
-                      if (cache.Canceled)
-                      {
-                          break;
-                      }
-                      if (interval > 0)
-                      {
-                          await Task.Delay(interval);
-                          interval = 0;
-                      }
-
-                      Tuple<IPAddress, int> ip = index >= ips.Count ? ips[^1] : ips[index];
-                      if (port == 0)
-                      {
-                          port = ip.Item2;
-                      }
-                      IPEndPoint targetEndpoint = new IPEndPoint(ip.Item1, port);
-                      Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                      try
-                      {
-                          targetSocket.KeepAlive();
-                          targetSocket.ReuseBind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
-                          IAsyncResult result = targetSocket.BeginConnect(targetEndpoint, null, null);
-                          result.AsyncWaitHandle.WaitOne(2000, false);
-
-                          if (result.IsCompleted)
-                          {
-                              if (cache.Canceled)
-                              {
-                                  targetSocket.SafeClose();
-                                  break;
-                              }
-                              targetSocket.EndConnect(result);
-
-                              if (arg.Data.IsDefault)
-                              {
-                                  IConnection connection = tcpServer.BindReceive(targetSocket, bufferSize: config.Client.TcpBufferSize);
-                                  await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
-                                  {
-                                      TunnelName = arg.RawData.TunnelName,
-                                      Connection = connection,
-                                      Data = new PunchHoleStep3Info
-                                      {
-                                          FromId = ConnectId,
-                                          Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
-                                          PunchType = PunchHoleTypes.TCP_NUTSSB
-                                      }
-                                  }).ConfigureAwait(false);
-                              }
-                              else
-                              {
-                                  if (connectTcpCache.TryRemove(arg.RawData.FromId, out _))
-                                  {
-                                      cache.Tcs.SetResult(new ConnectResultModel { State = true });
-                                  }
-                              }
-                              success = true;
-                              break;
-                          }
-                          else
-                          {
-                              targetSocket.SafeClose();
-                              interval = 300;
-                              await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
-                              if (arg.Data.GuessPort > 0)
-                              {
-                                  interval = 0;
-                                  port = arg.Data.GuessPort + index;
-                              }
-                              length--;
-                          }
-                      }
-                      catch (SocketException ex)
-                      {
-                          Logger.Instance.DebugError(ex);
-                          targetSocket.SafeClose();
-                          targetSocket = null;
-                          if (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
-                          {
-                              interval = 2000;
-                          }
-                          else
-                          {
-                              interval = 100;
-                              await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
-                              if (arg.Data.GuessPort > 0)
-                              {
-                                  interval = 0;
-                                  port = arg.Data.GuessPort + index;
-                              }
-                              length--;
-                          }
-                      }
-                      catch (Exception ex)
-                      {
-                          Logger.Instance.Error(ex);
-                      }
-
-                      index++;
-                  }
-                  if (!success)
-                  {
-                      await SendStep2Fail(arg).ConfigureAwait(false);
-                  }
+                ips.Add(new Tuple<IPAddress, int>(arg.Data.Ip, arg.Data.Port));
+                if (!connectTcpCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache))
+                {
+                    return;
+                }
 
 
-              }).ConfigureAwait(false);
+                bool success = false;
+                int length = cache.TryTimes, index = 0, interval = 0, port = 0;
+                while (length > 0)
+                {
+                    if (cache.Canceled)
+                    {
+                        break;
+                    }
+                    if (interval > 0)
+                    {
+                        await Task.Delay(interval);
+                        interval = 0;
+                    }
+
+                    Tuple<IPAddress, int> ip = index >= ips.Count ? ips[^1] : ips[index];
+                    if (port == 0)
+                    {
+                        port = ip.Item2;
+                    }
+                   
+                    IPEndPoint targetEndpoint = new IPEndPoint(ip.Item1, port);
+                    Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    try
+                    {
+                        targetSocket.KeepAlive();
+                        targetSocket.ReuseBind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
+                        IAsyncResult result = targetSocket.BeginConnect(targetEndpoint, null, null);
+                        result.AsyncWaitHandle.WaitOne(2000, false);
+
+                        if (result.IsCompleted)
+                        {
+                            if (cache.Canceled)
+                            {
+                                targetSocket.SafeClose();
+                                break;
+                            }
+                            targetSocket.EndConnect(result);
+
+                            if (arg.Data.IsDefault)
+                            {
+                                IConnection connection = tcpServer.BindReceive(targetSocket, bufferSize: config.Client.TcpBufferSize);
+                                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
+                                {
+                                    TunnelName = arg.RawData.TunnelName,
+                                    Connection = connection,
+                                    Data = new PunchHoleStep3Info
+                                    {
+                                        FromId = ConnectId,
+                                        Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
+                                        PunchType = PunchHoleTypes.TCP_NUTSSB
+                                    }
+                                }).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                if (connectTcpCache.TryRemove(arg.RawData.FromId, out _))
+                                {
+                                    cache.Tcs.SetResult(new ConnectResultModel { State = true });
+                                }
+                            }
+                            success = true;
+                            break;
+                        }
+                        else
+                        {
+                            targetSocket.SafeClose();
+                            interval = 300;
+                            await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                            if (arg.Data.GuessPort > 0)
+                            {
+                                interval = 0;
+                                port = arg.Data.GuessPort + index;
+                            }
+                            length--;
+                        }
+                    }
+                    catch (SocketException ex)
+                    {
+                        Logger.Instance.DebugError(ex);
+                        targetSocket.SafeClose();
+                        targetSocket = null;
+                        if (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+                        {
+                            interval = 2000;
+                        }
+                        else
+                        {
+                            interval = 100;
+                            await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                            if (arg.Data.GuessPort > 0)
+                            {
+                                interval = 0;
+                                port = arg.Data.GuessPort + index;
+                            }
+                            length--;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error(ex);
+                    }
+
+                    index++;
+                }
+                if (!success)
+                {
+                    await SendStep2Fail(arg).ConfigureAwait(false);
+                }
+
+            }).ConfigureAwait(false);
         }
 
         private async Task SendStep2Retry(ulong toid, string tunnelName)
@@ -320,7 +320,6 @@ namespace client.service.messengers.punchHole.tcp.nutssb
             {
 
                 IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
-
                 using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 targetSocket.Ttl = (short)(RouteLevel);
                 targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
