@@ -18,8 +18,6 @@ namespace server.messengers.register
         public string Name { get; set; } = string.Empty;
 
         public string GroupId { get; set; } = string.Empty;
-        [JsonIgnore]
-        public string OriginGroupId { get; set; } = string.Empty;
 
         [JsonIgnore]
         public long LastTime { get; set; }

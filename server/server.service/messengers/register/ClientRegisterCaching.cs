@@ -50,7 +50,7 @@ namespace server.service.messengers.register
 
         public RegisterCacheInfo GetBySameGroup(string groupid, string name)
         {
-            return cache.Values.FirstOrDefault(c => c.GroupId == groupid.Md5() && c.Name == name);
+            return cache.Values.FirstOrDefault(c => c.GroupId == groupid && c.Name == name);
         }
 
         public List<RegisterCacheInfo> GetAll()
@@ -68,11 +68,10 @@ namespace server.service.messengers.register
             {
                 model.Id = idNs.Increment();
             }
-            if (string.IsNullOrWhiteSpace(model.OriginGroupId))
+            if (string.IsNullOrWhiteSpace(model.GroupId))
             {
-                model.OriginGroupId = Guid.NewGuid().ToString().Md5();
+                model.GroupId = Guid.NewGuid().ToString().Md5();
             }
-            model.GroupId = model.OriginGroupId.Md5();
             cache.AddOrUpdate(model.Id, model, (a, b) => model);
             return model.Id;
         }
@@ -81,20 +80,15 @@ namespace server.service.messengers.register
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
-                Console.WriteLine("remove");
-
                 client.UdpConnection?.Disponse();
                 client.TcpConnection?.Disponse();
-                Console.WriteLine("remove1");
                 await OnChanged.PushAsync(client).ConfigureAwait(false);
-                Console.WriteLine("remove2");
                 await OnOffline.PushAsync(client).ConfigureAwait(false);
-                Console.WriteLine("remove3");
                 return true;
             }
             return false;
         }
-
+        
         public async Task<bool> Notify(IConnection connection)
         {
             if (Get(connection.ConnectId, out RegisterCacheInfo client))

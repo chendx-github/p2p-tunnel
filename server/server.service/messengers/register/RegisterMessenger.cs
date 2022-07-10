@@ -59,7 +59,7 @@ namespace server.service.messengers.register
                 Ip = connection.Address.Address,
                 Port = connection.Address.Port,
                 TcpPort = 0,
-                GroupId = client.OriginGroupId,
+                GroupId = client.GroupId,
                 Relay = config.Relay
             };
         }
@@ -87,7 +87,7 @@ namespace server.service.messengers.register
                 Ip = client.UdpConnection.Address.Address,
                 Port = client.UdpConnection.Address.Port,
                 TcpPort = connection.Address.Port,
-                GroupId = client.OriginGroupId,
+                GroupId = client.GroupId,
                 Relay = config.Relay
             };
         }
@@ -112,7 +112,7 @@ namespace server.service.messengers.register
                     client = new()
                     {
                         Name = model.Name,
-                        OriginGroupId = model.GroupId,
+                        GroupId = model.GroupId,
                         LocalIps = model.LocalIps,
                         Mac = model.Mac,
                         Id = 0

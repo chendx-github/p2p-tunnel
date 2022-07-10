@@ -91,12 +91,10 @@ namespace server.service
             var udpServer = services.GetService<IUdpServer>();
             server.OnDisconnect.Sub((IConnection connection) =>
             {
-                //Logger.Instance.DebugError($"tcp OnDisconnect");
                 clientRegisterCache.Remove(connection.ConnectId);
             });
             udpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                //Logger.Instance.DebugError($"udp OnDisconnect");
                 clientRegisterCache.Remove(connection.ConnectId);
             });
 

@@ -29,15 +29,6 @@ namespace client.service.messengers.register
             this.udpServer = udpServer;
         }
 
-        public async Task Exit()
-        {
-            MessageResponeInfo res = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
-            {
-                Connection = registerState.TcpConnection ?? registerState.UdpConnection,
-                Data = Helper.EmptyArray,
-                Path = "exit/Execute"
-            }).ConfigureAwait(false);
-        }
         public async Task<RegisterResult> Register(RegisterParams param)
         {
             MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<RegisterParamsInfo>
