@@ -47,104 +47,110 @@ namespace client.service.messengers.register
             {
                 if (registerState.TcpConnection != null && connection.ConnectId == registerState.TcpConnection.ConnectId)
                 {
-                    ExitAndAutoReg();
+                    _ = Register(true);
                 }
             });
         }
 
-        public void AutoReg()
-        {
-            if (config.Client.AutoReg && !registerState.LocalInfo.IsConnecting)
-            {
-                Task.Run(async () =>
-                {
-                    Logger.Instance.Info("开始自动注册");
-                    while (true)
-                    {
-                        CommonTaskResponseInfo<bool> result = await Register().ConfigureAwait(false);
-                        if (result.Data == true)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            Logger.Instance.Error(result.ErrorMsg);
-                        }
-                        System.Threading.Thread.Sleep(5000);
-                    }
-                    Logger.Instance.Warning("已自动注册");
-                });
-            }
-        }
-
-        private void ExitAndAutoReg()
-        {
-            Exit();
-            AutoReg();
-        }
-
         public void Exit()
         {
-            //await registerMessageHelper.Exit().ConfigureAwait(false);
+            registerState.Offline();
             udpServer.Stop();
             tcpServer.Stop();
-            registerState.Offline();
             GCHelper.FlushMemory();
         }
 
-        public async Task<CommonTaskResponseInfo<bool>> Register()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="autoReg">强行自动注册</param>
+        /// <returns></returns>
+        public async Task<CommonTaskResponseInfo<bool>> Register(bool autoReg = false)
         {
-            try
+            return await Task.Run(async () =>
             {
-                Exit();
-                IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
-                registerState.LocalInfo.IsConnecting = true;
-                registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
-                registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort(new List<int> { registerState.LocalInfo.UdpPort });
-                registerState.LocalInfo.Mac = string.Empty;
-                UdpBind(serverAddress);
-                if (registerState.UdpConnection == null)
+                CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = String.Empty };
+                int interval = 0;
+                for (int i = 0; i < config.Client.AutoRegTimes; i++)
                 {
-                    Exit();
-                    return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = "udp连接失败" };
-                }
-                TcpBind(serverAddress);
-                //交换密钥
-                if (config.Server.Encode)
-                {
-                    await SwapCryptoTcp();
-                }
+                    try
+                    {
+                        if (registerState.LocalInfo.IsConnecting)
+                        {
+                            success.ErrorMsg = "注册操作中...";
+                            break;
+                        }
+                        if (interval > 0)
+                        {
+                            await Task.Delay(interval);
+                            interval = 0;
+                        }
 
-                //注册
-                RegisterResult result = await GetRegisterResult();
-                //上线
-                config.Client.GroupId = result.Data.GroupId;
-                registerState.RemoteInfo.Relay = result.Data.Relay;
-                registerState.Online(result.Data.Id, result.Data.Ip, result.Data.Port, result.Data.TcpPort);
-                //上线通知
-                await OnlineNotify();
+                        //先退出
+                        Exit();
 
-                return new CommonTaskResponseInfo<bool> { Data = true, ErrorMsg = string.Empty };
-            }
-            catch (SocketException sex)
-            {
-                if (sex.SocketErrorCode == SocketError.AddressAlreadyInUse)
-                {
-                    return await Register();
+                        IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
+                        registerState.LocalInfo.IsConnecting = true;
+                        registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
+                        registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort(new List<int> { registerState.LocalInfo.UdpPort });
+                        registerState.LocalInfo.Mac = string.Empty;
+
+                        //绑定udp
+                        UdpBind(serverAddress);
+                        if (registerState.UdpConnection == null)
+                        {
+                            success.ErrorMsg = "udp连接失败";
+                        }
+                        else
+                        {
+                            //绑定tcp
+                            TcpBind(serverAddress);
+
+                            //交换密钥
+                            if (config.Server.Encode)
+                            {
+                                await SwapCryptoTcp();
+                            }
+
+                            //注册
+                            RegisterResult result = await GetRegisterResult();
+                            //上线
+                            config.Client.GroupId = result.Data.GroupId;
+                            registerState.RemoteInfo.Relay = result.Data.Relay;
+                            registerState.Online(result.Data.Id, result.Data.Ip, result.Data.Port, result.Data.TcpPort);
+                            //上线通知
+                            await registerMessageHelper.Notify().ConfigureAwait(false);
+
+                            success.ErrorMsg = "注册成功~";
+                            success.Data = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        success.ErrorMsg = ex.Message;
+                    }
+
+                    if (!success.Data)
+                    {
+                        registerState.LocalInfo.IsConnecting = false;
+                        Logger.Instance.Error(success.ErrorMsg);
+                        if (config.Client.AutoReg || autoReg)
+                        {
+                            interval = 5000;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        Logger.Instance.Debug(success.ErrorMsg);
+                        break;
+                    }
                 }
-                else
-                {
-                    Exit();
-                    Logger.Instance.DebugError(sex);
-                    return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = sex.Message };
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.DebugError(ex);
-                Exit();
-                return new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = ex.Message };
-            }
+                return success;
+            });
         }
         private void UdpBind(IPAddress serverAddress)
         {
@@ -209,17 +215,6 @@ namespace client.service.messengers.register
                 throw new Exception($"注册失败:{result.Data.Code.GetDesc((byte)result.Data.Code)}");
             }
             return result;
-        }
-        private async Task OnlineNotify()
-        {
-            if (await registerMessageHelper.Notify().ConfigureAwait(false))
-            {
-                Logger.Instance.Warning("已通知上线信息");
-            }
-            else
-            {
-                Logger.Instance.Error("通知上线信息失败");
-            }
         }
 
         private void Heart(object state)

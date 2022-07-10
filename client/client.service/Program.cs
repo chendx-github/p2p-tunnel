@@ -71,14 +71,18 @@ namespace client.service
                 .UseFtpPlugin() //文件服务
                 .UseLoggerPlugin() //日志
                ;
-            //自动注册
-            serviceProvider.GetService<IRegisterTransfer>().AutoReg();
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             ThreadPool.SetMinThreads(1000, 1000);
             ThreadPool.SetMaxThreads(2000, 2000);
+
+            //自动注册
+            if (serviceProvider.GetService<Config>().Client.AutoReg)
+            {
+                serviceProvider.GetService<IRegisterTransfer>().Register();
+            }
         }
     }
 }

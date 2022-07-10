@@ -24,7 +24,6 @@ namespace client.service.ui.api.service.clientServer.services
             if (!result.Data)
             {
                 arg.SetCode(-1, result.ErrorMsg);
-                Logger.Instance.Error(result.ErrorMsg);
             }
             return result.Data;
         }

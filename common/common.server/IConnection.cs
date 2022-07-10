@@ -110,6 +110,7 @@ namespace common.server
         }
 
         public abstract IConnection Clone();
+
     }
 
     public class UdpConnection : Connection
@@ -270,5 +271,6 @@ namespace common.server
             clone.EncodeEnable(Crypto);
             return clone;
         }
+
     }
 }

@@ -70,23 +70,28 @@ namespace client
         [Key(3)]
         public bool AutoReg { get; set; } = false;
         /// <summary>
-        /// 上报MAC地址
+        /// 自动注册重试次数
         /// </summary>
         [Key(4)]
+        public int AutoRegTimes { get; set; } = 10;
+        /// <summary>
+        /// 上报MAC地址
+        /// </summary>
+        [Key(5)]
         public bool UseMac { get; set; } = false;
         /// <summary>
         /// 使用ipv6
         /// </summary>
-        [Key(5)]
+        [Key(6)]
         public bool UseIpv6 { get; set; } = false;
 
-        [Key(6)]
+        [Key(7)]
         public int TcpBufferSize { get; set; } = 128 * 1024;
 
-        [Key(7)]
+        [Key(8)]
         public string Key { get; set; } = string.Empty;
 
-        [Key(8)]
+        [Key(9)]
         public bool Encode { get; set; } = false;
 
         [JsonIgnore, IgnoreMember]

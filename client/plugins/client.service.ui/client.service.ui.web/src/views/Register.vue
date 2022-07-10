@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-08 15:39:23
+ * @LastEditTime: 2022-07-11 00:08:25
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -12,7 +12,7 @@
         <h3 class="title t-c">将本客户端注册到服务器</h3>
         <div class="inner">
             <el-form label-width="8rem" ref="formDom" :model="model" :rules="rules">
-                <el-form-item label="" label-width="0">
+                <el-form-item label="基本信息">
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="名称" prop="ClientName">
@@ -88,31 +88,45 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
+                <el-form-item label="自动注册">
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="状态" prop="AutoReg">
+                                <el-select v-model="model.AutoReg" size="large">
+                                    <el-option :key="false" label="不自动注册" :value="false" />
+                                    <el-option :key="true" label="自动注册" :value="true" />
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="重试次数" prop="AutoRegTimes">
+                                <el-tooltip class="box-item" effect="dark" content="如果自动注册失败，将要重试几次" placement="top-start">
+                                    <el-input v-model="model.AutoRegTimes"></el-input>
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form-item>
                 <el-form-item label="注册状态">
                     <el-row>
-                        <el-col :span="5">
+                        <el-col :span="6">
                             <el-form-item label="UDP" prop="UdpConnected">
                                 <el-switch disabled v-model="registerState.LocalInfo.UdpConnected" />
                             </el-form-item>
                         </el-col>
-                        <el-col :span="5">
+                        <el-col :span="6">
                             <el-form-item label="TCP" prop="TcpConnected">
                                 <el-switch disabled v-model="registerState.LocalInfo.TcpConnected" />
                             </el-form-item>
                         </el-col>
-                        <el-col :span="5">
-                            <el-form-item label="自动注册" prop="AutoReg">
-                                <el-switch v-model="model.AutoReg" />
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="5">
+                        <el-col :span="6">
                             <el-form-item label="打洞加密" prop="ClientEncode">
                                 <el-tooltip class="box-item" effect="dark" content="客户端之间通信使用加密" placement="top-start">
                                     <el-switch v-model="model.ClientEncode" />
                                 </el-tooltip>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="4">
+                        <el-col :span="6">
                             <el-form-item label="服务加密" prop="ServerEncode">
                                 <el-tooltip class="box-item" effect="dark" content="客户端与服务端之间通信使用加密" placement="top-start">
                                     <el-switch v-model="model.ServerEncode" />
@@ -150,6 +164,7 @@ export default {
                 ServerUdpPort: 0,
                 ServerTcpPort: 0,
                 AutoReg: false,
+                AutoRegTimes: 10,
                 UseMac: false,
                 GroupId: '',
                 ClientEncode: false,
@@ -182,6 +197,7 @@ export default {
             state.model.ClientName = registerState.ClientConfig.Name = json.ClientConfig.Name;
             state.model.GroupId = registerState.ClientConfig.GroupId = json.ClientConfig.GroupId;
             state.model.AutoReg = registerState.ClientConfig.AutoReg = json.ClientConfig.AutoReg;
+            state.model.AutoRegTimes = registerState.ClientConfig.AutoRegTimes = json.ClientConfig.AutoRegTimes;
             state.model.UseMac = registerState.ClientConfig.UseMac = json.ClientConfig.UseMac;
             state.model.ClientEncode = registerState.ClientConfig.Encode = json.ClientConfig.Encode;
 
@@ -206,6 +222,7 @@ export default {
                         Name: state.model.ClientName,
                         GroupId: state.model.GroupId,
                         AutoReg: state.model.AutoReg,
+                        AutoRegTimes: +state.model.AutoRegTimes,
                         UseMac: state.model.UseMac,
                         Encode: state.model.ClientEncode
                     },
@@ -236,6 +253,9 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.el-row
+    width: 100%;
+
 .register-form
     padding: 2rem;
 
