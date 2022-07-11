@@ -65,7 +65,7 @@ namespace common.libs
             {
                 for (; ; )
                 {
-                   // long start = Stopwatch.GetTimestamp();
+                    long start = Stopwatch.GetTimestamp();
                     //等下一个时间点
                     WaitForNextTick();
                     //待入槽队列入槽
@@ -73,24 +73,24 @@ namespace common.libs
                     //执行当前槽的任务
                     ExpireTimeouts(buckets[(ticks & mask)]);
                     ticks++;
-                   // ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs - tickDurationMs;
+                    ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs - tickDurationMs;
 
-                    //double forwardCount = (ticksMore / tickDurationMs);
-                    //while (forwardCount > 1)
-                    //{
-                    //    ticksMore -= tickDurationMs;
+                    double forwardCount = (ticksMore / tickDurationMs);
+                    while (forwardCount > 1)
+                    {
+                        ticksMore -= tickDurationMs;
 
-                    //    start = Stopwatch.GetTimestamp();
-                    //    //待入槽队列入槽
-                    //    TransferTimeoutsToBuckets();
-                    //    //执行当前槽的任务
-                    //    ExpireTimeouts(buckets[(ticks & mask)]);
-                    //    ticks++;
+                        start = Stopwatch.GetTimestamp();
+                        //待入槽队列入槽
+                        TransferTimeoutsToBuckets();
+                        //执行当前槽的任务
+                        ExpireTimeouts(buckets[(ticks & mask)]);
+                        ticks++;
 
-                    //    ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs;
+                        ticksMore += (Stopwatch.GetTimestamp() - start) / tickMs;
 
-                    //    forwardCount = ticksMore / tickDurationMs;
-                    //}
+                        forwardCount = ticksMore / tickDurationMs;
+                    }
                 }
 
             })

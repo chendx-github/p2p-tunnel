@@ -13,7 +13,6 @@ namespace common.libs
         private static readonly Lazy<Logger> lazy = new Lazy<Logger>(() => new Logger());
         public static Logger Instance => lazy.Value;
         private readonly ConcurrentQueue<LoggerModel> queue = new ConcurrentQueue<LoggerModel>();
-        public int Count => queue.Count;
 
         public SimpleSubPushHandler<LoggerModel> OnLogger { get; } = new SimpleSubPushHandler<LoggerModel>();
         private Logger()
@@ -46,7 +45,7 @@ namespace common.libs
             {
                 while (true)
                 {
-                    while (Count > 0)
+                    while (queue.Count > 0)
                     {
                         if (queue.TryDequeue(out LoggerModel model))
                         {
@@ -59,7 +58,6 @@ namespace common.libs
             { IsBackground = true }.Start();
         }
 
-        [Conditional("DEBUG")]
         public void Debug(string content, params object[] args)
         {
             if (args != null && args.Length > 0)
@@ -67,6 +65,11 @@ namespace common.libs
                 content = string.Format(content, args);
             }
             Enqueue(new LoggerModel { Type = LoggerTypes.DEBUG, Content = content });
+        }
+        [Conditional("DEBUG")]
+        public void DebugDebug(string content, params object[] args)
+        {
+            Debug(content, args);
         }
         [Conditional("DEBUG")]
         public void Debug(Exception ex)
@@ -118,7 +121,6 @@ namespace common.libs
             }
             Enqueue(new LoggerModel { Type = LoggerTypes.ERROR, Content = content });
         }
-
         [Conditional("DEBUG")]
         public void DebugError(Exception ex)
         {

@@ -258,6 +258,10 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         {
                             interval = 2000;
                         }
+                        else if (ex.SocketErrorCode == SocketError.AddressNotAvailable)
+                        {
+                            Logger.Instance.DebugError(targetEndpoint.ToString());
+                        }
                         else
                         {
                             interval = 100;

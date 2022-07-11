@@ -57,7 +57,7 @@ namespace common.server.servers.rudp
                     connection.ReceiveData = reader.RawData.AsMemory(reader.UserDataOffset, reader.UserDataSize);
                     OnPacket.Push(connection);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             };

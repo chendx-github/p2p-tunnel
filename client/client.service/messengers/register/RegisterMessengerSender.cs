@@ -37,7 +37,7 @@ namespace client.service.messengers.register
                 Path = "register/Execute",
                 Data = new RegisterParamsInfo
                 {
-                    Id = registerState.ConnectId,
+                    Id = 0,
                     Name = param.ClientName,
                     GroupId = param.GroupId,
                     LocalIps = param.LocalIps,
