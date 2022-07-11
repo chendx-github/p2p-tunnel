@@ -32,6 +32,8 @@ namespace client.service
     {
         public static void Start()
         {
+            ThreadPool.SetMinThreads(150, 150);
+
             Logger.Instance.Info("正在启动...");
 
             ServiceCollection serviceCollection = new ServiceCollection();
@@ -75,8 +77,6 @@ namespace client.service
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
-            ThreadPool.SetMinThreads(1000, 1000);
-            ThreadPool.SetMaxThreads(2000, 2000);
 
             //自动注册
             if (serviceProvider.GetService<Config>().Client.AutoReg)

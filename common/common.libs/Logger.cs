@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace common.libs
@@ -41,20 +42,21 @@ namespace common.libs
                 Console.ForegroundColor = currentForeColor;
             });
 
-            Task.Factory.StartNew(() =>
+            new Thread(() =>
             {
                 while (true)
                 {
-                    if (Count > 0)
+                    while (Count > 0)
                     {
-                        if (Dequeue(out LoggerModel model))
+                        if (queue.TryDequeue(out LoggerModel model))
                         {
                             OnLogger.Push(model);
                         }
                     }
-                    System.Threading.Thread.Sleep(15);
+                    Thread.Sleep(15);
                 }
-            }, TaskCreationOptions.LongRunning);
+            })
+            { IsBackground = true }.Start();
         }
 
         [Conditional("DEBUG")]
@@ -127,10 +129,6 @@ namespace common.libs
         {
             queue.Enqueue(model);
         }
-        public bool Dequeue(out LoggerModel model)
-        {
-            return queue.TryDequeue(out model);
-        }
     }
 
     public class LoggerModel
@@ -143,5 +141,63 @@ namespace common.libs
     public enum LoggerTypes : byte
     {
         DEBUG = 0, INFO = 1, WARNING = 2, ERROR = 3
+    }
+
+    class SequentialScheduler : TaskScheduler, IDisposable
+    {
+        readonly BlockingCollection<Task> m_taskQueue = new BlockingCollection<Task>();
+        readonly Thread m_thread;
+        readonly CancellationTokenSource m_cancellation; // CR comment: field added
+        volatile bool m_disposed;  // CR comment: volatile added
+
+        public SequentialScheduler()
+        {
+            m_cancellation = new CancellationTokenSource();
+            m_thread = new Thread(Run);
+            m_thread.Start();
+        }
+
+        public void Dispose()
+        {
+            m_disposed = true;
+            m_cancellation.Cancel(); // CR comment: cancellation added
+        }
+
+        void Run()
+        {
+            while (!m_disposed)
+            {
+                // CR comment: dispose gracefully
+                try
+                {
+                    var task = m_taskQueue.Take(m_cancellation.Token);
+                    // Debug.Assert(TryExecuteTask(task));
+                    TryExecuteTask(task); // CR comment: not sure about the Debug.Assert here
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.Assert(m_disposed);
+                }
+            }
+        }
+
+        protected override IEnumerable<Task> GetScheduledTasks()
+        {
+            return m_taskQueue;
+        }
+
+        protected override void QueueTask(Task task)
+        {
+            m_taskQueue.Add(task);
+        }
+
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
+        {
+            if (Thread.CurrentThread == m_thread)
+            {
+                return TryExecuteTask(task);
+            }
+            return false;
+        }
     }
 }

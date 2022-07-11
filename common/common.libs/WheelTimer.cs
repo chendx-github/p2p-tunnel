@@ -61,7 +61,7 @@ namespace common.libs
         double ticksMore = 0;
         private void Worker()
         {
-            Task.Factory.StartNew(() =>
+            new Thread(() =>
             {
                 for (; ; )
                 {
@@ -93,7 +93,8 @@ namespace common.libs
                     }
                 }
 
-            }, TaskCreationOptions.LongRunning);
+            })
+            { IsBackground = true }.Start();
         }
         private void WaitForNextTick()
         {

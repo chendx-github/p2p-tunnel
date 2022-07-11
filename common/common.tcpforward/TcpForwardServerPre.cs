@@ -144,10 +144,12 @@ namespace common.tcpforward
                 ClientCacheInfo.Add(token);
 
                 //长连接的话，得先发送个空数据过去，让它先连接，不能等得到第一次数据才过去连接并发送数据
+                /*
                 if (token.Request.Msg.AliveType == TcpForwardAliveTypes.TUNNEL)
                 {
-                    Receive(readEventArgs, Helper.EmptyArray,0,0);
+                    Receive(readEventArgs, Helper.EmptyArray, 0, 0);
                 }
+                */
 
                 if (!e.AcceptSocket.ReceiveAsync(readEventArgs))
                 {
@@ -176,7 +178,7 @@ namespace common.tcpforward
                             int length = token.SourceSocket.Receive(arr);
                             if (length > 0)
                             {
-                                Receive(e, arr,0,length);
+                                Receive(e, arr, 0, length);
                             }
                         }
 
@@ -222,10 +224,10 @@ namespace common.tcpforward
                 CloseClientSocket(e);
             }
         }
-        private void Receive(SocketAsyncEventArgs e, byte[] data,int offset,int length)
+        private void Receive(SocketAsyncEventArgs e, byte[] data, int offset, int length)
         {
             ForwardAsyncUserToken token = (ForwardAsyncUserToken)e.UserToken;
-            token.Request.Msg.Buffer = data.AsMemory(offset,length);
+            token.Request.Msg.Buffer = data.AsMemory(offset, length);
             OnRequest.Push(token.Request);
             token.Request.Msg.Buffer = Helper.EmptyArray;
         }

@@ -34,7 +34,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         private ulong ConnectId => registerState.ConnectId;
 
         private int ClientTcpPort => registerState.LocalInfo.TcpPort;
-        private int RouteLevel => registerState.LocalInfo.RouteLevel + 2;
+        private int RouteLevel => registerState.LocalInfo.RouteLevel + 5;
 #if DEBUG
         private bool UseLocalPort = false;
 #else
@@ -192,7 +192,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     {
                         port = ip.Item2;
                     }
-                   
+
                     IPEndPoint targetEndpoint = new IPEndPoint(ip.Item1, port);
                     Socket targetSocket = new Socket(targetEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     try

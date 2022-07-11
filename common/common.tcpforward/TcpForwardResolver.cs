@@ -34,7 +34,7 @@ namespace common.tcpforward
         private void OnRequest(SendArg arg)
         {
             ConnectionKey key = new ConnectionKey(arg.Connection.ConnectId, arg.Data.RequestId);
-            if (connections.TryGetValue(key, out ConnectUserToken token))
+            if (connections.TryGetValue(key, out ConnectUserToken token) && token.TargetSocket != null && token.TargetSocket.Connected)
             {
                 if (arg.Data.Buffer.Length > 0)
                 {
@@ -268,6 +268,11 @@ namespace common.tcpforward
         {
             ConnectId = connectId;
             RequestId = requestId;
+        }
+
+        public override string ToString()
+        {
+            return $"{ConnectId},{RequestId}";
         }
     }
 }
