@@ -1,6 +1,10 @@
 @echo off
 SET target=%~dp0
 
+cd %target%/public
+rd /s /q publish
+del /s /q publish.rar
+
 echo publish client ==============================================
 cd %target%/client/client.service
 dotnet publish -c release -f net6.0 -o %target%/public/publish/client/default			-p:DebugType=none -p:DebugSymbols=false
