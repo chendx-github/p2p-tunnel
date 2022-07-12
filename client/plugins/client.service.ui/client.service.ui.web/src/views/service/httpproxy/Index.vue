@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 17:35:47
+ * @LastEditTime: 2022-07-12 21:49:37
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
@@ -93,7 +93,6 @@ export default {
         const shareData = injectShareData();
         const loadConfig = () => {
             getListProxy().then((res) => {
-                console.log(res);
                 const json = res[0] || {
                     ID: 0,
                     Port: 5412,

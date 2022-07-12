@@ -657,15 +657,38 @@ namespace client.service.tcpforward
     {
         public int ID { get; set; } = 0;
         public int Port { get; set; } = 0;
-        public bool Listening { get; set; } = false;
+
         public TcpForwardTypes ForwardType { get; set; } = TcpForwardTypes.FORWARD;
-        public string Name { get; set; } = String.Empty;
-        public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
+        /// <summary>
+        /// 代理时 必须 TcpForwardAliveTypes.WEB
+        /// </summary>
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
+
         public List<P2PForwardInfo> Forwards { get; set; } = new List<P2PForwardInfo>();
 
+        /// <summary>
+        /// 代理时填写
+        /// </summary>
+        public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
+        /// <summary>
+        /// 代理时填写
+        /// </summary>
+        public string Name { get; set; } = String.Empty;
+        /// <summary>
+        /// 代理时填写，是否直接开始监听
+        /// </summary>
+        public bool Listening { get; set; } = false;
+        /// <summary>
+        /// 代理时填写，是否设置pac代理
+        /// </summary>
         public bool IsPac { get; set; } = false;
+        /// <summary>
+        /// 代理时填写 是否自定义pac内容
+        /// </summary>
         public bool IsCustomPac { get; set; } = false;
+        /// <summary>
+        /// 自定义pac内容时传
+        /// </summary>
         public string Pac { get; set; } = string.Empty;
     }
     public class P2PForwardInfo

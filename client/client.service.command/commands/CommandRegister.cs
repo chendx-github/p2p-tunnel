@@ -14,26 +14,26 @@ namespace client.service.command.commands
             Command register = new Command("register", "注册相关命令") { };
             rootCommand.Add(register);
 
-            Command start = new Command("start", "开始注册") { };
+            Command start = new Command("start", "注册") { };
+            register.Add(start);
             start.SetHandler(() =>
             {
                 JsonNode res = JsonNode.Parse(Request("register/start"));
                 PrintRequestState(res);
             });
-            register.Add(start);
 
 
-            Command stop = new Command("stop", "退出注册") { };
+            Command stop = new Command("stop", "离线") { };
+            register.Add(stop);
             stop.SetHandler(() =>
             {
                 JsonNode res = JsonNode.Parse(Request("register/stop"));
                 PrintRequestState(res);
             });
-            register.Add(stop);
 
 
 
-            Command info = new Command("info", "获取注册配置信息") { };
+            Command info = new Command("info", "配置信息") { };
             register.Add(info);
             info.SetHandler(() =>
             {
@@ -42,7 +42,7 @@ namespace client.service.command.commands
 
 
 
-            Command config = new Command("config", "更新注册配置信息") { };
+            Command config = new Command("config", "更新配置") { };
             register.Add(config);
             Option<string> configName = new Option<string>("--name", description: "客户端名称", getDefaultValue: getDefaultValue);
             config.AddOption(configName);
