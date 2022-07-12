@@ -1,11 +1,14 @@
 ﻿using client.service.ui.api.clientServer;
 using common.libs;
 using common.libs.extends;
+using common.server.servers.pipeLine;
 using Fleck;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -98,10 +101,12 @@ namespace client.service.ui.api.service.clientServer
                 {
                     Task.Run(async () =>
                     {
-                        await socket.Send((await OnMessage(message.DeJson<ClientServiceRequestInfo>(), socket)).ToJson());
+                        await socket.Send((await OnMessage(message.DeJson<ClientServiceRequestInfo>())).ToJson());
                     });
                 };
             });
+
+            NamedPipe();
         }
 
         public IClientConfigure GetConfigure(string className)
@@ -134,7 +139,7 @@ namespace client.service.ui.api.service.clientServer
             }
         }
 
-        public async Task<ClientServiceResponseInfo> OnMessage(ClientServiceRequestInfo model, IWebSocketConnection connection)
+        public async Task<ClientServiceResponseInfo> OnMessage(ClientServiceRequestInfo model)
         {
             model.Path = model.Path.ToLower();
             if (!plugins.ContainsKey(model.Path))
@@ -156,7 +161,7 @@ namespace client.service.ui.api.service.clientServer
                     RequestId = model.RequestId,
                     Content = model.Content,
                     Path = model.Path,
-                    Connection = connection
+                    //Connection = connection
                 };
                 dynamic resultAsync = plugin.Method.Invoke(plugin.Target, new object[] { param });
                 object resultObject = null;
@@ -195,36 +200,17 @@ namespace client.service.ui.api.service.clientServer
                 };
             }
         }
-        //private const string pipeName = "client.cmd";
-        //private void NamedPipe()
-        //{
-        //    Pipeline pipeline = new Pipeline(pipeName);
-        //    Task.Run(async () =>
-        //    {
-        //        await pipeline.Server.WaitForConnectionAsync().ConfigureAwait(false);
-        //        NamedPipe();
 
-        //        while (true)
-        //        {
-        //            try
-        //            {
-        //                string msg = await pipeline.Reader.ReadLineAsync().ConfigureAwait(false);
-        //                if (string.IsNullOrWhiteSpace(msg))
-        //                {
-        //                    pipeline.Dispose();
-        //                    break;
-        //                }
-        //                ClientServiceResponseInfo result = await OnMessage(msg.DeJson<ClientServiceRequestInfo>()).ConfigureAwait(false);
-        //                await pipeline.Writer.WriteLineAsync(result.ToJson()).ConfigureAwait(false);
-        //            }
-        //            catch (Exception)
-        //            {
-        //                pipeline.Dispose();
-        //                break;
-        //            }
-        //        }
-        //    });
-        //}
+
+        private const string pipeName = "client.cmd";
+        private void NamedPipe()
+        {
+            PipelineServer pipelineServer = new PipelineServer(pipeName, (string message) =>
+            {
+                return (OnMessage(message.DeJson<ClientServiceRequestInfo>()).Result).ToJson();
+            });
+            pipelineServer.BeginAccept();
+        }
     }
 
 
@@ -236,32 +222,4 @@ namespace client.service.ui.api.service.clientServer
         public bool IsTask { get; set; }
         public bool IsTaskResult { get; set; }
     }
-
-    //public class Pipeline
-    //{
-    //    public NamedPipeServerStream Server { get; private set; }
-    //    public StreamWriter Writer { get; private set; }
-    //    public StreamReader Reader { get; private set; }
-
-    //    public Pipeline(string pipeName)
-    //    {
-    //        Server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 254, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-    //        Writer = new StreamWriter(Server);
-    //        Reader = new StreamReader(Server);
-    //    }
-    //    public void Dispose()
-    //    {
-    //        Server.Close();
-    //        Server.Dispose();
-    //        Server = null;
-
-    //        Reader.Close();
-    //        Reader.Dispose();
-    //        Reader = null;
-
-    //        Writer.Close();
-    //        Writer.Dispose();
-    //        Writer = null;
-    //    }
-    //}
 }

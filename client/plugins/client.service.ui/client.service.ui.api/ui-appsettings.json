@@ -2,10 +2,10 @@
   "web": {
     "Port": 5411,
     "Root": "./public/web",
-    "UseIpv6": false
+    "BindIp": "127.0.0.1"
   },
   "websocket": {
     "Port": 59411,
-    "UseIpv6": false
+    "BindIp": "127.0.0.1"
   }
 }

@@ -27,7 +27,7 @@ namespace client.service.messengers.clients
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
             IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
-            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender
+            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer
         )
         {
             this.punchHoleUdp = punchHoleUdp;
@@ -53,12 +53,15 @@ namespace client.service.messengers.clients
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
 
-            registerState.OnRegisterStateChange.Sub((state) =>
+            tcpServer.OnDisconnect.Sub((connection) =>
             {
-                if (!state)
+                //客户端掉线
+                if (registerState.TcpConnection != null && registerState.TcpConnection.ConnectId != connection.ConnectId)
                 {
-                    clientInfoCaching.Clear();
+                    clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
+                    ConnectClient(connection.ConnectId);
                 }
+
             });
 
             Logger.Instance.Info("获取外网距离ing...");
@@ -184,18 +187,18 @@ namespace client.service.messengers.clients
 
         private void OnRegisterStateChange(bool state)
         {
+            firstClients.Reset();
             if (!state)
             {
-                firstClients.Reset();
                 foreach (ClientInfo client in clientInfoCaching.All())
                 {
-                    clientInfoCaching.Remove(client.Id);
-                    if (client.UdpConnecting)
+                    if (client.UdpConnecting || client.TcpConnecting)
                     {
                         punchHoleTcp.SendStep2Stop(client.Id);
                     }
                 }
             }
+            clientInfoCaching.Clear();
         }
         private void OnServerSendClients(ClientsInfo clients)
         {

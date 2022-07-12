@@ -62,16 +62,7 @@ namespace client.service.ui.api
         [Key(2)]
         public string Root { get; set; } = "./web";
         [Key(3)]
-        public bool UseIpv6 { get; set; } = false;
-
-        [JsonIgnore, IgnoreMember]
-        public IPAddress BindIp
-        {
-            get
-            {
-                return UseIpv6 ? IPAddress.IPv6Loopback : IPAddress.Loopback;
-            }
-        }
+        public IPAddress BindIp { get; set; } = IPAddress.Loopback;
 
     }
     [MessagePackObject]
@@ -80,15 +71,6 @@ namespace client.service.ui.api
         [Key(1)]
         public int Port { get; set; } = 8098;
         [Key(2)]
-        public bool UseIpv6 { get; set; } = false;
-
-        [JsonIgnore, IgnoreMember]
-        public IPAddress BindIp
-        {
-            get
-            {
-                return UseIpv6 ? IPAddress.IPv6Loopback : IPAddress.Loopback;
-            }
-        }
+        public IPAddress BindIp { get; set; } = IPAddress.Loopback;
     }
 }

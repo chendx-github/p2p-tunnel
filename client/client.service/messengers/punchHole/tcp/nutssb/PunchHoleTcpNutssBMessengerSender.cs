@@ -260,18 +260,20 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         }
                         else if (ex.SocketErrorCode == SocketError.AddressNotAvailable)
                         {
+                            interval = 1000;
+                            length--;
                             Logger.Instance.DebugError(targetEndpoint.ToString());
                         }
                         else
                         {
                             interval = 100;
+                            length--;
                             await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {
                                 interval = 0;
                                 port = arg.Data.GuessPort + index;
                             }
-                            length--;
                         }
                     }
                     catch (Exception ex)

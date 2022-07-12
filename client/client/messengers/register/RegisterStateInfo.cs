@@ -80,7 +80,7 @@ namespace client.messengers.register
 
             OnRegisterStateChange.Push(false);
 
-            if(TcpConnection != null)
+            if (TcpConnection != null)
             {
                 TcpConnection.Disponse();
                 TcpConnection = null;
@@ -91,7 +91,7 @@ namespace client.messengers.register
                 UdpConnection = null;
             }
         }
-        public void Online(ulong id, IPAddress ip,int udpPort, int tcpPort)
+        public void Online(ulong id, IPAddress ip, int udpPort, int tcpPort)
         {
             LocalInfo.IsConnecting = false;
             LocalInfo.UdpConnected = true;
@@ -177,7 +177,7 @@ namespace client.messengers.register
         [Key(7)]
         public bool UdpConnected { get; set; } = false;
 
-
+        [System.Text.Json.Serialization.JsonIgnore]
         public SimpleSubPushHandler<bool> TcpConnectedSub { get; } = new SimpleSubPushHandler<bool>();
 
         private bool tcpConnected = false;

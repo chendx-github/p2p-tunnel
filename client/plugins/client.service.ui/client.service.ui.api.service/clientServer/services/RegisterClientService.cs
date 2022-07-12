@@ -1,6 +1,7 @@
 ﻿using client.messengers.register;
 using client.service.ui.api.clientServer;
 using common.libs;
+using common.libs.extends;
 using MessagePack;
 using System.Threading.Tasks;
 
@@ -43,6 +44,21 @@ namespace client.service.ui.api.service.clientServer.services
                 RemoteInfo = registerState.RemoteInfo,
             };
         }
+
+        public async Task Config(ClientServiceParamsInfo arg)
+        {
+            ConfigureParamsInfo model = arg.Content.DeJson<ConfigureParamsInfo>();
+
+            config.Client = model.ClientConfig;
+            config.Server = model.ServerConfig;
+            await config.SaveConfig().ConfigureAwait(false);
+        }
+    }
+
+    public class ConfigureParamsInfo
+    {
+        public ClientConfig ClientConfig { get; set; } = new ClientConfig();
+        public ServerConfig ServerConfig { get; set; } = new ServerConfig();
     }
 
     [MessagePackObject]

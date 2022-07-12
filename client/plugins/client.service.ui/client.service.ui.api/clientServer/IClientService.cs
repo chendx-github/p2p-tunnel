@@ -27,7 +27,7 @@ namespace client.service.ui.api.clientServer
 
     public class ClientServiceParamsInfo
     {
-        public IWebSocketConnection Connection { get; init; }
+        //public IWebSocketConnection Connection { get; init; }
 
         public long RequestId { get; set; } = 0;
         public string Content { get; set; } = string.Empty;

@@ -26,7 +26,7 @@ namespace client.service.ui.api.webrtc
         public async Task<bool> Execute(ClientServiceParamsInfo arg)
         {
             WebRTCParamsInfo model = arg.Content.DeJson<WebRTCParamsInfo>();
-
+            /*
             if(model.ToId == 0)
             {
                 await arg.Connection.Send(new ClientServiceResponseInfo
@@ -43,6 +43,7 @@ namespace client.service.ui.api.webrtc
                 }.ToJson());
                 return true;
             }
+            */
 
             if (registerState.TcpConnection != null)
             {

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-11 00:08:25
+ * @LastEditTime: 2022-07-12 13:24:20
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -148,8 +148,7 @@
 <script>
 import { ref, toRefs, reactive } from '@vue/reactivity';
 import { injectRegister } from '../states/register'
-import { sendRegisterMsg, getRegisterInfo } from '../apis/register'
-import { updateConfig } from '../apis/config'
+import { sendRegisterMsg, getRegisterInfo, updateConfig } from '../apis/register'
 
 import { ElMessage } from 'element-plus'
 import { watch } from '@vue/runtime-core';

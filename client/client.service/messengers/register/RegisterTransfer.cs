@@ -1,5 +1,4 @@
-﻿using client.messengers.clients;
-using client.messengers.register;
+﻿using client.messengers.register;
 using client.service.messengers.crypto;
 using client.service.messengers.heart;
 using common.libs;
@@ -8,7 +7,6 @@ using common.server;
 using common.server.model;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -45,7 +43,7 @@ namespace client.service.messengers.register
             Console.CancelKeyPress += (s, e) => Exit();
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                if (registerState.TcpConnection != null && connection.ConnectId == registerState.TcpConnection.ConnectId)
+                if (registerState.TcpConnection != null && registerState.TcpConnection.ConnectId == connection.ConnectId)
                 {
                     _ = Register(true);
                 }

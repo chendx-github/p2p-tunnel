@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-20 00:47:21
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 17:31:38
+ * @LastEditTime: 2022-07-12 17:06:12
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\tcpforward\Index.vue
@@ -133,6 +133,7 @@ export default {
 
         const handleAddForward = (row) => {
             addForwardData.value.currentLsiten = row;
+            addForwardData.value.forward = { ID: 0 };
             state.showAddForward = true;
         }
         const handleEditForward = (listen, forward) => {
