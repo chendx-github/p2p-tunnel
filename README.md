@@ -11,10 +11,9 @@
 
 1. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>
 2. <a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>
-3. 可执行程序目录<br>客户端client/client.service/public/<br>服务端server/server.service/public/<br>publish需要安装.NET环境，  publish-single单文件自包含环境
-4. 自己开通的网络更容易打洞，当使用租房的房东网络时，打洞比较困难
-5. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
-6. <a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
+3. 自己开通的网络更容易打洞，当使用租房的房东网络时，打洞比较困难
+4. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
+5. <a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
 
 ## 几个通信线路
 1. p2p、A<---->B

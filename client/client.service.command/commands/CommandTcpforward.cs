@@ -16,6 +16,7 @@ namespace client.service.command.commands
             Command tcpforward = new Command("tcpforward", "注册相关命令") { };
             rootCommand.Add(tcpforward);
 
+
             Command list = new Command("list", "tcp转发列表") { };
             list.SetHandler(HandlerList);
             tcpforward.Add(list);
