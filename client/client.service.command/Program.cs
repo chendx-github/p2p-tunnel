@@ -1,4 +1,5 @@
 ﻿using client.service.command.commands;
+using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 
@@ -20,8 +21,20 @@ namespace client.service.command
 
             new CommandRegister(rootCommand);
             new CommandTcpforward(rootCommand);
+            new CommandClients(rootCommand);
+            new CommandSocks5(rootCommand);
+            
+            if (args.Length > 0)
+            {
+                return await rootCommand.InvokeAsync(args);
+            }
 
-            return await rootCommand.InvokeAsync(args);
+            while (true)
+            {
+                Console.Write(">>");
+                string arg = Console.ReadLine();
+                await rootCommand.InvokeAsync(arg);
+            }
         }
     }
 }

@@ -23,6 +23,7 @@ namespace client.service.ui.api.service
         {
             services.UseClientServer(GetAddemblys(assemblys));
             services.UseWebServer();
+            
             return services;
         }
 

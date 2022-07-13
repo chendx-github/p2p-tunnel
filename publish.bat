@@ -43,4 +43,6 @@ echo publish server ============================================== OK
 
 cd %target%/public
 winrar a -r publish.rar ./publish
+
+cd %target%
 pause

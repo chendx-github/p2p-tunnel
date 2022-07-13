@@ -163,7 +163,7 @@ namespace client.service.messengers.clients
             {
                 Id = info.Id,
                 TunnelName = "tcp",
-                TryTimes = 3
+                TryTimes = 5
             }).ConfigureAwait(false);
             if (!result.State)
             {

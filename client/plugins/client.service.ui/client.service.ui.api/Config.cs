@@ -21,9 +21,16 @@ namespace client.service.ui.api
             this.configDataProvider = configDataProvider;
 
             Config config = ReadConfig().Result;
+            EnableWeb = config.EnableWeb;
+            EnableCommand = config.EnableCommand;
+            EnableApi = config.EnableApi;
             Websocket = config.Websocket;
             Web = config.Web;
         }
+
+        public bool EnableWeb { get; set; } = true;
+        public bool EnableCommand { get; set; } = true;
+        public bool EnableApi { get; set; } = true;
 
         /// <summary>
         /// 本地websocket
@@ -44,6 +51,9 @@ namespace client.service.ui.api
         {
             Config config = await ReadConfig().ConfigureAwait(false);
 
+            config.EnableWeb = EnableWeb;
+            config.EnableCommand = EnableCommand;
+            config.EnableApi = EnableApi;
             config.Web = Web;
             config.Websocket = Websocket;
 

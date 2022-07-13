@@ -49,8 +49,9 @@ namespace client.service.command.commands
             Option<string> configGroupId = new Option<string>("--groupid", description: "分组编号", getDefaultValue: getDefaultValue);
             config.AddOption(configGroupId);
             Option<string> configAutoReg = new Option<string>("--autoreg", description: "是否自动注册", getDefaultValue: getDefaultValue).FromAmong("true", "false");
-            Option<string> configAutoRegTimes = new Option<string>("--autoreg-times", description: "自动注册重试次数", getDefaultValue: getDefaultValue);
             config.AddOption(configAutoReg);
+            Option<string> configAutoRegTimes = new Option<string>("--autoreg-times", description: "自动注册重试次数", getDefaultValue: getDefaultValue);
+            config.AddOption(configAutoRegTimes);
             Option<string> configServerAddress = new Option<string>("--ip", description: "服务端ip或域名", getDefaultValue: getDefaultValue);
             config.AddOption(configServerAddress);
             Option<string> configServerUdpPort = new Option<string>("--udp", description: "服务端udp端口", getDefaultValue: getDefaultValue);

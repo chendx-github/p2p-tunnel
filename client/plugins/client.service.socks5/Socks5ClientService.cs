@@ -1,6 +1,7 @@
 ﻿using client.service.ui.api.clientServer;
 using common.libs.extends;
 using common.socks5;
+using System;
 
 namespace client.service.socks5
 {
@@ -25,7 +26,7 @@ namespace client.service.socks5
         }
 
         public void Set(ClientServiceParamsInfo arg)
-        {
+        {;
             var conf = arg.Content.DeJson<common.socks5.Config>();
 
             socks5ClientListener.Stop();
@@ -35,7 +36,7 @@ namespace client.service.socks5
                 {
                     socks5ClientListener.Start(conf.ListenPort);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     arg.SetCode(-1, ex.Message);
                 }

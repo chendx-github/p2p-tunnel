@@ -2,10 +2,10 @@
  * @Author: snltty
  * @Date: 2021-08-22 14:09:03
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-15 23:31:01
+ * @LastEditTime: 2022-07-13 22:22:35
  * @version: v1.0.0
  * @Descripttion: 功能说明
- * @FilePath: \client.service.ui.webd:\Desktop\desktop\opens\p2p-tunnel\README.md
+ * @FilePath: \client.service.ui.webd:\Desktop\p2p-tunnel\README.md
 -->
 ## p2p-tunnel
 
@@ -41,6 +41,7 @@
 - [x] http代理(支持ftp(被动模式))
 - [x] socks5代理(仅tcp，不实现bind，支持ftp(被动模式))
 - [x] 简单易用的客户端web管理页面
+- [x] 方便使用的命令行管理命令
 - [ ] 服务端web管理页面
 - [x] 支持通信数据加密
 - [x] 可扩展的插件式
@@ -55,9 +56,7 @@
 
 ## 几个项目
 1. client
-    1. client 客户端公共内容
-    2. client.service **客户端**
-    3. plugins
+    1. plugins
         1. client.service.ui //客户端的ui管理界面项目
             1. client.service.ui.api  //接口定义， 这样可以在开发别的插件的时候也使用ui配置
             2. client.service.ui.api.manager    //服务器管理接口，与服务器端对应
@@ -68,7 +67,10 @@
         3. client.service.logger  日志记录的web展示
         4. client.service.socks5  socks5代理客户端及服务端
         5. client.service.tcpforward tcp转发，及 http代理
-    4. client.service.web 客户端管理界面
+    2. client 客户端公共内容
+    3. client.service **客户端**
+    4. client.service.command 客户端命令行管理工具
+    5. client.service.tary 客户端托盘工具
 2. common 一些公共的功能
     1. common.libs 一些公共的功能
     2. common.server 服务器

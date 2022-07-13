@@ -32,11 +32,12 @@ namespace client.messengers.punchHole
     }
     public class OnStep1Params : OnStepBaseParams { }
     public class OnStep2Params : OnStepBaseParams { }
+    public class OnStep21Params : OnStepBaseParams { }
     public class OnStep2FailParams : OnStepBaseParams
     {
         public new PunchHoleStep2FailInfo Data { get; set; }
     }
-    public class OnStep3Params: OnStepBaseParams
+    public class OnStep3Params : OnStepBaseParams
     {
         public new PunchHoleStep3Info Data { get; set; }
     }

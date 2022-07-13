@@ -90,26 +90,4 @@ namespace client.service.ui.api.service.webServer
         }
     }
 
-    public static class ServiceCollectionExtends
-    {
-        public static ServiceCollection AddWebServer(this ServiceCollection services)
-        {
-            services.AddSingleton<IWebServer, WebServer>();
-            return services;
-        }
-        public static ServiceProvider UseWebServer(this ServiceProvider services)
-        {
-            services.GetService<IWebServer>().Start();
-
-            var config = services.GetService<Config>();
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
-            Logger.Instance.Debug("ui管理，web服务已启动...");
-            Logger.Instance.Info($"管理页面web :http://{config.Web.BindIp}:{config.Web.Port}");
-            Logger.Instance.Info($"管理页面web :https://snltty.gitee.io/p2p-tunnel");
-            Logger.Instance.Info($"管理页面api :ws://{config.Websocket.BindIp}:{config.Websocket.Port}");
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
-
-            return services;
-        }
-    }
 }

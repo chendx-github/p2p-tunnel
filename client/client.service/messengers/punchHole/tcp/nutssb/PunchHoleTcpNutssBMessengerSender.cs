@@ -174,8 +174,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
 
 
                 bool success = false;
-                int length = cache.TryTimes, index = 0, interval = 0, port = 0;
-                while (length > 0)
+                int interval = 0, port = 0;
+                for (int i = 0; i < cache.TryTimes; i++)
                 {
                     if (cache.Canceled)
                     {
@@ -187,7 +187,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         interval = 0;
                     }
 
-                    Tuple<IPAddress, int> ip = index >= ips.Count ? ips[^1] : ips[index];
+                    Tuple<IPAddress, int> ip = i >= ips.Count ? ips[^1] : ips[i];
                     if (port == 0)
                     {
                         port = ip.Item2;
@@ -244,9 +244,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                             if (arg.Data.GuessPort > 0)
                             {
                                 interval = 0;
-                                port = arg.Data.GuessPort + index;
+                                port = arg.Data.GuessPort + i;
                             }
-                            length--;
                         }
                     }
                     catch (SocketException ex)
@@ -261,18 +260,16 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         else if (ex.SocketErrorCode == SocketError.AddressNotAvailable)
                         {
                             interval = 1000;
-                            length--;
-                            Logger.Instance.DebugError(targetEndpoint.ToString());
+                            Logger.Instance.Error($"{ex.SocketErrorCode}:{targetEndpoint}");
                         }
                         else
                         {
                             interval = 100;
-                            length--;
                             await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {
                                 interval = 0;
-                                port = arg.Data.GuessPort + index;
+                                port = arg.Data.GuessPort + i;
                             }
                         }
                     }
@@ -280,9 +277,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                     {
                         Logger.Instance.Error(ex);
                     }
-
-                    index++;
                 }
+
                 if (!success)
                 {
                     await SendStep2Fail(arg).ConfigureAwait(false);

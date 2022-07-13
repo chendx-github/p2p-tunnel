@@ -8,4 +8,5 @@ dotnet publish -c release -f net6.0 -o d:/free/p2p-tunnel/ -r win-x64 --self-con
 cd %target%/client/client.service.tray
 dotnet publish -c release -o d:/free/p2p-tunnel -r win-x64 --self-contained true  -p:DebugType=none -p:DebugSymbols=false  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
+cd %target%
 pause

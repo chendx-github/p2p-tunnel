@@ -10,8 +10,11 @@ namespace client.service.command.commands
 {
     internal class CommandTcpforward : CommandBase
     {
+        private Dictionary<string, string> tunnelTypes = new Dictionary<string, string> { { "2", "tcp" }, { "4", "udp" }, { "8", "tcp first" }, { "16", "udp first" } };
         public CommandTcpforward(RootCommand rootCommand)
         {
+            string tunnelTypesStr = string.Join(",", tunnelTypes.Select(c => $"{c.Key}:{c.Value}"));
+
             Command tcpforward = new Command("tcpforward", "tcp转发相关命令") { };
             rootCommand.Add(tcpforward);
 
@@ -20,6 +23,28 @@ namespace client.service.command.commands
             tcpforward.Add(list);
             list.SetHandler(HandlerList);
 
+
+            Command add = new Command("add", "添加监听") { };
+            tcpforward.Add(add);
+            Option<int> addPort = new Option<int>("--port", description: "端口") { IsRequired = true };
+            add.AddOption(addPort);
+            Option<int> addAliveType = new Option<int>("--alive", description: $"连接类型，{(int)TcpForwardAliveTypes.TUNNEL}长连接，{(int)TcpForwardAliveTypes.WEB}短链接") { IsRequired = true }.FromAmong("1", "2");
+            add.AddOption(addAliveType);
+            add.SetHandler((addPort, addAliveType) =>
+            {
+                JsonNode res = JsonNode.Parse(Request("tcpforward/AddListen", new
+                {
+                    id = 0,
+                    content = new
+                    {
+                        ID = 0,
+                        Port = addPort,
+                        AliveType = addAliveType,
+                        ForwardType = (int)TcpForwardTypes.FORWARD,
+                    }.ToJson()
+                }.ToJson()));
+                PrintRequestState(res);
+            }, addPort, addAliveType);
 
             Command del = new Command("del", "删除监听") { };
             tcpforward.Add(del);
@@ -30,19 +55,6 @@ namespace client.service.command.commands
                 JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveListen", new { id = delid, content = string.Empty }.ToJson()));
                 PrintRequestState(res);
             }, delid);
-
-
-            Command delForward = new Command("del-forward", "删除转发") { };
-            tcpforward.Add(delForward);
-            var delListenid = new Argument<int>("listenid", "监听id");
-            var delForwardid = new Argument<int>("forwardid", "转发id");
-            delForward.Add(delListenid);
-            delForward.Add(delForwardid);
-            delForward.SetHandler((delListenid, delForwardid) =>
-            {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveForward", new { id = 0, content = new { ListenID = delListenid, ForwardID = delForwardid }.ToJson() }.ToJson()));
-                PrintRequestState(res);
-            }, delListenid, delForwardid);
 
 
             Command start = new Command("start", "启动监听") { };
@@ -67,47 +79,17 @@ namespace client.service.command.commands
             }, stopid);
 
 
-            Command add = new Command("add", "添加监听") { };
-            tcpforward.Add(add);
-            Option<int> addPort = new Option<int>("--port", description: "端口") { IsRequired = true };
-            add.AddOption(addPort);
-            Option<int> addAliveType = new Option<int>("--alive-type", description: $"连接类型，{(int)TcpForwardAliveTypes.TUNNEL}长连接，{(int)TcpForwardAliveTypes.WEB}短链接") { IsRequired = true }.FromAmong("1", "2");
-            add.AddOption(addAliveType);
-            add.SetHandler((addPort, addAliveType) =>
-            {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/AddListen", new
-                {
-                    id = 0,
-                    content = new
-                    {
-                        ID = 0,
-                        Port = addPort,
-                        AliveType = addAliveType,
-                        ForwardType = (int)TcpForwardTypes.FORWARD,
-                    }.ToJson()
-                }.ToJson()));
-                PrintRequestState(res);
-            }, addPort, addAliveType);
-
-
-
-            Command addForward = new Command("add-forward", "添加转发") { };
+            Command addForward = new Command("forward-add", "添加转发") { };
             tcpforward.Add(addForward);
             Argument<int> listenid = new Argument<int>("--listenid", description: "监听id");
             addForward.AddArgument(listenid);
-
-            Option<int> addTunnelType = new Option<int>("--tunnel-type",
-                description: $"通道类型，{(int)TcpForwardTunnelTypes.TCP_FIRST}优先tcp，{(int)TcpForwardTunnelTypes.TCP}仅tcp，{(int)TcpForwardTunnelTypes.UDP_FIRST}优先udp，{(int)TcpForwardTunnelTypes.UDP}仅udp"
-            )
-            { IsRequired = true }.FromAmong("8", "2", "16", "4");
+            Option<int> addTunnelType = new Option<int>("--tunnel", description: $"通道类型，{tunnelTypesStr}")
+            { IsRequired = true }.FromAmong(tunnelTypes.Keys.ToArray());
             addForward.AddOption(addTunnelType);
-
             Option<string> addName = new Option<string>("--name", description: "目标客户端名") { IsRequired = true };
             addForward.AddOption(addName);
-
-            Option<string> addSourceIp = new Option<string>("--source-ip", description: "访问ip") { IsRequired = true };
+            Option<string> addSourceIp = new Option<string>("--source", description: "访问ip") { IsRequired = true };
             addForward.AddOption(addSourceIp);
-
             Option<string> addTarget = new Option<string>("--target", description: "目标地址，带端口，例如127.0.0.1:80") { IsRequired = true };
             addForward.AddOption(addTarget);
             addForward.SetHandler((listenid, addTunnelAliveType, addName, addSourceIp, addTarget) =>
@@ -133,14 +115,120 @@ namespace client.service.command.commands
                 PrintRequestState(res);
             }, listenid, addTunnelType, addName, addSourceIp, addTarget);
 
+            Command delForward = new Command("forward-del", "删除转发") { };
+            tcpforward.Add(delForward);
+            var delListenid = new Argument<int>("listenid", "监听id");
+            var delForwardid = new Argument<int>("forwardid", "转发id");
+            delForward.Add(delListenid);
+            delForward.Add(delForwardid);
+            delForward.SetHandler((delListenid, delForwardid) =>
+            {
+                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveForward", new { id = 0, content = new { ListenID = delListenid, ForwardID = delForwardid }.ToJson() }.ToJson()));
+                PrintRequestState(res);
+            }, delListenid, delForwardid);
+
+
+            Command proxy = new Command("proxy-list", "查看http1.1代理") { };
+            tcpforward.Add(proxy);
+            proxy.SetHandler(() =>
+            {
+                JsonNode res = JsonNode.Parse(Request("tcpforward/ListProxy"));
+                if (res.Root["Code"].GetValue<int>() == 0)
+                {
+                    var array = res.Root["Content"].AsArray();
+                    var forwards = new List<List<object>> {
+                            new List<object>{"id","端口", "通道类型", "目标","监听状态","pac代理" }
+                        }.Concat(array.Select(c => new List<object> {
+                                    c["ID"].ToString() ,
+                                    c["Port"].ToString(),
+                                    tunnelTypes[c["TunnelType"].ToString()],
+                                    string.IsNullOrWhiteSpace(c["Name"].ToString())?"服务器":c["Name"].ToString(),
+                                    c["Listening"].GetValue<bool>()?"已监听":"------",
+                                    c["IsPac"].GetValue<bool>() ? "已设置":"------",
+                                }).ToList()).ToList();
+                    PrintTable(forwards);
+                }
+
+                PrintRequestState(res);
+            });
+
+
+            Command addProxy = new Command("proxy-add", "添加http1.1代理") { };
+            tcpforward.Add(addProxy);
+            Option<int> addProxyPort = new Option<int>("--port", description: "端口") { IsRequired = true };
+            addProxy.AddOption(addProxyPort);
+            Option<int> addProxyTunnelType = new Option<int>("--tunnel", description: $"通道类型，{tunnelTypesStr}", getDefaultValue: () => (int)TcpForwardTunnelTypes.TCP_FIRST).FromAmong(tunnelTypes.Keys.ToArray());
+            addProxy.AddOption(addProxyTunnelType);
+            Option<string> addProxyName = new Option<string>("--name", description: "目标客户端名，空为服务器", getDefaultValue: () => string.Empty);
+            addProxy.AddOption(addProxyName);
+            Option<string> addProxyListening = new Option<string>("--listen", description: "是否开启监听", getDefaultValue: () => "false").FromAmong("true", "false");
+            addProxy.AddOption(addProxyListening);
+            Option<string> addProxyIsPac = new Option<string>("--ispac", description: "是否开启pac代理", getDefaultValue: () => "false").FromAmong("true", "false");
+            addProxy.AddOption(addProxyIsPac);
+            addProxy.SetHandler((addProxyPort, addProxyTunnelType, addProxyName, addProxyListening, addProxyIsPac) =>
+            {
+                JsonNode res = JsonNode.Parse(Request("tcpforward/AddListen", new
+                {
+                    id = 0,
+                    content = new
+                    {
+                        ID = 0,
+                        Port = addProxyPort,
+                        Listening = Boolean.Parse(addProxyListening),
+                        Name = addProxyName,
+                        TunnelType = addProxyTunnelType,
+                        AliveType = (int)TcpForwardAliveTypes.WEB,
+                        ForwardType = (int)TcpForwardTypes.PROXY,
+                        IsPac = Boolean.Parse(addProxyIsPac)
+                    }.ToJson()
+                }.ToJson()));
+                PrintRequestState(res);
+            }, addProxyPort, addProxyTunnelType, addProxyName, addProxyListening, addProxyIsPac);
+
+
+            Command updateProxy = new Command("proxy-update", "更新http1.1代理") { };
+            tcpforward.Add(updateProxy);
+            Option<string> updateProxyPort = new Option<string>("--port", description: "端口", getDefaultValue: getDefaultValue);
+            updateProxy.AddOption(updateProxyPort);
+            Option<string> updateProxyTunnelType = new Option<string>("--tunnel", description: $"通道类型，{tunnelTypesStr}", getDefaultValue: getDefaultValue).FromAmong(tunnelTypes.Keys.ToArray());
+            updateProxy.AddOption(updateProxyTunnelType);
+            Option<string> updateProxyName = new Option<string>("--name", description: "目标客户端名，空为服务器", getDefaultValue: getDefaultValue);
+            updateProxy.AddOption(updateProxyName);
+            Option<string> updateProxyListening = new Option<string>("--listen", description: "是否开启监听", getDefaultValue: getDefaultValue).FromAmong("true", "false");
+            updateProxy.AddOption(updateProxyListening);
+            Option<string> updateProxyIsPac = new Option<string>("--ispac", description: "是否开启pac代理", getDefaultValue: getDefaultValue).FromAmong("true", "false");
+            updateProxy.AddOption(updateProxyIsPac);
+            updateProxy.SetHandler((updateProxyPort, updateProxyTunnelType, updateProxyName, updateProxyListening, updateProxyIsPac) =>
+            {
+                JsonNode res = JsonNode.Parse(Request("tcpforward/ListProxy"));
+                if (res.Root["Code"].GetValue<int>() == 0)
+                {
+                    var array = res.Root["Content"].AsArray();
+                    if (array.Count > 0)
+                    {
+                        JsonNode proxy = array[0];
+                        RunAsNotDefaultValue(updateProxyPort, () => { proxy["Port"] = int.Parse(updateProxyPort); });
+                        RunAsNotDefaultValue(updateProxyTunnelType, () => { proxy["TunnelType"] = int.Parse(updateProxyTunnelType); });
+                        RunAsNotDefaultValue(updateProxyName, () => { proxy["Name"] = updateProxyName; });
+                        RunAsNotDefaultValue(updateProxyListening, () => { proxy["Listening"] = bool.Parse(updateProxyListening); });
+                        RunAsNotDefaultValue(updateProxyIsPac, () => { proxy["IsPac"] = bool.Parse(updateProxyIsPac); });
+                        Request("tcpforward/AddListen", new { id = 0, content = proxy.ToJson() }.ToJson());
+                    }
+                    else
+                    {
+                        Console.WriteLine("Empty");
+                    }
+                }
+
+                PrintRequestState(res);
+            }, updateProxyPort, updateProxyTunnelType, updateProxyName, updateProxyListening, updateProxyIsPac);
+
 
         }
 
         private void HandlerList()
         {
             JsonNode res = JsonNode.Parse(Request("tcpforward/list"));
-
-            var tunnelTypes = new Dictionary<string, string> { { "2", "tcp" }, { "4", "udp" }, { "8", "tcp first" }, { "16", "udp first" } };
             if (res.Root["Code"].GetValue<int>() == 0)
             {
                 var array = res.Root["Content"].AsArray();

@@ -69,7 +69,10 @@ namespace client.service.socks5
                 else
                 {
                     var client = clientInfoCaching.GetByName(config.TargetName);
-                    connection = SelectConnection(config.TunnelType, client.TcpConnection, client.UdpConnection);
+                    if(client != null)
+                    {
+                        connection = SelectConnection(config.TunnelType, client.TcpConnection, client.UdpConnection);
+                    }
                 }
             }
         }

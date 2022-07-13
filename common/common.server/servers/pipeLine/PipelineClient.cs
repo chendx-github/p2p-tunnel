@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.IO.Pipes;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace common.server.servers.pipeLine
 {
     public class PipelineClient
     {
-        public NamedPipeClientStream Client { get; private set; }
-        public StreamWriter Writer { get; private set; }
-        public StreamReader Reader { get; private set; }
+        private NamedPipeClientStream Client { get; set; }
+        private StreamWriter Writer { get; set; }
+        private StreamReader Reader { get; set; }
 
         public PipelineClient(string pipeName)
         {
-            Client = new NamedPipeClientStream(pipeName);
+            Client = new NamedPipeClientStream(".",pipeName);
             Writer = new StreamWriter(Client);
             Reader = new StreamReader(Client);
 
@@ -25,6 +20,15 @@ namespace common.server.servers.pipeLine
         public void Connect()
         {
             Client.Connect();
+        }
+        public void WriteLine(string msg)
+        {
+            Writer.WriteLine(msg);
+            Writer.Flush();
+        }
+        public string ReadLine()
+        {
+            return Reader.ReadLine();
         }
 
         public void Dispose()

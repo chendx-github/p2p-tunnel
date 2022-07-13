@@ -33,6 +33,7 @@ namespace client.service.ui.api.service.clientServer
 
         public void LoadPlugins(Assembly[] assemblys)
         {
+
             Type voidType = typeof(void);
 
             IEnumerable<Type> types = assemblys.SelectMany(c => c.GetTypes());
@@ -62,7 +63,7 @@ namespace client.service.ui.api.service.clientServer
                     settingPlugins.Add(item.Name, (IClientConfigure)serviceProvider.GetService(item));
             }
         }
-        public void Start()
+        public void Websocket()
         {
             WebSocketServer server = new($"ws://{config.Websocket.BindIp}:{config.Websocket.Port}");
             server.RestartAfterListenError = true;
@@ -105,8 +106,6 @@ namespace client.service.ui.api.service.clientServer
                     });
                 };
             });
-
-            NamedPipe();
         }
 
         public IClientConfigure GetConfigure(string className)
@@ -138,7 +137,6 @@ namespace client.service.ui.api.service.clientServer
                 item.Send(msg);
             }
         }
-
         public async Task<ClientServiceResponseInfo> OnMessage(ClientServiceRequestInfo model)
         {
             model.Path = model.Path.ToLower();
@@ -203,7 +201,7 @@ namespace client.service.ui.api.service.clientServer
 
 
         private const string pipeName = "client.cmd";
-        private void NamedPipe()
+        public void NamedPipe()
         {
             PipelineServer pipelineServer = new PipelineServer(pipeName, (string message) =>
             {

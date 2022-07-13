@@ -1,23 +1,29 @@
 ﻿using System;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace common.server.servers.pipeLine
 {
     public class PipelineServer
     {
-        public NamedPipeServerStream Server { get; private set; }
-        public StreamWriter Writer { get; private set; }
-        public StreamReader Reader { get; private set; }
-        public Func<string, string> Action { get; private set; }
+        private NamedPipeServerStream Server { get; set; }
+        private StreamWriter Writer { get; set; }
+        private StreamReader Reader { get; set; }
+        private Func<string, string> Action { get; set; }
+        private string PipeName { get; set; }
+        private static int maxNumberAcceptedClients = 5;
 
         public PipelineServer(string pipeName, Func<string, string> action)
         {
-            Server = new NamedPipeServerStream(pipeName);
+            Server = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 254);
             Writer = new StreamWriter(Server);
             Reader = new StreamReader(Server);
             Action = action;
+            PipeName = pipeName;
+
+
         }
         public void BeginAccept()
         {
@@ -30,6 +36,14 @@ namespace common.server.servers.pipeLine
         private void ProcessAccept(IAsyncResult result)
         {
             Server.EndWaitForConnection(result);
+
+            Interlocked.Decrement(ref maxNumberAcceptedClients);
+            if(maxNumberAcceptedClients > 0)
+            {
+                PipelineServer server = new PipelineServer(PipeName, Action);
+                server.BeginAccept();
+            }
+
             Task.Run(async () =>
             {
                 while (true)
@@ -37,17 +51,13 @@ namespace common.server.servers.pipeLine
                     try
                     {
                         string msg = await Reader.ReadLineAsync().ConfigureAwait(false);
-                        if (string.IsNullOrWhiteSpace(msg))
-                        {
-                            Server.Disconnect();
-                            break;
-                        }
                         string res = Action(msg);
                         await Writer.WriteLineAsync(res).ConfigureAwait(false);
-                        Writer.Flush();
+                        await Writer.FlushAsync();
                     }
                     catch (Exception)
                     {
+                        Server.Disconnect();
                         break;
                     }
                 }

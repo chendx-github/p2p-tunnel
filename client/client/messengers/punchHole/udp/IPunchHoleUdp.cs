@@ -1,6 +1,5 @@
 ﻿using common.libs;
 using MessagePack;
-using common.server;
 using common.server.model;
 using System;
 using System.Threading.Tasks;
@@ -16,6 +15,9 @@ namespace client.messengers.punchHole.udp
 
         public SimpleSubPushHandler<OnStep2Params> OnStep2Handler { get; }
         public Task OnStep2(OnStep2Params e);
+
+        public SimpleSubPushHandler<OnStep21Params> OnStep21Handler { get; }
+        public Task OnStep21(OnStep21Params e);
 
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; }
         public void OnStep2Fail(OnStep2FailParams e);

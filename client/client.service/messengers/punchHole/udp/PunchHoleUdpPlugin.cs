@@ -26,6 +26,9 @@ namespace client.service.messengers.punchHole.udp
                 case PunchHoleUdpSteps.STEP_2:
                     Step2(arg);
                     break;
+                case PunchHoleUdpSteps.STEP_2_1:
+                    Step21(arg);
+                    break;
                 case PunchHoleUdpSteps.STEP_2_Fail:
                     Step2Fail(arg);
                     break;
@@ -52,6 +55,15 @@ namespace client.service.messengers.punchHole.udp
         private void Step2(OnPunchHoleArg arg)
         {
             punchHoleUdp.OnStep2(new OnStep2Params
+            {
+                Connection = arg.Connection,
+                RawData = arg.Data,
+                Data = arg.Data.Data.DeBytes<PunchHoleNotifyInfo>()
+            });
+        }
+        private void Step21(OnPunchHoleArg arg)
+        {
+            punchHoleUdp.OnStep21(new OnStep21Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,

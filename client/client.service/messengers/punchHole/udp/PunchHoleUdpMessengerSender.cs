@@ -3,7 +3,6 @@ using client.messengers.punchHole.udp;
 using client.messengers.register;
 using common.libs;
 using common.server;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +97,7 @@ namespace client.service.messengers.punchHole.udp
                 {
                     Connection = udpServer.CreateConnection(new IPEndPoint(ip, arg.Data.Port)),
                     TunnelName = arg.RawData.TunnelName,
+                    ToId = arg.RawData.FromId,
                     Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
                 }).ConfigureAwait(false);
             }
@@ -106,6 +106,7 @@ namespace client.service.messengers.punchHole.udp
             {
                 Connection = udpServer.CreateConnection(new IPEndPoint(arg.Data.Ip, arg.Data.Port)),
                 TunnelName = arg.RawData.TunnelName,
+                ToId = arg.RawData.FromId,
                 Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
             }).ConfigureAwait(false);
 
@@ -149,6 +150,13 @@ namespace client.service.messengers.punchHole.udp
                     cache.Tcs.SetResult(new ConnectResultModel { State = true });
                 }
             }
+        }
+
+        public SimpleSubPushHandler<OnStep21Params> OnStep21Handler { get; } = new SimpleSubPushHandler<OnStep21Params>();
+        public async Task OnStep21(OnStep21Params arg)
+        {
+            OnStep21Handler.Push(arg);
+            await Task.CompletedTask;
         }
 
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; } = new SimpleSubPushHandler<OnStep2FailParams>();
