@@ -2,29 +2,34 @@
  * @Author: snltty
  * @Date: 2021-08-22 14:09:03
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-13 22:22:35
+ * @LastEditTime: 2022-07-14 14:02:17
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.webd:\Desktop\p2p-tunnel\README.md
 -->
-## p2p-tunnel
+<div align="center">
 
-1. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>，<a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>，<a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
-2. **/public/publish.rar**包含多个版本的已发布的可执行程序
+# p2p-tunnel
+## Visual Studio 2022 LTSC 17.2
+
+</div>
+
+1. **/public/publish.rar包含win linux mac下依赖.NET6环境的x64和arm64**，更多环境的发布程序，请自行发布，或者进群获取
+2. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>，<a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>，<a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
 3. 自己开通的网络更容易打洞，当使用租房的房东网络时，打洞比较困难
 4. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
 
-## 几个通信线路
+## 通信线路
 1. p2p、A<---->B
 2. 中继、A<---->server<---->B（免费打洞服务器不开启）
 3. 服务器代理、server<---->A（免费打洞服务器不开启）
 
-## 几个通信模式
+## 通信模式
 1. **tcp转发**1对1，不支持像ftp这样的多通道
 2. **http1.1代理**多对多，支持ftp
 3. **socks5代理**多对多，支持ftp
 
-## 几个通信流程
+## 通信流程
 1. A <--tcp转发-->B<---->内网服务
 2. server <--tcp转发-->A<---->内网服务
 3. A <--http1.1代理-->B<---->内网或外网服务
@@ -32,7 +37,7 @@
 5. A <--socks5代理-->B<---->内网或外网服务
 6. A <--socks5代理-->server<---->内网或外网服务
   
-## 几个要点
+## 要点
 - [x] .NET6 跨平台，小尺寸，小内存<br><a href="https://github.com/neuecc/MessagePack-CSharp" target="_blank">MessagePack 序列化</a>，<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
 - [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
 - [x] p2p 打洞、tcp、udp
@@ -49,14 +54,14 @@
 <p><img src="./public/screenshot/speed.png" width="400"></p>
 <p><img src="./public/screenshot/file-speed.png" width="400"></p>
 
-## 几个QQ群
+## QQ群
 有啥兴趣，有啥想了解的，尽可进群
 <p><img src="./public/screenshot/qrcode.jpg" style="border:1px solid #ddd;" width="400"></p>
 
-## 几个项目
+## 项目
 1. client
     1. plugins
-        1. client.service.ui //客户端的ui管理界面项目
+        1. client.service.ui //客户端的管理工具
             1. client.service.ui.api  //接口定义， 这样可以在开发别的插件的时候也使用ui配置
             2. client.service.ui.api.manager    //服务器管理接口，与服务器端对应
             3. client.service.ui.api.service //服务

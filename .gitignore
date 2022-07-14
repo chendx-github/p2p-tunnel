@@ -3,3 +3,5 @@ bin
 obj
 node_modules
 publish
+publish-all
+publish-all.rar
