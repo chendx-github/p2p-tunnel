@@ -176,15 +176,11 @@ namespace common.libs
         /// <returns></returns>
         public static IPAddress GetDomainIp(string domain)
         {
-            char last = domain[domain.Length - 1];
-            if (last >= 49 && last <= 57)
+            if (IPAddress.TryParse(domain, out IPAddress ip))
             {
-                return IPAddress.Parse(domain);
+                return ip;
             }
-            else
-            {
-                return Dns.GetHostEntry(domain).AddressList[0];
-            }
+            return Dns.GetHostEntry(domain).AddressList[0];
         }
 
         /// <summary>
@@ -232,8 +228,10 @@ namespace common.libs
             return new IPEndPoint(GetDomainIp(ip), port);
         }
 
-       
 
+        static Memory<byte> ipv6Loopback = IPAddress.IPv6Loopback.GetAddressBytes();
+        static Memory<byte> ipv6Multicast = IPAddress.Parse("ff00::").GetAddressBytes();
+        static Memory<byte> ipv6Local = IPAddress.Parse("fe80::").GetAddressBytes();
         /// <summary>
         /// 判断是不是本地地址
         /// </summary>
@@ -241,8 +239,18 @@ namespace common.libs
         /// <returns></returns>
         public static bool IsLan(IPEndPoint endPoint)
         {
-            var bytes = endPoint.Address.GetAddressBytes();
-            return bytes[0] == 127 || bytes[0] == 10 || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1]<=18) || (bytes[0] == 192 && bytes[1] == 168);
+            var bytes = endPoint.Address.GetAddressBytes().AsSpan();
+            if (bytes.Length == 4)
+            {
+                return bytes[0] == 127
+               || bytes[0] == 10
+               || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
+               || (bytes[0] == 192 && bytes[1] == 168);
+            }
+
+            return bytes.SequenceEqual(ipv6Loopback.Span)
+                || bytes.SequenceEqual(ipv6Multicast.Span)
+                || (bytes[0] == ipv6Local.Span[0] && bytes[1] == ipv6Local.Span[1]);
         }
     }
 }

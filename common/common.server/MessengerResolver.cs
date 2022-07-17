@@ -30,7 +30,7 @@ namespace common.server
 
             this.tcpserver.OnPacket.Sub((IConnection connection) =>
             {
-                InputData(connection).ConfigureAwait(false);
+                InputData(connection).Wait();
             });
             this.udpserver.OnPacket.Sub((IConnection connection) =>
             {

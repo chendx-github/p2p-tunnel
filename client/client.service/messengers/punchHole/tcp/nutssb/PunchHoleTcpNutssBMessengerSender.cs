@@ -36,7 +36,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         private int ClientTcpPort => registerState.LocalInfo.TcpPort;
         private int RouteLevel => registerState.LocalInfo.RouteLevel + 5;
 #if DEBUG
-        private bool UseLocalPort = false;
+        private bool UseLocalPort = true;
 #else
         private bool UseLocalPort = true;
 #endif
