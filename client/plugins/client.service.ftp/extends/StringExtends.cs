@@ -16,14 +16,21 @@ namespace client.service.ftp.extends
                 {
                     if (!string.IsNullOrWhiteSpace(item))
                     {
-                        string filePath = Path.Combine(baseDir, item);
-                        if (filePath.StartsWith(rootDir))
+                        if (Path.IsPathRooted(dir))
                         {
-                            Clear(Path.Combine(baseDir, item));
+                            Clear(dir);
                         }
                         else
                         {
-                            errs.Add($"{item} 无目录权限");
+                            string filePath = Path.Combine(baseDir, item);
+                            if (filePath.StartsWith(rootDir))
+                            {
+                                Clear(Path.Combine(baseDir, item));
+                            }
+                            else
+                            {
+                                errs.Add($"{item} 无目录权限");
+                            }
                         }
                     }
                 }
@@ -40,17 +47,27 @@ namespace client.service.ftp.extends
                 {
                     if (!string.IsNullOrWhiteSpace(item))
                     {
-                        string filePath = Path.Combine(baseDir, item);
-                        if (filePath.StartsWith(rootDir))
+                        if (Path.IsPathRooted(dir))
                         {
-                            if (!Directory.Exists(filePath))
+                            if (!Directory.Exists(dir))
                             {
-                                Directory.CreateDirectory(filePath);
+                                Directory.CreateDirectory(dir);
                             }
                         }
                         else
                         {
-                            errs.Add($"{item} 无目录权限");
+                            string filePath = Path.Combine(baseDir, item);
+                            if (filePath.StartsWith(rootDir))
+                            {
+                                if (!Directory.Exists(filePath))
+                                {
+                                    Directory.CreateDirectory(filePath);
+                                }
+                            }
+                            else
+                            {
+                                errs.Add($"{item} 无目录权限");
+                            }
                         }
                     }
                 }
@@ -93,7 +110,7 @@ namespace client.service.ftp.extends
                 catch (Exception)
                 {
 
-                    
+
                 }
             }
         }

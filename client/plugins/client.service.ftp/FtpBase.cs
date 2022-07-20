@@ -81,47 +81,47 @@ namespace client.service.ftp
             return path.ClearDir(currentPath, RootPath);
         }
 
-        protected async Task Upload(string currentPath, string path, ClientInfo client)
+        protected async Task Upload(string currentPath, string path, ClientInfo client, string targetCurrentPath = "")
         {
             await Task.Run(async () =>
             {
-                string targetCurrentPath = await RemoteCurrentPath(client).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(targetCurrentPath))
+                {
+                    targetCurrentPath = await RemoteCurrentPath(client).ConfigureAwait(false);
+                }
                 if (string.IsNullOrWhiteSpace(targetCurrentPath))
                 {
                     Logger.Instance.Error($" Upload fail,empty target path");
                     return;
                 }
-
                 foreach (string item in path.Split(Helper.SeparatorChar))
                 {
                     if (!string.IsNullOrWhiteSpace(item))
                     {
-                        string filepath = Path.Combine(currentPath, item);
+                        string filepath = item;
+                        if (!Path.IsPathRooted(filepath))
+                        {
+                            filepath = Path.Combine(currentPath, item);
+                        }
+
                         if (Directory.Exists(filepath))
                         {
                             List<FileUploadInfo> files = new();
                             GetFiles(files, new DirectoryInfo(filepath));
-
-                            IEnumerable<string> paths = files.Where(c => c.Type == FileType.Folder)
-                                .Select(c => c.Path.Replace(currentPath, String.Empty).TrimStart(Path.DirectorySeparatorChar));
-                            if (paths.Any())
-                            {
-                                await RemoteCreate(string.Join(Helper.SeparatorString, paths), client).ConfigureAwait(false);
-                            }
                             foreach (FileUploadInfo file in files.Where(c => c.Type == FileType.File))
                             {
-                                AppendUpload(file.Path, currentPath, targetCurrentPath, client);
+                                AppendUpload(file.Path, targetCurrentPath, client);
                             }
                         }
                         else if (File.Exists(filepath))
                         {
-                            AppendUpload(filepath, currentPath, targetCurrentPath, client);
+                            AppendUpload(filepath, targetCurrentPath, client);
                         }
                     }
                 }
             }).ConfigureAwait(false);
         }
-        private void AppendUpload(string path, string currentPath, string targetCurrentPath, ClientInfo client)
+        private void AppendUpload(string path, string targetCurrentPath, ClientInfo client)
         {
             System.IO.FileInfo file = new System.IO.FileInfo(path);
             try
@@ -236,13 +236,19 @@ namespace client.service.ftp
                 FileSaveInfo fs = Downloads.Get(wrap.Client.Id, cmd.Md5);
                 if (fs == null)
                 {
+                    string dir = Path.GetDirectoryName(cmd.FullName);
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
                     fs = new FileSaveInfo
                     {
                         Stream = null,
                         IndexLength = 0,
                         TotalLength = cmd.Size,
                         FullName = cmd.FullName,
-                        CacheFullName = Path.Combine(Path.GetDirectoryName(cmd.FullName), $"{cmd.Md5}.downloading"),
+                        CacheFullName = Path.Combine(dir, $"{cmd.Md5}.downloading"),
                         ClientId = wrap.Client.Id,
                         Md5 = cmd.Md5,
                         State = UploadStates.Wait
@@ -254,7 +260,7 @@ namespace client.service.ftp
                     }, 1000, true);
                     Downloads.Add(fs);
                 }
-                else if (fs.Token.IsCancellationRequested || fs.State == UploadStates.Canceled)
+                else if (fs.Token.IsCancellationRequested)
                 {
                     return;
                 }

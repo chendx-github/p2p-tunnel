@@ -137,9 +137,9 @@ namespace client.service.ftp.client
         {
             await base.OnFile(cmd, data).ConfigureAwait(false);
         }
-        public async Task Upload(string path, ClientInfo client)
+        public async Task Upload(string path, ClientInfo client, string targetCurrentPath = "")
         {
-            await Upload(CurrentPath, path, client).ConfigureAwait(false);
+            await Upload(CurrentPath, path, client, targetCurrentPath).ConfigureAwait(false);
         }
 
         public async Task<FileInfo[]> RemoteList(string path, ClientInfo client)

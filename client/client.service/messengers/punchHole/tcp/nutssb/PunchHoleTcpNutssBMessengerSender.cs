@@ -239,7 +239,8 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         else
                         {
                             targetSocket.SafeClose();
-                            interval = 300;
+                            targetSocket = null;
+                            interval = 100;
                             await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {
@@ -253,6 +254,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         Logger.Instance.DebugError(ex);
                         targetSocket.SafeClose();
                         targetSocket = null;
+                        interval = 100;
                         if (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
                         {
                             interval = 2000;
@@ -264,7 +266,6 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                         }
                         else
                         {
-                            interval = 100;
                             await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {

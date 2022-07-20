@@ -106,21 +106,27 @@ namespace client.service.ftp.server
         }
         private DirectoryInfo JoinPath(FtpListCommand cmd, ulong clientId)
         {
-            string currentPath = GetCurrentPath(clientId);
-
-            DirectoryInfo dirInfo = new DirectoryInfo(currentPath);
-            if (!string.IsNullOrWhiteSpace(cmd.Path))
+            if (Path.IsPathRooted(cmd.Path))
             {
-                dirInfo = new DirectoryInfo(Path.Combine(currentPath, cmd.Path));
+                return new DirectoryInfo(cmd.Path);
             }
-            //不能访问根目录的上级目录
-            if (dirInfo.FullName.Length < RootPath.Length)
+            else
             {
-                dirInfo = new DirectoryInfo(RootPath);
-            }
-            SetCurrentPath(dirInfo.FullName, clientId);
+                string currentPath = GetCurrentPath(clientId);
 
-            return dirInfo;
+                DirectoryInfo dirInfo = new DirectoryInfo(currentPath);
+                if (!string.IsNullOrWhiteSpace(cmd.Path))
+                {
+                    dirInfo = new DirectoryInfo(Path.Combine(currentPath, cmd.Path));
+                }
+                //不能访问根目录的上级目录
+                if (dirInfo.FullName.Length < RootPath.Length)
+                {
+                    dirInfo = new DirectoryInfo(RootPath);
+                }
+                SetCurrentPath(dirInfo.FullName, clientId);
+                return dirInfo;
+            }
         }
 
     }

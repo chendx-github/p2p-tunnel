@@ -89,7 +89,7 @@ namespace client.service.ftp.client
             RemoteUploadParamsInfo model = arg.Content.DeJson<RemoteUploadParamsInfo>();
             if (clientInfoCaching.Get(model.Id, out ClientInfo client))
             {
-                await ftpClient.Upload(model.Path, client).ConfigureAwait(false);
+                await ftpClient.Upload(model.Path, client, model.TargetPath).ConfigureAwait(false);
             }
         }
         public async Task<bool> RemoteDelete(ClientServiceParamsInfo arg)
@@ -132,7 +132,7 @@ namespace client.service.ftp.client
     public class RemoteListParamsInfo
     {
         public ulong Id { get; set; }
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
     }
 
     public class RemoteDeleteParamsInfo : RemoteListParamsInfo
@@ -141,6 +141,7 @@ namespace client.service.ftp.client
 
     public class RemoteUploadParamsInfo : RemoteListParamsInfo
     {
+        public string TargetPath { get; set; } = string.Empty;
     }
 
     public class RemoteDownloadParamsInfo : RemoteListParamsInfo
@@ -151,6 +152,6 @@ namespace client.service.ftp.client
         public ulong Id { get; set; }
         public ulong Md5 { get; set; }
     }
-   
-   
+
+
 }
