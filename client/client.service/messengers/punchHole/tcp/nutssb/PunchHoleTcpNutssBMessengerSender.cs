@@ -1,6 +1,7 @@
 ﻿using client.messengers.punchHole;
 using client.messengers.punchHole.tcp;
 using client.messengers.register;
+using client.service.messengers.crypto;
 using common.libs;
 using common.libs.extends;
 using common.server;
@@ -19,14 +20,16 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
         private readonly ITcpServer tcpServer;
         private readonly RegisterStateInfo registerState;
+        private readonly CryptoSwap cryptoSwap;
         private readonly Config config;
 
         public PunchHoleTcpNutssBMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer,
-            RegisterStateInfo registerState, Config config)
+            RegisterStateInfo registerState, CryptoSwap cryptoSwap, Config config)
         {
             this.punchHoleMessengerSender = punchHoleMessengerSender;
             this.tcpServer = tcpServer;
             this.registerState = registerState;
+            this.cryptoSwap = cryptoSwap;
             this.config = config;
         }
 
@@ -214,6 +217,7 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                             if (arg.Data.IsDefault)
                             {
                                 IConnection connection = tcpServer.BindReceive(targetSocket, bufferSize: config.Client.TcpBufferSize);
+                                await CryptoSwap(connection);
                                 await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
                                 {
                                     TunnelName = arg.RawData.TunnelName,
@@ -286,6 +290,16 @@ namespace client.service.messengers.punchHole.tcp.nutssb
                 }
 
             }).ConfigureAwait(false);
+        }
+
+        private async Task CryptoSwap(IConnection connection)
+        {
+            if (config.Client.Encode)
+            {
+                ICrypto crypto = await cryptoSwap.Swap(connection, null);
+                connection.EncodeEnable(crypto);
+                //await cryptoSwap.Test(connection);
+            }
         }
 
         private async Task SendStep2Retry(ulong toid, string tunnelName)

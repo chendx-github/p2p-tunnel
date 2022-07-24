@@ -23,7 +23,7 @@ namespace client.service.messengers.crypto
         {
             MessageResponeInfo publicKeyResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
             {
-                Connection = tcp,
+                Connection = tcp ?? udp,
                 Path = "crypto/key",
                 Data = Helper.EmptyArray
             }).ConfigureAwait(false);
@@ -38,33 +38,34 @@ namespace client.service.messengers.crypto
             byte[] encodedData = encoder.Encode(new CryptoSetParamsInfo { Password = password }.ToBytes());
             encoder.Dispose();
 
-            MessageResponeInfo setResponseTcp = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            if (tcp != null)
             {
-                Connection = tcp,
-                Path = "crypto/set",
-                Data = encodedData
-            }).ConfigureAwait(false);
-            MessageResponeInfo setResponseUdp = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
-            {
-                Connection = udp,
-                Path = "crypto/set",
-                Data = encodedData
-            }).ConfigureAwait(false);
-
-            if (setResponseTcp.Code == MessageResponeCodes.OK && setResponseUdp.Code == MessageResponeCodes.OK)
-            {
-                return cryptoFactory.CreateSymmetric(password);
-            }
-            else
-            {
-                await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
                 {
                     Connection = tcp,
-                    Path = "crypto/clear",
-                    Data = Helper.EmptyArray
+                    Path = "crypto/set",
+                    Data = encodedData
                 }).ConfigureAwait(false);
+                if (setResponse.Code != MessageResponeCodes.OK)
+                {
+                    return null;
+                }
             }
-            return null;
+            if (udp != null)
+            {
+                MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                {
+                    Connection = udp,
+                    Path = "crypto/set",
+                    Data = encodedData
+                }).ConfigureAwait(false);
+                if (setResponse.Code != MessageResponeCodes.OK)
+                {
+                    return null;
+                }
+            }
+
+            return cryptoFactory.CreateSymmetric(password);
         }
 
         public async Task<bool> Test(IConnection connection)

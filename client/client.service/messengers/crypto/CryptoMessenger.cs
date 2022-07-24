@@ -3,6 +3,8 @@ using common.libs;
 using common.libs.extends;
 using common.server;
 using common.server.model;
+using System;
+using System.Text;
 
 namespace client.service.messengers.crypto
 {
@@ -40,6 +42,15 @@ namespace client.service.messengers.crypto
                 client.UdpConnection.EncodeDisable();
                 client.TcpConnection.EncodeDisable();
             }
+            return true;
+        }
+
+        public bool Test(IConnection connection)
+        {
+            CryptoTestParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<CryptoTestParamsInfo>();
+
+            Console.WriteLine($"{connection.ServerType},encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(model.Content).Span)}");
+
             return true;
         }
     }

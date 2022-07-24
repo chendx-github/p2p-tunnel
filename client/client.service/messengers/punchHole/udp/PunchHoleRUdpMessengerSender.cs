@@ -1,14 +1,13 @@
 ﻿using client.messengers.punchHole;
 using client.messengers.punchHole.udp;
 using client.messengers.register;
+using client.service.messengers.crypto;
 using common.libs;
 using common.server;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace client.service.messengers.punchHole.udp
@@ -18,12 +17,16 @@ namespace client.service.messengers.punchHole.udp
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
         private readonly RegisterStateInfo registerState;
         private readonly IUdpServer udpServer;
+        private readonly CryptoSwap cryptoSwap;
+        private readonly Config config;
 
-        public PunchHoleRUdpMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, RegisterStateInfo registerState, IUdpServer udpServer)
+        public PunchHoleRUdpMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, RegisterStateInfo registerState, IUdpServer udpServer, CryptoSwap cryptoSwap, Config config)
         {
             this.punchHoleMessengerSender = punchHoleMessengerSender;
             this.registerState = registerState;
             this.udpServer = udpServer;
+            this.cryptoSwap = cryptoSwap;
+            this.config = config;
         }
 
         private IConnection connection => registerState.TcpConnection;
@@ -87,7 +90,10 @@ namespace client.service.messengers.punchHole.udp
             OnStep2Handler.Push(arg);
             await Task.Run(async () =>
             {
-                connectCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache);
+                if (!connectCache.TryGetValue(arg.RawData.FromId, out ConnectCacheModel cache))
+                {
+                    return;
+                }
 
                 if (arg.Data.IsDefault)
                 {
@@ -128,6 +134,7 @@ namespace client.service.messengers.punchHole.udp
                     }
                     if (connection != null)
                     {
+                        await CryptoSwap(connection);
                         await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
                         {
                             Connection = connection,
@@ -163,6 +170,16 @@ namespace client.service.messengers.punchHole.udp
                     }
                 }
             });
+        }
+
+        private async Task CryptoSwap(IConnection connection)
+        {
+            if (config.Client.Encode)
+            {
+                ICrypto crypto = await cryptoSwap.Swap(null, connection);
+                connection.EncodeEnable(crypto);
+                //await cryptoSwap.Test(connection);
+            }
         }
 
         public SimpleSubPushHandler<OnStep21Params> OnStep21Handler { get; } = new SimpleSubPushHandler<OnStep21Params>();
