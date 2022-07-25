@@ -79,7 +79,7 @@ namespace client.service.ftp.server
             IEnumerable<string> notAccessPaths = paths.Except(accessPaths);
             if (accessPaths.Any())
             {
-                await Upload(currentPath, string.Join(Helper.SeparatorChar, accessPaths), wrap.Client).ConfigureAwait(false);
+                await Upload(currentPath, accessPaths, wrap.Client).ConfigureAwait(false);
             }
             if (notAccessPaths.Any())
             {

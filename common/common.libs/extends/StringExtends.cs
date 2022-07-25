@@ -101,13 +101,5 @@ namespace common.libs.extends
         {
             return Encoding.UTF8.GetBytes(str);
         }
-        public static string GetString(this byte[] bytes, int startindex = 0)
-        {
-            return Encoding.UTF8.GetString(bytes);
-        }
-        public static string GetString(this byte[] bytes, int startindex, int length)
-        {
-            return Encoding.UTF8.GetString(bytes, startindex, length);
-        }
     }
 }

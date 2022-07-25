@@ -15,7 +15,6 @@ namespace common.server
         private NumberSpace requestIdNumberSpace = new NumberSpace(0);
         private WheelTimer<TimeoutState> wheelTimer = new WheelTimer<TimeoutState>();
         private ConcurrentDictionary<ulong, WheelTimerTimeout<TimeoutState>> sends = new ConcurrentDictionary<ulong, WheelTimerTimeout<TimeoutState>>();
-        private SimpleObjectPool<MessageRequestWrap> messageRequestWrapPool = new SimpleObjectPool<MessageRequestWrap>();
         private Memory<byte> sendOnlyPath = "relay/sendonly".GetBytes();
         private Memory<byte> sendReplyPath = "relay/sendreply".GetBytes();
 

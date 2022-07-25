@@ -1,39 +1,13 @@
-﻿using common.libs;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace common.libs.extends
 {
     public static class SocketExtends
     {
-        public static byte[] ReceiveAll(this NetworkStream stream)
-        {
-            List<byte> bytes = new();
-            do
-            {
-                byte[] buffer = new byte[1024];
-                int len = stream.Read(buffer);
-                if (len == 0)
-                {
-                    return Helper.EmptyArray;
-                }
-                if (len < 1024)
-                {
-                    byte[] temp = new byte[len];
-                    Array.Copy(buffer, 0, temp, 0, len);
-                    buffer = temp;
-                }
-                bytes.AddRange(buffer);
-
-            } while (stream.DataAvailable);
-
-            return bytes.ToArray();
-        }
+       
         public static void SafeClose(this Socket socket)
         {
             if (socket != null)
@@ -51,7 +25,6 @@ namespace common.libs.extends
                 }
             }
         }
-
         public static void Reuse(this Socket socket, bool reuse = true)
         {
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, reuse);

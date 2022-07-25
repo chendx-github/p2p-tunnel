@@ -94,6 +94,10 @@ namespace client
         [Key(9)]
         public bool Encode { get; set; } = false;
 
+
+        [Key(10)]
+        public string EncodePassword { get; set; } = string.Empty;
+
         [JsonIgnore, IgnoreMember]
         public IPAddress BindIp
         {
@@ -127,5 +131,7 @@ namespace client
         public int TcpPort { get; set; } = 8000;
         [Key(4)]
         public bool Encode { get; set; } = false;
+        [Key(5)]
+        public string EncodePassword { get; set; } = string.Empty;
     }
 }

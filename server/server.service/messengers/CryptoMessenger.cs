@@ -13,11 +13,13 @@ namespace server.service.messengers
         private readonly IAsymmetricCrypto asymmetricCrypto;
         private readonly ICryptoFactory cryptoFactory;
         private readonly IClientRegisterCaching clientRegisterCache;
-        public CryptoMessenger(IAsymmetricCrypto asymmetricCrypto, ICryptoFactory cryptoFactory, IClientRegisterCaching clientRegisterCache)
+        private readonly Config config;
+        public CryptoMessenger(IAsymmetricCrypto asymmetricCrypto, ICryptoFactory cryptoFactory, IClientRegisterCaching clientRegisterCache, Config config)
         {
             this.asymmetricCrypto = asymmetricCrypto;
             this.cryptoFactory = cryptoFactory;
             this.clientRegisterCache = clientRegisterCache;
+            this.config = config;
         }
 
         public string Key(IConnection connection)
@@ -27,10 +29,23 @@ namespace server.service.messengers
 
         public bool Set(IConnection connection)
         {
-            var memory = asymmetricCrypto.Decode(connection.ReceiveRequestWrap.Memory);
-            CryptoSetParamsInfo model = memory.DeBytes<CryptoSetParamsInfo>();
+            string password;
+            if (connection.ReceiveRequestWrap.Memory.Length > 0)
+            {
+                var memory = asymmetricCrypto.Decode(connection.ReceiveRequestWrap.Memory);
+                CryptoSetParamsInfo model = memory.DeBytes<CryptoSetParamsInfo>();
+                password = model.Password;
+            }
+            else
+            {
+                password = config.EncodePassword;
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return false;
+            }
 
-            ISymmetricCrypto encoder = cryptoFactory.CreateSymmetric(model.Password);
+            ISymmetricCrypto encoder = cryptoFactory.CreateSymmetric(password);
             connection.EncodeEnable(encoder);
             return true;
         }

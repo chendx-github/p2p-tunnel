@@ -81,7 +81,11 @@ namespace client.service.ftp
             return path.ClearDir(currentPath, RootPath);
         }
 
-        protected async Task Upload(string currentPath, string path, ClientInfo client, string targetCurrentPath = "")
+        protected async Task Upload(string currentPath, string paths, ClientInfo client, string targetCurrentPath = "")
+        {
+            await Upload(currentPath, paths.Split(Helper.SeparatorChar), client, targetCurrentPath);
+        }
+        protected async Task Upload(string currentPath, IEnumerable<string> paths, ClientInfo client, string targetCurrentPath = "")
         {
             await Task.Run(async () =>
             {
@@ -94,7 +98,7 @@ namespace client.service.ftp
                     Logger.Instance.Error($" Upload fail,empty target path");
                     return;
                 }
-                foreach (string item in path.Split(Helper.SeparatorChar))
+                foreach (string item in paths)
                 {
                     if (!string.IsNullOrWhiteSpace(item))
                     {

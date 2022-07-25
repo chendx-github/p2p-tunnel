@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-12 13:24:20
+ * @LastEditTime: 2022-07-25 14:08:44
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -82,7 +82,7 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="IP" prop="Ip">
+                            <el-form-item label="IP地址" prop="Ip">
                                 <el-input readonly v-model="registerState.RemoteInfo.Ip"></el-input>
                             </el-form-item>
                         </el-col>
@@ -107,6 +107,38 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
+                <el-form-item label="数据加密">
+                    <el-row>
+                        <el-col :span="3">
+                            <el-form-item label="客户端" prop="ClientEncode">
+                                <el-tooltip class="box-item" effect="dark" content="客户端之间通信使用加密" placement="top-start">
+                                    <el-switch v-model="model.ClientEncode" />
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="9">
+                            <el-form-item label="密钥" prop="ClientEncodePassword">
+                                <el-tooltip class="box-item" effect="dark" content="加密密钥32位，为空则每次加密随机密钥，如果填写，则各客户端都填写" placement="top-start">
+                                    <el-input v-model="model.ClientEncodePassword"></el-input>
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="3">
+                            <el-form-item label="服务器" prop="ServerEncode">
+                                <el-tooltip class="box-item" effect="dark" content="客户端与服务端之间通信使用加密" placement="top-start">
+                                    <el-switch v-model="model.ServerEncode" />
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="9">
+                            <el-form-item label="密钥" prop="ServerEncodePassword">
+                                <el-tooltip class="box-item" effect="dark" content="加密密钥 32位，为空则每次加密随机密钥，使用p2p.snltty.com服务器则必须留空" placement="top-start">
+                                    <el-input v-model="model.ServerEncodePassword"></el-input>
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </el-form-item>
                 <el-form-item label="注册状态">
                     <el-row>
                         <el-col :span="6">
@@ -117,20 +149,6 @@
                         <el-col :span="6">
                             <el-form-item label="TCP" prop="TcpConnected">
                                 <el-switch disabled v-model="registerState.LocalInfo.TcpConnected" />
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="打洞加密" prop="ClientEncode">
-                                <el-tooltip class="box-item" effect="dark" content="客户端之间通信使用加密" placement="top-start">
-                                    <el-switch v-model="model.ClientEncode" />
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="服务加密" prop="ServerEncode">
-                                <el-tooltip class="box-item" effect="dark" content="客户端与服务端之间通信使用加密" placement="top-start">
-                                    <el-switch v-model="model.ServerEncode" />
-                                </el-tooltip>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -167,7 +185,9 @@ export default {
                 UseMac: false,
                 GroupId: '',
                 ClientEncode: false,
+                ClientEncodePassword: "",
                 ServerEncode: false,
+                ServerEncodePassword: "",
             },
             rules: {
                 ClientName: [{ required: true, message: '必填', trigger: 'blur' }],
@@ -199,11 +219,13 @@ export default {
             state.model.AutoRegTimes = registerState.ClientConfig.AutoRegTimes = json.ClientConfig.AutoRegTimes;
             state.model.UseMac = registerState.ClientConfig.UseMac = json.ClientConfig.UseMac;
             state.model.ClientEncode = registerState.ClientConfig.Encode = json.ClientConfig.Encode;
+            state.model.ClientEncodePassword = registerState.ClientConfig.ClientEncodePassword = json.ClientConfig.EncodePassword;
 
             state.model.ServerIp = registerState.ServerConfig.Ip = json.ServerConfig.Ip;
             state.model.ServerUdpPort = registerState.ServerConfig.UdpPort = json.ServerConfig.UdpPort;
             state.model.ServerTcpPort = registerState.ServerConfig.TcpPort = json.ServerConfig.TcpPort;
             state.model.ServerEncode = registerState.ServerConfig.Encode = json.ServerConfig.Encode;
+            state.model.ServerEncodePassword = registerState.ServerConfig.ServerEncodePassword = json.ServerConfig.EncodePassword;
         }).catch((msg) => {
             // ElMessage.error(msg);
         });
@@ -223,13 +245,15 @@ export default {
                         AutoReg: state.model.AutoReg,
                         AutoRegTimes: +state.model.AutoRegTimes,
                         UseMac: state.model.UseMac,
-                        Encode: state.model.ClientEncode
+                        Encode: state.model.ClientEncode,
+                        EncodePassword: state.model.ClientEncodePassword
                     },
                     ServerConfig: {
                         Ip: state.model.ServerIp,
                         UdpPort: +state.model.ServerUdpPort,
                         TcpPort: +state.model.ServerTcpPort,
-                        Encode: state.model.ServerEncode
+                        Encode: state.model.ServerEncode,
+                        EncodePassword: state.model.ServerEncodePassword
                     }
                 };
                 registerState.LocalInfo.IsConnecting = true;

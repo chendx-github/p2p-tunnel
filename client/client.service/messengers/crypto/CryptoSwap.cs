@@ -12,60 +12,75 @@ namespace client.service.messengers.crypto
     {
         private readonly MessengerSender messengerSender;
         private readonly ICryptoFactory cryptoFactory;
+        private readonly Config config;
 
-        public CryptoSwap(MessengerSender messengerSender, ICryptoFactory cryptoFactory)
+        public CryptoSwap(MessengerSender messengerSender, ICryptoFactory cryptoFactory, Config config)
         {
             this.messengerSender = messengerSender;
             this.cryptoFactory = cryptoFactory;
+            this.config = config;
         }
 
-        public async Task<ICrypto> Swap(IConnection tcp, IConnection udp)
+        public async Task<ICrypto> Swap(IConnection tcp, IConnection udp, string password)
         {
-            MessageResponeInfo publicKeyResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            try
             {
-                Connection = tcp ?? udp,
-                Path = "crypto/key",
-                Data = Helper.EmptyArray
-            }).ConfigureAwait(false);
-            if (publicKeyResponse.Code != MessageResponeCodes.OK)
+                byte[] encodedData = Helper.EmptyArray;
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    MessageResponeInfo publicKeyResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    {
+                        Connection = tcp ?? udp,
+                        Path = "crypto/key",
+                        Data = Helper.EmptyArray
+                    }).ConfigureAwait(false);
+                    if (publicKeyResponse.Code != MessageResponeCodes.OK)
+                    {
+                        return null;
+                    }
+
+                    string publicKey = publicKeyResponse.Data.DeBytes<string>();
+                    IAsymmetricCrypto encoder = cryptoFactory.CreateAsymmetric(new RsaKey { PublicKey = publicKey, PrivateKey = string.Empty });
+                    password = StringHelper.RandomPasswordStringMd5();
+                    encodedData = encoder.Encode(new CryptoSetParamsInfo { Password = password }.ToBytes());
+                    encoder.Dispose();
+                }
+
+                ICrypto crypto = cryptoFactory.CreateSymmetric(password);
+                if (tcp != null)
+                {
+                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    {
+                        Connection = tcp,
+                        Path = "crypto/set",
+                        Data = encodedData
+                    }).ConfigureAwait(false);
+                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).DeBytes<bool>() == false)
+                    {
+                        return null;
+                    }
+                }
+                if (udp != null)
+                {
+                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    {
+                        Connection = udp,
+                        Path = "crypto/set",
+                        Data = encodedData
+                    }).ConfigureAwait(false);
+                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).DeBytes<bool>() == false)
+                    {
+                        return null;
+                    }
+                }
+
+                return crypto;
+            }
+            catch (Exception ex)
             {
+                Logger.Instance.Error(ex.Message);
                 return null;
             }
-
-            string publicKey = publicKeyResponse.Data.DeBytes<string>();
-            IAsymmetricCrypto encoder = cryptoFactory.CreateAsymmetric(new RsaKey { PublicKey = publicKey, PrivateKey = String.Empty });
-            string password = StringHelper.RandomPasswordStringMd5();
-            byte[] encodedData = encoder.Encode(new CryptoSetParamsInfo { Password = password }.ToBytes());
-            encoder.Dispose();
-
-            if (tcp != null)
-            {
-                MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
-                {
-                    Connection = tcp,
-                    Path = "crypto/set",
-                    Data = encodedData
-                }).ConfigureAwait(false);
-                if (setResponse.Code != MessageResponeCodes.OK)
-                {
-                    return null;
-                }
-            }
-            if (udp != null)
-            {
-                MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
-                {
-                    Connection = udp,
-                    Path = "crypto/set",
-                    Data = encodedData
-                }).ConfigureAwait(false);
-                if (setResponse.Code != MessageResponeCodes.OK)
-                {
-                    return null;
-                }
-            }
-
-            return cryptoFactory.CreateSymmetric(password);
         }
 
         public async Task<bool> Test(IConnection connection)

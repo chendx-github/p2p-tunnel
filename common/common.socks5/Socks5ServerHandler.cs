@@ -85,7 +85,7 @@ namespace common.socks5
                 if (command == Socks5EnumRequestCommand.Connect)
                 {
                     IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data.Span);
-                    if (!config.LanConnectEnable && NetworkHelper.IsLan(remoteEndPoint))
+                    if (!config.LanConnectEnable && remoteEndPoint.IsLan())
                     {
                         data.Response[0] = (byte)Socks5EnumResponseCommand.NetworkError;
                     }

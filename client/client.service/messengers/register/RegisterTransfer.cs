@@ -67,7 +67,7 @@ namespace client.service.messengers.register
         {
             return await Task.Run(async () =>
             {
-                CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = String.Empty };
+                CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = string.Empty };
                 int interval = 0;
                 for (int i = 0; i < config.Client.AutoRegTimes; i++)
                 {
@@ -89,8 +89,7 @@ namespace client.service.messengers.register
 
                         IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
                         registerState.LocalInfo.IsConnecting = true;
-                        registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
-                        registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort(new List<int> { registerState.LocalInfo.UdpPort });
+                        registerState.LocalInfo.TcpPort = registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
                         registerState.LocalInfo.Mac = string.Empty;
 
                         //绑定udp
@@ -178,10 +177,10 @@ namespace client.service.messengers.register
         }
         private async Task SwapCryptoTcp()
         {
-            ICrypto crypto = await cryptoSwap.Swap(registerState.TcpConnection, registerState.UdpConnection);
+            ICrypto crypto = await cryptoSwap.Swap(registerState.TcpConnection, registerState.UdpConnection, config.Server.EncodePassword);
             if (crypto == null)
             {
-                throw new Exception("注册交换密钥失败");
+                throw new Exception("注册交换密钥失败，如果客户端设置了密钥，则服务器必须设置相同的密钥，如果服务器未设置密钥，则客户端必须留空");
             }
             registerState.TcpConnection.EncodeEnable(crypto);
             registerState.UdpConnection.EncodeEnable(crypto);

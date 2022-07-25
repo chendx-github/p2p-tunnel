@@ -296,9 +296,15 @@ namespace client.service.messengers.punchHole.tcp.nutssb
         {
             if (config.Client.Encode)
             {
-                ICrypto crypto = await cryptoSwap.Swap(connection, null);
-                connection.EncodeEnable(crypto);
-                //await cryptoSwap.Test(connection);
+                ICrypto crypto = await cryptoSwap.Swap(connection, null, config.Client.EncodePassword);
+                if (crypto == null)
+                {
+                    Logger.Instance.Error("tcp打洞交换密钥失败，可能是两端密钥不一致，A如果设置了密钥，则B必须设置相同的密钥，如果B未设置密钥，则A必须留空");
+                }
+                else
+                {
+                    connection.EncodeEnable(crypto);
+                }
             }
         }
 
