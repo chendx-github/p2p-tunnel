@@ -4,7 +4,6 @@ using common.server;
 using MessagePack;
 using System;
 using System.ComponentModel;
-using System.Net;
 
 namespace common.tcpforward
 {
@@ -35,6 +34,8 @@ namespace common.tcpforward
         public Memory<byte> TargetEndpoint { get; set; }
         [Key(5)]
         public Memory<byte> Buffer { get; set; } = Helper.EmptyArray;
+
+        public IConnection Connection { get; set; }
 
         public byte[] ToBytes()
         {

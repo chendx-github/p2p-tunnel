@@ -31,14 +31,14 @@ namespace common.tcpforward
             maxNumberAcceptedClients = new Semaphore(config.NumConnections, config.NumConnections);
         }
 
-        private void OnRequest(SendArg arg)
+        private void OnRequest(TcpForwardInfo arg)
         {
-            ConnectionKey key = new ConnectionKey(arg.Connection.ConnectId, arg.Data.RequestId);
+            ConnectionKey key = new ConnectionKey(arg.Connection.ConnectId, arg.RequestId);
             if (connections.TryGetValue(key, out ConnectUserToken token) && token.TargetSocket != null && token.TargetSocket.Connected)
             {
-                if (arg.Data.Buffer.Length > 0)
+                if (arg.Buffer.Length > 0)
                 {
-                    token.TargetSocket.Send(arg.Data.Buffer.Span);
+                    token.TargetSocket.Send(arg.Buffer.Span);
                 }
                 else
                 {
@@ -51,10 +51,10 @@ namespace common.tcpforward
                 Connect(arg);
             }
         }
-        private void Connect(SendArg arg)
+        private void Connect(TcpForwardInfo arg)
         {
-            IPEndPoint endpoint = NetworkHelper.EndpointFromArray(arg.Data.TargetEndpoint);
-            if (!config.LanConnectEnable && arg.Data.ForwardType == TcpForwardTypes.PROXY && endpoint.IsLan())
+            IPEndPoint endpoint = NetworkHelper.EndpointFromArray(arg.TargetEndpoint);
+            if (!config.LanConnectEnable && arg.ForwardType == TcpForwardTypes.PROXY && endpoint.IsLan())
             {
                 Receive(arg, Helper.EmptyArray, 0, 0);
                 return;
@@ -72,14 +72,14 @@ namespace common.tcpforward
             SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
             saea.RemoteEndPoint = endpoint;
             saea.Completed += IO_Completed;
-            if (arg.Data.Buffer.Length > 0 && arg.Data.ForwardType != TcpForwardTypes.PROXY)
+            if (arg.Buffer.Length > 0 && arg.ForwardType != TcpForwardTypes.PROXY)
             {
-                saea.SetBuffer(arg.Data.Buffer);
+                saea.SetBuffer(arg.Buffer);
             }
-            arg.Data.Buffer = Helper.EmptyArray;
+            arg.Buffer = Helper.EmptyArray;
             saea.UserToken = new ConnectUserToken
             {
-                Key = new ConnectionKey(arg.Connection.ConnectId, arg.Data.RequestId),
+                Key = new ConnectionKey(arg.Connection.ConnectId, arg.RequestId),
                 SendArg = arg
             };
 
@@ -110,7 +110,7 @@ namespace common.tcpforward
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    if (token.SendArg.Data.ForwardType == TcpForwardTypes.PROXY)
+                    if (token.SendArg.ForwardType == TcpForwardTypes.PROXY)
                     {
                         Receive(token, HttpConnectMethodHelper.ConnectSuccessMessage());
                     }
@@ -126,7 +126,7 @@ namespace common.tcpforward
                 }
                 else
                 {
-                    if (token.SendArg.Data.ForwardType == TcpForwardTypes.PROXY)
+                    if (token.SendArg.ForwardType == TcpForwardTypes.PROXY)
                     {
                         Receive(token, HttpConnectMethodHelper.ConnectErrorMessage());
                     }
@@ -189,7 +189,7 @@ namespace common.tcpforward
             connections.TryRemove(token.Key, out _);
         }
 
-        private bool Intercept(SendArg arg, int port)
+        private bool Intercept(TcpForwardInfo arg, int port)
         {
             if (!config.ConnectEnable)
             {
@@ -214,9 +214,9 @@ namespace common.tcpforward
         {
             Receive(token.SendArg, data, offset, length);
         }
-        private void Receive(SendArg arg, byte[] data, int offset, int length)
+        private void Receive(TcpForwardInfo arg, byte[] data, int offset, int length)
         {
-            arg.Data.Buffer = data.AsMemory(offset, length);
+            arg.Buffer = data.AsMemory(offset, length);
             //Logger.Instance.DebugError($"serverType2:{arg.Connection.ServerType},{arg.Data.RequestId},{arg.Connection.ConnectId},RequestId:{arg.Data.RequestId}");
             tcpForwardMessengerSender.SendResponse(arg).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -228,7 +228,7 @@ namespace common.tcpforward
         public Socket TargetSocket { get; set; }
         public ConnectionKey Key { get; set; }
 
-        public SendArg SendArg { get; set; }
+        public TcpForwardInfo SendArg { get; set; }
 
         public byte[] Buffer { get; set; }
 

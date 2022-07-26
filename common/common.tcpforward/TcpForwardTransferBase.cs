@@ -39,12 +39,9 @@ namespace common.tcpforward
             }
             else
             {
+                request.Msg.Connection = request.Connection;
                 request.Connection.ReceiveBytes += (ulong)request.Msg.Buffer.Length;
-                tcpForwardMessengerSender.SendRequest(new SendArg
-                {
-                    Data = request.Msg,
-                    Connection = request.Connection
-                }).ConfigureAwait(false).GetAwaiter().GetResult();
+                tcpForwardMessengerSender.SendRequest(request.Msg).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 

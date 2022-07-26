@@ -34,6 +34,8 @@ namespace client.service
         {
             ThreadPool.SetMinThreads(150, 150);
 
+            LoggerConsole();
+
             Logger.Instance.Info("正在启动...");
 
             ServiceCollection serviceCollection = new ServiceCollection();
@@ -83,6 +85,33 @@ namespace client.service
             {
                 serviceProvider.GetService<IRegisterTransfer>().Register();
             }
+        }
+
+        static void LoggerConsole()
+        {
+            Logger.Instance.OnLogger.Sub((model) =>
+             {
+                  ConsoleColor currentForeColor = Console.ForegroundColor;
+                  switch (model.Type)
+                  {
+                      case LoggerTypes.DEBUG:
+                          Console.ForegroundColor = ConsoleColor.Blue;
+                          break;
+                      case LoggerTypes.INFO:
+                          Console.ForegroundColor = ConsoleColor.White;
+                          break;
+                      case LoggerTypes.WARNING:
+                          Console.ForegroundColor = ConsoleColor.Yellow;
+                          break;
+                      case LoggerTypes.ERROR:
+                          Console.ForegroundColor = ConsoleColor.Red;
+                          break;
+                      default:
+                          break;
+                  }
+                  Console.WriteLine($"[{model.Type.ToString().PadRight(7)}][{model.Time:yyyy-MM-dd HH:mm:ss}]:{model.Content}");
+                  Console.ForegroundColor = currentForeColor;
+              });
         }
     }
 }

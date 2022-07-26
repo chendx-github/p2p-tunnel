@@ -13,29 +13,29 @@ namespace common.tcpforward
             this.messengerSender = messengerSender;
         }
 
-        public SimpleSubPushHandler<SendArg> OnRequestHandler { get; } = new SimpleSubPushHandler<SendArg>();
-        public async Task SendRequest(SendArg arg)
+        public SimpleSubPushHandler<TcpForwardInfo> OnRequestHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
+        public async Task SendRequest(TcpForwardInfo arg)
         {
             await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
             {
                 Path = "TcpForward/Request",
                 Connection = arg.Connection,
-                Data = arg.Data.ToBytes()
+                Data = arg.ToBytes()
             }).ConfigureAwait(false);
         }
-        public void OnRequest(SendArg data)
+        public void OnRequest(TcpForwardInfo data)
         {
             OnRequestHandler.Push(data);
         }
 
         public SimpleSubPushHandler<TcpForwardInfo> OnResponseHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
-        public async Task SendResponse(SendArg arg)
+        public async Task SendResponse(TcpForwardInfo arg)
         {
             await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
             {
                 Path = "TcpForward/Response",
                 Connection = arg.Connection,
-                Data = arg.Data.ToBytes()
+                Data = arg.ToBytes()
             }).ConfigureAwait(false);
         }
         public void OnResponse(TcpForwardInfo data)
@@ -71,10 +71,5 @@ namespace common.tcpforward
                 Data = data
             }).ConfigureAwait(false);
         }
-    }
-    public class SendArg
-    {
-        public IConnection Connection { get; set; }
-        public TcpForwardInfo Data { get; set; }
     }
 }

@@ -29,13 +29,15 @@ namespace server.service.tcpforward
         public void Request(IConnection connection)
         {
             TcpForwardInfo data = new TcpForwardInfo();
+            data.Connection = connection;
             data.DeBytes(connection.ReceiveRequestWrap.Memory);
-            tcpForwardMessengerSender.OnRequest(new SendArg { Connection = connection, Data = data });
+            tcpForwardMessengerSender.OnRequest(data);
         }
 
         public void Response(IConnection connection)
         {
             TcpForwardInfo data = new TcpForwardInfo();
+            data.Connection = connection;
             data.DeBytes(connection.ReceiveRequestWrap.Memory);
             tcpForwardMessengerSender.OnResponse(data);
         }
