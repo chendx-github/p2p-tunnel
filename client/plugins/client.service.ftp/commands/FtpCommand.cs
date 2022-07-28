@@ -33,6 +33,8 @@ namespace client.service.ftp.commands
         FILE_ERROR = 8,
         [Description("当前目录")]
         CURRENT_PATH = 9,
+        [Description("设置当前目录")]
+        CURRENT_PATH_SET = 10,
     }
 
     public interface IFtpCommandBase

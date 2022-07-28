@@ -47,15 +47,21 @@ namespace client.service.ftp.client
                     config.ClientRootPath = config.ClientCurrentPath = GetFolderPath(SpecialFolder.CommonDesktopDirectory);
                 }
             }
-            DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(config.ClientCurrentPath, path));
-            if (dirInfo.FullName.Length < config.ClientRootPath.Length)
+            DirectoryInfo dirInfo;
+            if (Path.IsPathRooted(path))
             {
-                dirInfo = new DirectoryInfo(config.ClientRootPath);
+                dirInfo = new DirectoryInfo(path);
             }
-            config.ClientCurrentPath = dirInfo.FullName;
+            else
+            {
+                dirInfo = new DirectoryInfo(Path.Combine(config.ClientCurrentPath, path));
+                if (dirInfo.FullName.Length < config.ClientRootPath.Length)
+                {
+                    dirInfo = new DirectoryInfo(config.ClientRootPath);
+                }
+            }
 
-
-            return dirInfo.GetDirectories()
+            var files = dirInfo.GetDirectories()
                 .Where(c => (c.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
                 .Select(c => new FileInfo
                 {
@@ -75,6 +81,9 @@ namespace client.service.ftp.client
                 LastAccessTime = c.LastAccessTime,
                 Type = FileType.File,
             }));
+
+            config.ClientCurrentPath = dirInfo.FullName;
+            return files;
         }
         public SpecialFolderInfo GetSpecialFolders()
         {
@@ -152,12 +161,19 @@ namespace client.service.ftp.client
                 {
                     return result.ReadData.DeBytes<FileInfo[]>();
                 }
+                else
+                {
+                    throw new Exception(result.ReadData.DeBytes<string>());
+                }
             }
-            return Array.Empty<FileInfo>();
+            else
+            {
+                throw new Exception(response.Data.DeBytes<string>());
+            }
         }
-        public async Task<bool> Download(string path, ClientInfo client)
+        public async Task<bool> Download(string path, ClientInfo client, string targetCurrentPath = "")
         {
-            var response = await SendReplyTcp(new FtpDownloadCommand { Path = path }, client).ConfigureAwait(false);
+            var response = await SendReplyTcp(new FtpDownloadCommand { Path = path, TargetPath = targetCurrentPath }, client).ConfigureAwait(false);
             return response.Code == MessageResponeCodes.OK;
         }
 

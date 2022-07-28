@@ -6,25 +6,20 @@ using System.Text;
 namespace client.service.ftp.commands
 {
     [MessagePackObject]
-    public class FtpDownloadCommand : IFtpCommandBase
+    public class FtpSetCurrentPathCommand : IFtpCommandBase
     {
         [Key(1)]
-        public FtpCommand Cmd { get; set; } = FtpCommand.DOWNLOAD;
+        public FtpCommand Cmd { get; set; } = FtpCommand.CURRENT_PATH_SET;
 
         [Key(2)]
         public string Path { get; set; }
-
-        [Key(3)]
-        public string TargetPath { get; set; } = string.Empty;
 
         public byte[] ToBytes()
         {
             byte cmdByte = (byte)Cmd;
 
             byte[] path = Path.GetBytes();
-            byte[] targetPath = TargetPath.GetBytes();
             byte[] pathLength = path.Length.ToBytes();
-            byte[] targetPathLength = TargetPath.Length.ToBytes();
 
             var bytes = new byte[
                 1 +
@@ -37,19 +32,12 @@ namespace client.service.ftp.commands
             Array.Copy(pathLength, 0, bytes, index, pathLength.Length);
             index += 4;
 
-            Array.Copy(targetPathLength, 0, bytes, index, targetPathLength.Length);
-            index += 4;
-
             if (path.Length > 0)
             {
                 Array.Copy(path, 0, bytes, index, path.Length);
                 index += path.Length;
             }
-            if (targetPath.Length > 0)
-            {
-                Array.Copy(targetPath, 0, bytes, index, targetPath.Length);
-                index += targetPath.Length;
-            }
+
             return bytes;
         }
 
@@ -61,16 +49,9 @@ namespace client.service.ftp.commands
             int pathLength = bytes.Span.Slice(index).ToInt32();
             index += 4;
 
-            int targetPathLength = bytes.Span.Slice(index).ToInt32();
-            index += 4;
-
             if (pathLength > 0)
             {
                 Path = bytes.Span.Slice(index, pathLength).GetString();
-            }
-            if (targetPathLength > 0)
-            {
-                TargetPath = bytes.Span.Slice(index, targetPathLength).GetString();
             }
         }
     }

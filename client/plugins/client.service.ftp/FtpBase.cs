@@ -91,7 +91,7 @@ namespace client.service.ftp
             {
                 if (string.IsNullOrWhiteSpace(targetCurrentPath))
                 {
-                    targetCurrentPath = await RemoteCurrentPath(client).ConfigureAwait(false);
+                    targetCurrentPath = await GetRemoteCurrentPath(client).ConfigureAwait(false);
                 }
                 if (string.IsNullOrWhiteSpace(targetCurrentPath))
                 {
@@ -352,7 +352,7 @@ namespace client.service.ftp
             MessageResponeInfo resp = await SendReplyTcp(new FtpDelCommand { Path = path }, client).ConfigureAwait(false);
             return FtpResultInfo.FromBytes(resp.Data);
         }
-        public async Task<string> RemoteCurrentPath(ClientInfo client)
+        public async Task<string> GetRemoteCurrentPath(ClientInfo client)
         {
             MessageResponeInfo resp = await SendReplyTcp(new FtpCurrentPathCommand { }, client).ConfigureAwait(false);
             if (resp.Code == MessageResponeCodes.OK)
@@ -361,6 +361,11 @@ namespace client.service.ftp
             }
 
             return string.Empty;
+        }
+        public async Task<FtpResultInfo> SetRemoteCurrentPath(string path, ClientInfo client)
+        {
+            MessageResponeInfo resp = await SendReplyTcp(new FtpSetCurrentPathCommand { Path = path }, client).ConfigureAwait(false);
+            return FtpResultInfo.FromBytes(resp.Data);
         }
 
         protected async Task<bool> SendOnlyTcp(IFtpCommandBase data, ClientInfo client)

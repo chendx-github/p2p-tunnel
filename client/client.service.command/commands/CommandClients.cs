@@ -16,11 +16,12 @@ namespace client.service.command.commands
 
 
             Command list = new Command("list", "客户端列表") { };
-            list.SetHandler(HandlerList);
             clients.Add(list);
+            list.SetHandler(HandlerList);
 
 
             Command connect = new Command("connect", "连接目标客户端") { };
+            clients.Add(connect);
             Argument<int> connectId = new Argument<int>("id", "目标客户端id");
             connect.Add(connectId);
             connect.SetHandler((connectId) =>
@@ -28,10 +29,10 @@ namespace client.service.command.commands
                 JsonNode res = JsonNode.Parse(Request("clients/connect", new { ID = connectId }.ToJson()));
                 PrintRequestState(res);
             }, connectId);
-            clients.Add(connect);
 
 
             Command connectReverse = new Command("connect-reverse", "目标客户端反向连接，让它连我") { };
+            clients.Add(connectReverse);
             Argument<int> connectReverseId = new Argument<int>("id", "目标客户端id");
             connectReverse.Add(connectReverseId);
             connectReverse.SetHandler((connectReverseId) =>
@@ -39,10 +40,10 @@ namespace client.service.command.commands
                 JsonNode res = JsonNode.Parse(Request("clients/connectReverse", new { ID = connectReverseId }.ToJson()));
                 PrintRequestState(res);
             }, connectReverseId);
-            clients.Add(connectReverse);
 
 
             Command offline = new Command("offline", "离线目标客户端") { };
+            clients.Add(offline);
             Argument<int> offlineId = new Argument<int>("id", "目标客户端id");
             offline.Add(offlineId);
             offline.SetHandler((offlineId) =>
@@ -50,10 +51,10 @@ namespace client.service.command.commands
                 JsonNode res = JsonNode.Parse(Request("clients/offline", new { ID = offlineId }.ToJson()));
                 PrintRequestState(res);
             }, offlineId);
-            clients.Add(offline);
 
 
             Command reset = new Command("reset", "重置目标客户端") { };
+            clients.Add(reset);
             Argument<int> resetId = new Argument<int>("id", "目标客户端id");
             reset.Add(resetId);
             reset.SetHandler((resetId) =>
@@ -61,7 +62,29 @@ namespace client.service.command.commands
                 JsonNode res = JsonNode.Parse(Request("clients/reset", new { ID = resetId }.ToJson()));
                 PrintRequestState(res);
             }, resetId);
-            clients.Add(reset);
+
+
+            Command test = new Command("test", "测试数据速率") { };
+            clients.Add(test);
+            Argument<int> testId = new Argument<int>("id", "目标客户端id");
+            Argument<int> testKb = new Argument<int>("kb", description: "包大小KB", getDefaultValue: () => 1);
+            Argument<int> testCount = new Argument<int>("count", description: "包数量", getDefaultValue: () => 10000);
+            test.Add(testId);
+            test.Add(testKb);
+            test.Add(testCount);
+            test.SetHandler((testId, testKb, testCount) =>
+            {
+                JsonNode res = JsonNode.Parse(Request("test/packet", new { Id = testId, KB = testKb, Count = testCount }.ToJson()));
+
+                if (res.Root["Code"].GetValue<int>() == 0)
+                {
+                    var data = res.Root["Content"];
+                    Console.WriteLine($"{data["Ms"].GetValue<long>()}ms,{data["Ticks"].GetValue<long>()}ticks,");
+                }
+
+                PrintRequestState(res);
+            }, testId, testKb, testCount);
+
         }
 
         private void HandlerList()

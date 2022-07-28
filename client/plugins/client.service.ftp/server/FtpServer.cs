@@ -34,10 +34,18 @@ namespace client.service.ftp.server
             LoadPlugins(assemblys, typeof(IFtpCommandServerPlugin));
         }
 
+        public void SetCurrentPath(FtpSetCurrentPathCommand cmd, FtpPluginParamWrap wrap)
+        {
+            if (Path.IsPathRooted(cmd.Path))
+            {
+                SetCurrentPath(cmd.Path, wrap.Client.Id);
+            }
+        }
+
         public FileInfo[] GetFiles(FtpListCommand cmd, FtpPluginParamWrap wrap)
         {
             DirectoryInfo dirInfo = JoinPath(cmd, wrap.Client.Id);
-            return dirInfo.GetDirectories()
+            var files = dirInfo.GetDirectories()
                 .Where(c => (c.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden)
                 .Select(c => new FileInfo
                 {
@@ -58,6 +66,10 @@ namespace client.service.ftp.server
                 LastAccessTime = c.LastAccessTime,
                 Type = FileType.File,
             })).ToArray();
+
+            SetCurrentPath(dirInfo.FullName, wrap.Client.Id);
+
+            return files;
         }
         public List<string> Create(FtpCreateCommand cmd, FtpPluginParamWrap wrap)
         {
@@ -75,11 +87,14 @@ namespace client.service.ftp.server
         {
             string[] paths = cmd.Path.Split(Helper.SeparatorChar);
             string currentPath = GetCurrentPath(wrap.Client.Id);
-            IEnumerable<string> accessPaths = paths.Where(c => Path.Combine(currentPath, c).StartsWith(config.ServerRoot));
+            IEnumerable<string> accessPaths = paths.Where(c =>
+            {
+                return Path.IsPathRooted(c) || Path.Combine(currentPath, c).StartsWith(config.ServerRoot);
+            });
             IEnumerable<string> notAccessPaths = paths.Except(accessPaths);
             if (accessPaths.Any())
             {
-                await Upload(currentPath, accessPaths, wrap.Client).ConfigureAwait(false);
+                await Upload(currentPath, accessPaths, wrap.Client, cmd.TargetPath).ConfigureAwait(false);
             }
             if (notAccessPaths.Any())
             {
@@ -124,7 +139,6 @@ namespace client.service.ftp.server
                 {
                     dirInfo = new DirectoryInfo(RootPath);
                 }
-                SetCurrentPath(dirInfo.FullName, clientId);
                 return dirInfo;
             }
         }

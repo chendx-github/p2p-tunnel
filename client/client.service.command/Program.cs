@@ -23,7 +23,8 @@ namespace client.service.command
             new CommandTcpforward(rootCommand);
             new CommandClients(rootCommand);
             new CommandSocks5(rootCommand);
-            
+            new CommandFtp(rootCommand);
+
             if (args.Length > 0)
             {
                 return await rootCommand.InvokeAsync(args);

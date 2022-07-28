@@ -51,10 +51,11 @@ namespace client.service.ftp
                         }
                         catch (Exception ex)
                         {
-                            Logger.Instance.Error(ex);
+                            Logger.Instance.DebugError(ex);
                             return new FtpResultInfo
                             {
-                                Code = FtpResultInfo.FtpResultCodes.UNKNOW
+                                Code = FtpResultInfo.FtpResultCodes.UNKNOW,
+                                Data = ex.Message
                             }.ToBytes();
                         }
                     }

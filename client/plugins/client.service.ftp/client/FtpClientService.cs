@@ -24,17 +24,39 @@ namespace client.service.ftp.client
         }
         public object LocalList(ClientServiceParamsInfo arg)
         {
-            var list = ftpClient.LocalList(arg.Content);
-            return new
+            try
             {
-                Current = config.ClientCurrentPath,
-                Data = list
-            };
+                var list = ftpClient.LocalList(arg.Content);
+                return new
+                {
+                    Current = config.ClientCurrentPath,
+                    Data = list
+                };
+            }
+            catch (Exception ex)
+            {
+                arg.SetCode(-1, ex.Message);
+                return null;
+            }
         }
         public void SetLocalPath(ClientServiceParamsInfo arg)
         {
             ftpClient.SetCurrentPath(arg.Content);
         }
+        public async Task<bool> SetRemotePath(ClientServiceParamsInfo arg)
+        {
+            RemoteListParamsInfo model = arg.Content.DeJson<RemoteListParamsInfo>();
+            if (clientInfoCaching.Get(model.Id, out ClientInfo client))
+            {
+                var res = await ftpClient.SetRemoteCurrentPath(model.Path, client).ConfigureAwait(false);
+                if (res.Code != FtpResultInfo.FtpResultCodes.OK)
+                {
+                    arg.SetErrorMessage(res.Code.GetDesc((byte)res.Code));
+                }
+            }
+            return false;
+        }
+
         public void LocalCreate(ClientServiceParamsInfo arg)
         {
             ftpClient.Create(arg.Content);
@@ -68,10 +90,17 @@ namespace client.service.ftp.client
         }
         public async Task<FileInfo[]> RemoteList(ClientServiceParamsInfo arg)
         {
-            RemoteListParamsInfo model = arg.Content.DeJson<RemoteListParamsInfo>();
-            if (clientInfoCaching.Get(model.Id, out ClientInfo client))
+            try
             {
-                return await ftpClient.RemoteList(model.Path, client).ConfigureAwait(false);
+                RemoteListParamsInfo model = arg.Content.DeJson<RemoteListParamsInfo>();
+                if (clientInfoCaching.Get(model.Id, out ClientInfo client))
+                {
+                    return await ftpClient.RemoteList(model.Path, client).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                arg.SetCode(-1, ex.Message);
             }
             return Array.Empty<FileInfo>();
         }
@@ -80,7 +109,7 @@ namespace client.service.ftp.client
             RemoteDownloadParamsInfo model = arg.Content.DeJson<RemoteDownloadParamsInfo>();
             if (clientInfoCaching.Get(model.Id, out ClientInfo client))
             {
-                return await ftpClient.Download(model.Path, client).ConfigureAwait(false);
+                return await ftpClient.Download(model.Path, client, model.TargetPath).ConfigureAwait(false);
             }
             return false;
         }
@@ -146,6 +175,7 @@ namespace client.service.ftp.client
 
     public class RemoteDownloadParamsInfo : RemoteListParamsInfo
     {
+        public string TargetPath { get; set; } = string.Empty;
     }
     public class RemoteCancelParamsInfo
     {
