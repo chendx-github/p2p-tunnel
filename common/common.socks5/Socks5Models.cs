@@ -2,6 +2,7 @@
 using common.libs.extends;
 using MessagePack;
 using System;
+using System.Net;
 
 namespace common.socks5
 {
@@ -16,14 +17,37 @@ namespace common.socks5
 
         public byte[] Response { get; set; } = new byte[1];
 
+        public IPEndPoint SourceEP { get; set; }
+
         public byte[] ToBytes()
         {
-            var idBytes = BitConverter.GetBytes(Id);
-            var bytes = new byte[idBytes.Length + Data.Length];
+            byte[] idBytes = BitConverter.GetBytes(Id);
+            int length = idBytes.Length + Data.Length, index = 0;
+            byte[] ipBytes = Helper.EmptyArray;
+            byte[] portBytes = Helper.EmptyArray;
+            if (SourceEP != null)
+            {
+                ipBytes = SourceEP.Address.GetAddressBytes();
+                portBytes = BitConverter.GetBytes(SourceEP.Port);
+                length += 1 + ipBytes.Length + 2;
+            }
 
-            int index = 0;
+            byte[] bytes = new byte[length];
             Array.Copy(idBytes, 0, bytes, index, idBytes.Length);
             index += idBytes.Length;
+
+            bytes[index] = 0;
+            index += 1;
+            if (ipBytes.Length > 0)
+            {
+                bytes[index - 1] = (byte)(ipBytes.Length + 2);
+                Array.Copy(ipBytes, 0, bytes, index, ipBytes.Length);
+                index += ipBytes.Length;
+
+                bytes[index] = portBytes[0];
+                bytes[index + 1] = portBytes[1];
+                index += 2;
+            }
 
             if (Data.Length > 0)
             {
@@ -34,15 +58,31 @@ namespace common.socks5
 
         public void DeBytes(Memory<byte> bytes)
         {
-            Id = bytes.Slice(0, 8).Span.ToUInt64();
+            int index = 0;
+            Id = bytes.Slice(index, 8).Span.ToUInt64();
+            index += 8;
 
-            Data = bytes.Slice(8);
+            byte epLength = bytes.Span[index];
+            if (epLength > 0)
+            {
+                IPAddress ip = new IPAddress(bytes.Span.Slice(index, epLength - 2));
+                index += epLength - 2;
+                SourceEP = new IPEndPoint(ip, BitConverter.ToUInt16(bytes.Span.Slice(index, 2)));
+                index += 2;
+            }
+
+            Data = bytes.Slice(index);
         }
 
         public static (ulong id, Memory<byte> data) Read(Memory<byte> data)
         {
+            int index = 0;
             ulong id = data.Slice(0, 8).Span.ToUInt64();
-            Memory<byte> res = data.Slice(8);
+            index += 8;
+
+            index += data.Span[index];
+
+            Memory<byte> res = data.Slice(index);
             return (id, res);
         }
     }

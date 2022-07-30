@@ -1,9 +1,7 @@
 ﻿using client.messengers.clients;
 using client.messengers.register;
-using common.libs;
 using common.server;
 using common.socks5;
-using System;
 
 namespace client.service.socks5
 {
@@ -45,6 +43,11 @@ namespace client.service.socks5
         {
             GetConnection();
             return socks5MessengerSender.Forward(data, connection);
+        }
+        public bool HndleForwardUdp(Socks5Info data)
+        {
+            GetConnection();
+            return socks5MessengerSender.ForwardUdp(data, connection);
         }
 
         public void Close(ulong id)

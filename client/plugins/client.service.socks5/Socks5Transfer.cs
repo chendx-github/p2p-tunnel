@@ -70,6 +70,7 @@ namespace client.service.socks5
         {
             ProxySystemSetting.Set(url);
         }
+
         public void ClearPac()
         {
             ProxySystemSetting.Clear();

@@ -14,7 +14,6 @@ namespace common.server
         public ulong ConnectId { get; set; }
         public bool Connected { get; }
         public bool Relay { get; set; }
-        public object State { get; set; }
 
         public bool EncodeEnabled { get; }
         public ICrypto Crypto { get; }
@@ -102,7 +101,6 @@ namespace common.server
 
         public virtual void Disponse()
         {
-            State = null;
             Address = null;
             LastTime = 0;
             ReceiveRequestWrap = null;

@@ -18,7 +18,6 @@ namespace common.socks5
         public void Request(IConnection connection)
         {
             Socks5Info socks5Info = new Socks5Info();
-            connection.State = socks5Info;
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleRequest(connection, socks5Info);
         }
@@ -31,7 +30,7 @@ namespace common.socks5
 
         public void Auth(IConnection connection)
         {
-            Socks5Info socks5Info = connection.State as Socks5Info;
+            Socks5Info socks5Info = new Socks5Info();
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleAuth(connection, socks5Info);
         }
@@ -44,7 +43,7 @@ namespace common.socks5
 
         public void Command(IConnection connection)
         {
-            Socks5Info socks5Info = connection.State as Socks5Info;
+            Socks5Info socks5Info = new Socks5Info();
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HandleCommand(connection, socks5Info);
         }
@@ -57,14 +56,26 @@ namespace common.socks5
 
         public void Forward(IConnection connection)
         {
-            Socks5Info socks5Info = connection.State as Socks5Info;
+            Socks5Info socks5Info = new Socks5Info();
             socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
             socks5ServerHandler.HndleForward(connection, socks5Info);
+        }
+        public void ForwardUdp(IConnection connection)
+        {
+            Socks5Info socks5Info = new Socks5Info();
+            socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
+            socks5ServerHandler.HndleForwardUdp(connection, socks5Info);
         }
         public void Response(IConnection connection)
         {
             (ulong id, Memory<byte> data) = Socks5Info.Read(connection.ReceiveRequestWrap.Memory);
             socks5ClientListener.Response(id, data);
+        }
+        public void ResponseUdp(IConnection connection)
+        {
+            Socks5Info socks5Info = new Socks5Info();
+            socks5Info.DeBytes(connection.ReceiveRequestWrap.Memory);
+            socks5ClientListener.ResponseUdp(socks5Info);
         }
     }
 }

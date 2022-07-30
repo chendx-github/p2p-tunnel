@@ -78,11 +78,29 @@ namespace common.socks5
                 Data = data.ToBytes()
             }).Result;
         }
+        public bool ForwardUdp(Socks5Info data, IConnection connection)
+        {
+            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            {
+                Path = "socks5/forwardudp",
+                Connection = connection,
+                Data = data.ToBytes()
+            }).Result;
+        }
         public void Response(Socks5Info data, IConnection connection)
         {
             _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
             {
                 Path = "socks5/response",
+                Connection = connection,
+                Data = data.ToBytes()
+            }).ConfigureAwait(false);
+        }
+        public void ResponseUdp(Socks5Info data, IConnection connection)
+        {
+            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            {
+                Path = "socks5/responseudp",
                 Connection = connection,
                 Data = data.ToBytes()
             }).ConfigureAwait(false);

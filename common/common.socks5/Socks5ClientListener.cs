@@ -11,8 +11,10 @@ namespace common.socks5
     public class Socks5ClientListener
     {
         private Socket socket;
+        private UdpClient udpClient;
         private IPEndPoint endpoint;
         private ConcurrentDictionary<ulong, AsyncUserToken> connections = new();
+
         private readonly NumberSpace numberSpace = new NumberSpace(0);
 
         private readonly ISocks5ClientHandler socks5Handler;
@@ -44,6 +46,13 @@ namespace common.socks5
             acceptEventArg.Completed += IO_Completed;
 
             StartAccept(acceptEventArg);
+
+            udpClient = new UdpClient(localEndPoint);
+            IAsyncResult result = udpClient.BeginReceive(ProcessReceiveUdp, null);
+            if (result.CompletedSynchronously)
+            {
+                ProcessReceiveUdp(result);
+            }
         }
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
@@ -102,7 +111,7 @@ namespace common.socks5
                 SocketFlags = SocketFlags.None,
             };
             token.PoolBuffer = ArrayPool<byte>.Shared.Rent(config.BufferSize);
-            readEventArgs.SetBuffer(token.PoolBuffer,0, config.BufferSize);
+            readEventArgs.SetBuffer(token.PoolBuffer, 0, config.BufferSize);
             readEventArgs.Completed += IO_Completed;
             if (!socket.ReceiveAsync(readEventArgs))
             {
@@ -156,6 +165,27 @@ namespace common.socks5
                 Logger.Instance.DebugError(ex);
             }
         }
+        private void ProcessReceiveUdp(IAsyncResult result)
+        {
+            try
+            {
+                IPEndPoint rep = null;
+                byte[] data = udpClient.EndReceive(result, ref rep);
+
+                Socks5Info info = new Socks5Info { Id = 0, Data = data, SourceEP = rep };
+                socks5Handler.HndleForwardUdp(info);
+
+                result = udpClient.BeginReceive(ProcessReceiveUdp, null);
+                if (result.CompletedSynchronously)
+                {
+                    ProcessReceiveUdp(result);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         private void ExecuteHandle(AsyncUserToken token)
         {
             bool closeFlag = true;
@@ -300,6 +330,10 @@ namespace common.socks5
                 }
             }
         }
+        public void ResponseUdp(Socks5Info info)
+        {
+            udpClient.Send(Socks5Parser.MakeUdpResponse(endpoint, info.Data).Span, info.SourceEP);
+        }
 
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
@@ -320,6 +354,7 @@ namespace common.socks5
         public void Stop()
         {
             socket?.SafeClose();
+            udpClient?.Dispose();
             foreach (var item in connections.Values)
             {
                 item.Clear();
@@ -353,4 +388,5 @@ namespace common.socks5
             DataWrap = null;
         }
     }
+
 }

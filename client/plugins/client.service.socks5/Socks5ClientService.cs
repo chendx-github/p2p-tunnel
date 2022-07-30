@@ -63,6 +63,7 @@ namespace client.service.socks5
         {
             return socks5Transfer.GetPac();
         }
+
         public void SetPac(ClientServiceParamsInfo arg)
         {
             PacSetParamsInfo model = arg.Content.DeJson<PacSetParamsInfo>();

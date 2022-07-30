@@ -8,6 +8,7 @@ namespace common.socks5
         bool HandleAuth(Socks5Info data);
         bool HandleCommand(Socks5Info data);
         bool HndleForward(Socks5Info data);
+        bool HndleForwardUdp(Socks5Info data);
         void Close(ulong id);
 
         void Flush();

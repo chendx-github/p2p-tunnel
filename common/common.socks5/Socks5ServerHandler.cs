@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -14,15 +15,20 @@ namespace common.socks5
     public class Socks5ServerHandler : ISocks5ServerHandler
     {
         private ConcurrentDictionary<ConnectionKey, AsyncServerUserToken> connections = new(new ConnectionKeyComparer());
+        private ConcurrentDictionary<ConnectionKeyUdp, UdpToken> udpConnections = new(new ConnectionKeyUdpComparer());
 
         private readonly Socks5MessengerSender socks5MessengerSender;
         private readonly Config config;
+        private readonly WheelTimer<UdpToken> wheelTimer = new WheelTimer<UdpToken>();
+
         Semaphore maxNumberAcceptedClients;
         public Socks5ServerHandler(Socks5MessengerSender socks5MessengerSender, Config config)
         {
             this.socks5MessengerSender = socks5MessengerSender;
             this.config = config;
             maxNumberAcceptedClients = new Semaphore(config.NumConnections, config.NumConnections);
+
+            TimeoutUdp();
         }
 
         public void HandleRequest(IConnection connection, Socks5Info data)
@@ -38,7 +44,6 @@ namespace common.socks5
             data.Data = data.Response;
             socks5MessengerSender.RequestResponse(data, connection);
         }
-
         public void HandleAuth(IConnection connection, Socks5Info data)
         {
             if (!config.ConnectEnable)
@@ -52,7 +57,6 @@ namespace common.socks5
             data.Data = data.Response;
             socks5MessengerSender.RequestResponse(data, connection);
         }
-
         public void HndleForward(IConnection connection, Socks5Info data)
         {
             if (config.ConnectEnable)
@@ -72,6 +76,74 @@ namespace common.socks5
             }
         }
 
+        public void HndleForwardUdp(IConnection connection, Socks5Info data)
+        {
+            if (config.ConnectEnable)
+            {
+                Memory<byte> temp = data.Data.Slice(3, data.Data.Span.Length - 3);
+                IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(temp);
+                Memory<byte> sendData = Socks5Parser.GetUdpData(temp);
+
+                ConnectionKeyUdp key = new ConnectionKeyUdp(connection.ConnectId, data.SourceEP);
+                if (!udpConnections.TryGetValue(key, out UdpToken token) || !token.TargetSocket.Connected)
+                {
+                    Socket socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                    token = new UdpToken { Connection = connection, Data = data, TargetSocket = socket };
+                    token.PoolBuffer = ArrayPool<byte>.Shared.Rent(65535);
+                    udpConnections.AddOrUpdate(key, token, (a, b) => token);
+
+                    EndPoint tempRemoteEP = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
+                    IAsyncResult result = socket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref tempRemoteEP, ReceiveCallbackUdp, token);
+                    if (result.CompletedSynchronously)
+                    {
+                        ReceiveCallbackUdp(result);
+                    }
+                }
+
+                _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
+            }
+        }
+        private void TimeoutUdp()
+        {
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<UdpToken>
+            {
+                State = null,
+                Callback = (timeout) =>
+                {
+                    long time = DateTimeHelper.GetTimeStamp();
+
+                    var tokens = udpConnections.Where(c => time - c.Value.LastTime > (5 * 60 * 1000));
+                    foreach (var item in tokens)
+                    {
+                        item.Value.Clear();
+                        udpConnections.TryRemove(item.Key, out _);
+                    }
+                }
+            }, 1000, true);
+        }
+        private void ReceiveCallbackUdp(IAsyncResult result)
+        {
+            try
+            {
+                UdpToken token = result.AsyncState as UdpToken;
+
+                EndPoint tempRemoteEP = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
+                int length = token.TargetSocket.EndReceiveFrom(result, ref tempRemoteEP);
+                token.Data.Data = token.PoolBuffer.AsMemory(0, length);
+
+                socks5MessengerSender.ResponseUdp(token.Data, token.Connection);
+
+                result = token.TargetSocket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref tempRemoteEP, ReceiveCallbackUdp, token);
+                if (result.CompletedSynchronously)
+                {
+                    ReceiveCallbackUdp(result);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         public void HandleCommand(IConnection connection, Socks5Info data)
         {
             data.Response[0] = 0xff;
@@ -84,7 +156,7 @@ namespace common.socks5
                 Socks5EnumRequestCommand command = (Socks5EnumRequestCommand)data.Data.Span[1];
                 if (command == Socks5EnumRequestCommand.Connect)
                 {
-                    IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data.Span);
+                    IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data.Slice(3, data.Data.Span.Length - 3));
                     if (!config.LanConnectEnable && remoteEndPoint.IsLan())
                     {
                         data.Response[0] = (byte)Socks5EnumResponseCommand.NetworkError;
@@ -94,11 +166,11 @@ namespace common.socks5
                         Connect(connection, data, remoteEndPoint);
                     }
                 }
-                else if (command == Socks5EnumRequestCommand.Bind)
-                {
-                    data.Response[0] = (byte)Socks5EnumResponseCommand.CommandNotAllow;
-                }
                 else if (command == Socks5EnumRequestCommand.UdpAssociate)
+                {
+                    data.Response[0] = (byte)Socks5EnumResponseCommand.ConnecSuccess;
+                }
+                else if (command == Socks5EnumRequestCommand.Bind)
                 {
                     data.Response[0] = (byte)Socks5EnumResponseCommand.CommandNotAllow;
                 }
@@ -138,7 +210,6 @@ namespace common.socks5
                 TargetProcessConnect(connectEventArgs);
             }
         }
-
         private void Target_IO_Completed(object sender, SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
@@ -202,7 +273,6 @@ namespace common.socks5
                 socks5MessengerSender.CommandResponse(token.Data, token.Connection);
             }
         }
-
         private void BindTargetReceive(AsyncServerUserToken connectToken)
         {
             AsyncServerUserToken token = new AsyncServerUserToken
@@ -322,9 +392,10 @@ namespace common.socks5
             {
                 ArrayPool<byte>.Shared.Return(PoolBuffer);
             }
+            GC.Collect();
+            GC.SuppressFinalize(this);
         }
     }
-
     public class ConnectionKeyComparer : IEqualityComparer<ConnectionKey>
     {
         public bool Equals(ConnectionKey x, ConnectionKey y)
@@ -337,7 +408,6 @@ namespace common.socks5
             return 0;
         }
     }
-
     public readonly struct ConnectionKey
     {
         public readonly ulong RequestId { get; }
@@ -347,6 +417,50 @@ namespace common.socks5
         {
             ConnectId = connectId;
             RequestId = requestId;
+        }
+    }
+
+    public class UdpToken
+    {
+        public IConnection Connection { get; set; }
+        public Socket TargetSocket { get; set; }
+        public Socks5Info Data { get; set; }
+        public byte[] PoolBuffer { get; set; }
+
+        public long LastTime { get; set; } = DateTimeHelper.GetTimeStamp();
+
+        public void Clear()
+        {
+            TargetSocket?.SafeClose();
+            if (PoolBuffer != null && PoolBuffer.Length > 0)
+            {
+                ArrayPool<byte>.Shared.Return(PoolBuffer);
+            }
+            GC.Collect();
+            GC.SuppressFinalize(this);
+        }
+    }
+    public class ConnectionKeyUdpComparer : IEqualityComparer<ConnectionKeyUdp>
+    {
+        public bool Equals(ConnectionKeyUdp x, ConnectionKeyUdp y)
+        {
+            return x.Endpoint.Equals(y.Endpoint) && x.ConnectId == y.ConnectId;
+        }
+
+        public int GetHashCode(ConnectionKeyUdp obj)
+        {
+            return 0;
+        }
+    }
+    public readonly struct ConnectionKeyUdp
+    {
+        public readonly IPEndPoint Endpoint { get; }
+        public readonly ulong ConnectId { get; }
+
+        public ConnectionKeyUdp(ulong connectId, IPEndPoint endpoint)
+        {
+            ConnectId = connectId;
+            Endpoint = endpoint;
         }
     }
 }
