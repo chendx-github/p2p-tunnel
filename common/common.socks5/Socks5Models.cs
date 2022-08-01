@@ -22,14 +22,14 @@ namespace common.socks5
         public byte[] ToBytes()
         {
             byte[] idBytes = BitConverter.GetBytes(Id);
-            int length = idBytes.Length + Data.Length, index = 0;
+            int length = idBytes.Length + Data.Length + 1, index = 0;
             byte[] ipBytes = Helper.EmptyArray;
             byte[] portBytes = Helper.EmptyArray;
             if (SourceEP != null)
             {
                 ipBytes = SourceEP.Address.GetAddressBytes();
                 portBytes = BitConverter.GetBytes(SourceEP.Port);
-                length += 1 + ipBytes.Length + 2;
+                length += ipBytes.Length + 2;
             }
 
             byte[] bytes = new byte[length];
@@ -63,6 +63,7 @@ namespace common.socks5
             index += 8;
 
             byte epLength = bytes.Span[index];
+            index += 1;
             if (epLength > 0)
             {
                 IPAddress ip = new IPAddress(bytes.Span.Slice(index, epLength - 2));
@@ -81,6 +82,7 @@ namespace common.socks5
             index += 8;
 
             index += data.Span[index];
+            index += 1;
 
             Memory<byte> res = data.Slice(index);
             return (id, res);

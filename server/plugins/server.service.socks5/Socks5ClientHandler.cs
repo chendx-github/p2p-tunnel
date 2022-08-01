@@ -27,6 +27,10 @@ namespace server.service.socks5
         {
             return true;
         }
+        public bool HndleForwardUdp(Socks5Info data)
+        {
+            return true;
+        }
 
         public void Close(ulong id)
         {
@@ -34,5 +38,7 @@ namespace server.service.socks5
         public void Flush()
         {
         }
+
+        
     }
 }

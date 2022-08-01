@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-22 14:09:03
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-14 14:02:17
+ * @LastEditTime: 2022-08-01 16:17:49
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.webd:\Desktop\p2p-tunnel\README.md
@@ -43,7 +43,7 @@
 - [x] p2p 打洞、tcp、udp
 - [x] tcp转发(不支持ftp)
 - [x] http代理(支持ftp(被动模式))
-- [x] socks5代理(仅tcp，不实现bind，支持ftp(被动模式))
+- [x] socks5代理(支持tcp，udp，不实现bind，支持ftp(被动模式))
 - [x] 简单易用的客户端web管理页面
 - [x] 方便使用的命令行管理命令
 - [ ] 服务端web管理页面
@@ -78,7 +78,7 @@
 2. common 一些公共的功能
     1. common.libs 一些公共的功能
     2. common.server 服务器
-    3. common.socks5 socks5代理(仅  tcp，不实现bind)
+    3. common.socks5 socks5代理(支持tcp、udp，不实现bind)
     4. common.tcpforward tcp转发公共定义
 3. server
     1. plugins

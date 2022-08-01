@@ -19,6 +19,8 @@ namespace server.service
         {
             Config config = File.ReadAllText("appsettings.json").DeJson<Config>();
 
+            LoggerConsole();
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton((e) => config);
 
@@ -43,6 +45,34 @@ namespace server.service
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
 
             Console.ReadLine();
+        }
+
+
+        static void LoggerConsole()
+        {
+            Logger.Instance.OnLogger.Sub((model) =>
+            {
+                ConsoleColor currentForeColor = Console.ForegroundColor;
+                switch (model.Type)
+                {
+                    case LoggerTypes.DEBUG:
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        break;
+                    case LoggerTypes.INFO:
+                        Console.ForegroundColor = ConsoleColor.White;
+                        break;
+                    case LoggerTypes.WARNING:
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                    case LoggerTypes.ERROR:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine($"[{model.Type.ToString().PadRight(7)}][{model.Time:yyyy-MM-dd HH:mm:ss}]:{model.Content}");
+                Console.ForegroundColor = currentForeColor;
+            });
         }
     }
 }

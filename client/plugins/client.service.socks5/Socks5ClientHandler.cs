@@ -26,7 +26,6 @@ namespace client.service.socks5
             GetConnection();
             return socks5MessengerSender.Request(data, connection);
         }
-
         public bool HandleAuth(Socks5Info data)
         {
             GetConnection();
@@ -38,7 +37,6 @@ namespace client.service.socks5
             GetConnection();
             return socks5MessengerSender.Command(data, connection);
         }
-
         public bool HndleForward(Socks5Info data)
         {
             GetConnection();

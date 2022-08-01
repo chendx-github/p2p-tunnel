@@ -80,27 +80,27 @@ namespace common.socks5
         {
             if (config.ConnectEnable)
             {
-                Memory<byte> temp = data.Data.Slice(3, data.Data.Span.Length - 3);
-                IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(temp);
-                Memory<byte> sendData = Socks5Parser.GetUdpData(temp);
+                IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
+                Memory<byte> sendData = Socks5Parser.GetUdpData(data.Data);
 
                 ConnectionKeyUdp key = new ConnectionKeyUdp(connection.ConnectId, data.SourceEP);
-                if (!udpConnections.TryGetValue(key, out UdpToken token) || !token.TargetSocket.Connected)
+                if (!udpConnections.TryGetValue(key, out UdpToken token))
                 {
                     Socket socket = new Socket(remoteEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                     token = new UdpToken { Connection = connection, Data = data, TargetSocket = socket };
                     token.PoolBuffer = ArrayPool<byte>.Shared.Rent(65535);
                     udpConnections.AddOrUpdate(key, token, (a, b) => token);
 
-                    EndPoint tempRemoteEP = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
-                    IAsyncResult result = socket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref tempRemoteEP, ReceiveCallbackUdp, token);
-                    if (result.CompletedSynchronously)
-                    {
-                        ReceiveCallbackUdp(result);
-                    }
-                }
+                    _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
 
-                _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
+                    IAsyncResult result = socket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref token.TempRemoteEP, ReceiveCallbackUdp, token);
+                }
+                else
+                {
+                    _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
+                }
+                token.Update();
+
             }
         }
         private void TimeoutUdp()
@@ -127,17 +127,15 @@ namespace common.socks5
             {
                 UdpToken token = result.AsyncState as UdpToken;
 
-                EndPoint tempRemoteEP = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
-                int length = token.TargetSocket.EndReceiveFrom(result, ref tempRemoteEP);
-                token.Data.Data = token.PoolBuffer.AsMemory(0, length);
-
-                socks5MessengerSender.ResponseUdp(token.Data, token.Connection);
-
-                result = token.TargetSocket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref tempRemoteEP, ReceiveCallbackUdp, token);
-                if (result.CompletedSynchronously)
+                int length = token.TargetSocket.EndReceiveFrom(result, ref token.TempRemoteEP);
+                if (length > 0)
                 {
-                    ReceiveCallbackUdp(result);
+                    token.Data.Data = token.PoolBuffer.AsMemory(0, length);
+
+                    token.Update();
+                    socks5MessengerSender.ResponseUdp(token.Data, token.Connection);
                 }
+                result = token.TargetSocket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref token.TempRemoteEP, ReceiveCallbackUdp, token);
             }
             catch (Exception)
             {
@@ -156,7 +154,7 @@ namespace common.socks5
                 Socks5EnumRequestCommand command = (Socks5EnumRequestCommand)data.Data.Span[1];
                 if (command == Socks5EnumRequestCommand.Connect)
                 {
-                    IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data.Slice(3, data.Data.Span.Length - 3));
+                    IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
                     if (!config.LanConnectEnable && remoteEndPoint.IsLan())
                     {
                         data.Response[0] = (byte)Socks5EnumResponseCommand.NetworkError;
@@ -428,6 +426,7 @@ namespace common.socks5
         public byte[] PoolBuffer { get; set; }
 
         public long LastTime { get; set; } = DateTimeHelper.GetTimeStamp();
+        public EndPoint TempRemoteEP = new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort);
 
         public void Clear()
         {
@@ -438,6 +437,11 @@ namespace common.socks5
             }
             GC.Collect();
             GC.SuppressFinalize(this);
+        }
+
+        public void Update()
+        {
+            LastTime = DateTimeHelper.GetTimeStamp();
         }
     }
     public class ConnectionKeyUdpComparer : IEqualityComparer<ConnectionKeyUdp>

@@ -2,14 +2,14 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 17:36:30
+ * @LastEditTime: 2022-08-01 13:19:04
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\socks5\Index.vue
 -->
 <template>
     <div class="socks5-wrap">
-        <el-alert class="alert" type="warning" show-icon :closable="false" title="socks5代理，如果服务端开启，则也可以代理到服务端" description="仅实现了tcp，可代理tcp及上层协议，适用于ftp双通道" />
+        <el-alert class="alert" type="warning" show-icon :closable="false" title="socks5代理，如果服务端开启，则也可以代理到服务端" description="适用于ftp双通道" />
         <div class="form">
             <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="80px">
                 <el-form-item label="" label-width="0">
@@ -51,12 +51,16 @@
                         <el-row :gutter="10">
                             <el-col :span="5">
                                 <el-form-item label-width="0" prop="ListenEnable">
-                                    <el-checkbox v-model="state.form.ListenEnable" label="开启端口监听" />
+                                    <el-tooltip class="box-item" effect="dark" content="不勾选表示关闭socks5监听" placement="top-start">
+                                        <el-checkbox v-model="state.form.ListenEnable" label="开启监听" />
+                                    </el-tooltip>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
                                 <el-form-item label-width="0" prop="ConnectEnable">
-                                    <el-checkbox v-model="state.form.ConnectEnable" label="允许被连接" />
+                                    <el-tooltip class="box-item" effect="dark" content="作为目标端时，是否允许被连接" placement="top-start">
+                                        <el-checkbox v-model="state.form.ConnectEnable" label="允许被连接" />
+                                    </el-tooltip>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
@@ -73,17 +77,22 @@
                                     </el-tooltip>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="4">
-                                <el-form-item label-width="0">
-                                    <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
-                                </el-form-item>
-                            </el-col>
                         </el-row>
                     </div>
                 </el-form-item>
                 <el-form-item label-width="0">
+                    <div class="w-100 t-c">
+                        tcp udp地址均为 <strong>127.0.0.1:{{state.form.ListenPort}}</strong>
+                    </div>
+                </el-form-item>
+                <el-form-item label-width="0">
+                    <div class="w-100 t-c">
+                        <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
+                    </div>
+                </el-form-item>
+                <el-form-item label-width="0">
                     <div class="w-100">
-                        <el-input v-model="state.pac" :rows="22" type="textarea" placeholder="写pac内容" resize="none" />
+                        <el-input v-model="state.pac" :rows="16" type="textarea" placeholder="写pac内容" resize="none" />
                     </div>
                 </el-form-item>
             </el-form>

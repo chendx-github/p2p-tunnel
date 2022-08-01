@@ -49,10 +49,6 @@ namespace common.socks5
 
             udpClient = new UdpClient(localEndPoint);
             IAsyncResult result = udpClient.BeginReceive(ProcessReceiveUdp, null);
-            if (result.CompletedSynchronously)
-            {
-                ProcessReceiveUdp(result);
-            }
         }
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
@@ -167,19 +163,15 @@ namespace common.socks5
         }
         private void ProcessReceiveUdp(IAsyncResult result)
         {
+            IPEndPoint rep = null;
             try
             {
-                IPEndPoint rep = null;
                 byte[] data = udpClient.EndReceive(result, ref rep);
 
                 Socks5Info info = new Socks5Info { Id = 0, Data = data, SourceEP = rep };
                 socks5Handler.HndleForwardUdp(info);
 
                 result = udpClient.BeginReceive(ProcessReceiveUdp, null);
-                if (result.CompletedSynchronously)
-                {
-                    ProcessReceiveUdp(result);
-                }
             }
             catch (Exception)
             {
