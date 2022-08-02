@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-09-26 19:43:21
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-30 16:16:05
+ * @LastEditTime: 2022-08-02 16:06:11
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\ftp\Progress.vue
@@ -81,7 +81,6 @@ export default {
             if (info.Downloads.length < state.download.length) {
                 pushListener.push('ftp.progress.download');
             }
-
             state.upload = info.Uploads;
             state.download = info.Downloads;
         }

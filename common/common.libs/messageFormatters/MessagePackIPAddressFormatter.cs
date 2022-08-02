@@ -1,5 +1,6 @@
 ﻿using MessagePack;
 using MessagePack.Formatters;
+using System;
 using System.Net;
 
 namespace common.libs.messageFormatters

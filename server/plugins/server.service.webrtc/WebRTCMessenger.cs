@@ -37,7 +37,7 @@ namespace server.service.manager
                         return await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Content = connection.ReceiveRequestWrap.Memory,
+                            Content = model.ToBytes(),
                             MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);

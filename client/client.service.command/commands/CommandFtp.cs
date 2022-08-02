@@ -143,7 +143,7 @@ namespace client.service.command.commands
                     var uploadTable = new List<List<object>> {
                             new List<object>{ "文件名", "文件大小", "已上传", "速度" }
                         }.Concat(uploads.Where(c => c["State"].GetValue<int>() == (int)UploadStates.Uploading).Select(c => new List<object> {
-                            Path.GetFileName(c["FullName"].ToString()),
+                            c["FileName"].ToString(),
                             SizeFormat(double.Parse(c["TotalLength"].ToString())),
                             SizeFormat(double.Parse(c["IndexLength"].ToString())),
                             SizeFormat(double.Parse(c["Speed"].ToString()))
@@ -153,7 +153,7 @@ namespace client.service.command.commands
                     var downloadTable = new List<List<object>> {
                             new List<object>{ "文件名", "文件大小", "已下载", "速度" }
                         }.Concat(downloads.Where(c => c["State"].GetValue<int>() == (int)UploadStates.Uploading).Select(c => new List<object> {
-                            Path.GetFileName(c["FullName"].ToString()),
+                            c["FileName"].ToString(),
                             SizeFormat(double.Parse(c["TotalLength"].ToString())),
                             SizeFormat(double.Parse(c["IndexLength"].ToString())),
                             SizeFormat(double.Parse(c["Speed"].ToString()))

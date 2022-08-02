@@ -491,7 +491,16 @@ namespace client.service.ftp
         /// <summary>
         /// 本地文件完整路径
         /// </summary>
+        [JsonIgnore]
         public string FullName { get; set; } = string.Empty;
+        public string FileName
+        {
+            get
+            {
+                return Path.GetFileName(FullName);
+            }
+        }
+
         public long Speed { get; set; } = 0;
         public UploadStates State { get; set; } = UploadStates.Wait;
 

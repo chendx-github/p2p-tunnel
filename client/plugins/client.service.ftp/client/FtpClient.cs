@@ -173,6 +173,10 @@ namespace client.service.ftp.client
         }
         public async Task<bool> Download(string path, ClientInfo client, string targetCurrentPath = "")
         {
+            if (string.IsNullOrWhiteSpace(targetCurrentPath))
+            {
+                targetCurrentPath = config.ClientCurrentPath;
+            }
             var response = await SendReplyTcp(new FtpDownloadCommand { Path = path, TargetPath = targetCurrentPath }, client).ConfigureAwait(false);
             return response.Code == MessageResponeCodes.OK;
         }

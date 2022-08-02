@@ -1,6 +1,4 @@
 ﻿using client.messengers.clients;
-using client.messengers.punchHole.tcp;
-using client.messengers.register;
 using client.service.ftp.commands;
 using common.libs;
 using Microsoft.Extensions.DependencyInjection;
