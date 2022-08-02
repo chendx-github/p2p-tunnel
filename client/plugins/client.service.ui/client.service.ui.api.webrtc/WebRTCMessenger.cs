@@ -16,7 +16,8 @@ namespace client.service.ui.api.webrtc
 
         public bool Execute(IConnection connection)
         {
-            WebRTCConnectionInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<WebRTCConnectionInfo>();
+            WebRTCConnectionInfo model = new WebRTCConnectionInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             clientServer.Notify(new ClientServiceResponseInfo
             {

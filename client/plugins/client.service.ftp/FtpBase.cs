@@ -357,7 +357,7 @@ namespace client.service.ftp
             MessageResponeInfo resp = await SendReplyTcp(new FtpCurrentPathCommand { }, client).ConfigureAwait(false);
             if (resp.Code == MessageResponeCodes.OK)
             {
-                return FtpResultInfo.FromBytes(resp.Data).ReadData.DeBytes<string>();
+                return FtpResultInfo.FromBytes(resp.Data).ReadData.Span.GetString();
             }
 
             return string.Empty;
@@ -378,18 +378,18 @@ namespace client.service.ftp
         }
         protected async Task<bool> SendOnlyTcp(byte[] data, IConnection connection)
         {
-            return await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return await messengerSender.SendOnly(new MessageRequestWrap
             {
-                Data = data,
+                Content = data,
                 Path = SocketPath,
                 Connection = connection
             }).ConfigureAwait(false);
         }
         protected async Task<MessageResponeInfo> SendReplyTcp(IFtpCommandBase data, ClientInfo client)
         {
-            return await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            return await messengerSender.SendReply(new MessageRequestWrap
             {
-                Data = data.ToBytes(),
+                Content = data.ToBytes(),
                 Path = SocketPath,
                 Connection = SelectConnection(client)
             }).ConfigureAwait(false);
@@ -618,17 +618,11 @@ namespace client.service.ftp
         public ClientInfo Client { get; set; }
     }
 
-    [MessagePackObject]
     public class FtpResultInfo
     {
-        [Key(1)]
         public FtpResultCodes Code { get; set; } = FtpResultCodes.OK;
 
-        /// <summary>
-        /// 写数据
-        /// </summary>
-        [Key(2)]
-        public object Data { get; set; } = Helper.EmptyArray;
+        public byte[] Data { get; set; } = Helper.EmptyArray;
 
         /// <summary>
         /// 读数据
@@ -651,11 +645,9 @@ namespace client.service.ftp
 
         public byte[] ToBytes()
         {
-            byte[] dataBytes = Data is byte[]? Data as byte[] : Data.ToBytes();
-
-            byte[] result = new byte[1 + dataBytes.Length];
+            byte[] result = new byte[1 + Data.Length];
             result[0] = (byte)Code;
-            Array.Copy(dataBytes, 0, result, 1, dataBytes.Length);
+            Array.Copy(Data, 0, result, 1, Data.Length);
 
             return result;
         }

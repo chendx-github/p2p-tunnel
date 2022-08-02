@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace common.libs.extends
 {
@@ -12,29 +8,9 @@ namespace common.libs.extends
         {
             return BitConverter.GetBytes(num);
         }
-
         public static byte[] ToBytes(this ulong num)
         {
             return BitConverter.GetBytes(num);
-        }
-
-        public static byte[] ToBytes(this int num)
-        {
-            return BitConverter.GetBytes(num);
-        }
-
-        public static byte[] ToBytes(this short num)
-        {
-            return BitConverter.GetBytes(num);
-        }
-
-        public static short ToInt16(this byte[] bytes, int startindex = 0)
-        {
-            return BitConverter.ToInt16(bytes, startindex);
-        }
-        public static int ToInt32(this byte[] bytes, int startindex = 0)
-        {
-            return BitConverter.ToInt32(bytes, startindex);
         }
         public static long ToInt64(this byte[] bytes, int startindex = 0)
         {
@@ -44,5 +20,88 @@ namespace common.libs.extends
         {
             return BitConverter.ToUInt64(bytes, startindex);
         }
+        public static long ToInt64(this Span<byte> span)
+        {
+            return BitConverter.ToInt64(span);
+        }
+        public static ulong ToUInt64(this Span<byte> span)
+        {
+            return BitConverter.ToUInt64(span);
+        }
+        public static long ToInt64(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToInt64(span);
+        }
+        public static ulong ToUInt64(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToUInt64(span);
+        }
+
+        public static byte[] ToBytes(this int num)
+        {
+            return BitConverter.GetBytes(num);
+        }
+        public static byte[] ToBytes(this uint num)
+        {
+            return BitConverter.GetBytes(num);
+        }
+        public static int ToInt32(this byte[] bytes, int startindex = 0)
+        {
+            return BitConverter.ToInt32(bytes, startindex);
+        }
+        public static uint ToUInt32(this byte[] bytes, int startindex = 0)
+        {
+            return BitConverter.ToUInt32(bytes, startindex);
+        }
+        public static int ToInt32(this Span<byte> span)
+        {
+            return BitConverter.ToInt32(span);
+        }
+        public static uint ToUInt32(this Span<byte> span)
+        {
+            return BitConverter.ToUInt32(span);
+        }
+        public static int ToInt32(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToInt32(span);
+        }
+        public static uint ToUInt32(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToUInt32(span);
+        }
+
+        public static byte[] ToBytes(this short num)
+        {
+            return BitConverter.GetBytes(num);
+        }
+        public static byte[] ToBytes(this ushort num)
+        {
+            return BitConverter.GetBytes(num);
+        }
+        public static short ToInt16(this byte[] bytes, int startindex = 0)
+        {
+            return BitConverter.ToInt16(bytes, startindex);
+        }
+        public static ushort ToUInt16(this byte[] bytes, int startindex = 0)
+        {
+            return BitConverter.ToUInt16(bytes, startindex);
+        }
+        public static short ToInt16(this Span<byte> span)
+        {
+            return BitConverter.ToInt16(span);
+        }
+        public static ushort ToUInt16(this Span<byte> span)
+        {
+            return BitConverter.ToUInt16(span);
+        }
+        public static short ToInt16(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToInt16(span);
+        }
+        public static ushort ToUInt16(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToUInt16(span);
+        }
+
     }
 }

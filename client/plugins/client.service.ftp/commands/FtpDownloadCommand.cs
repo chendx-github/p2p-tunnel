@@ -5,24 +5,20 @@ using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpDownloadCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.DOWNLOAD;
 
-        [Key(2)]
         public string Path { get; set; }
 
-        [Key(3)]
         public string TargetPath { get; set; } = string.Empty;
 
         public byte[] ToBytes()
         {
             byte cmdByte = (byte)Cmd;
 
-            byte[] path = Path.GetBytes();
-            byte[] targetPath = TargetPath.GetBytes();
+            byte[] path = Path.ToBytes();
+            byte[] targetPath = TargetPath.ToBytes();
             byte[] pathLength = path.Length.ToBytes();
             byte[] targetPathLength = TargetPath.Length.ToBytes();
 

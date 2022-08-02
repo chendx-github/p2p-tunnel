@@ -160,7 +160,8 @@ namespace server.service.messengers.register
                 return new TunnelRegisterResultInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.VERIFY };
             }
 
-            TunnelRegisterParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<TunnelRegisterParamsInfo>();
+            TunnelRegisterParamsInfo model = new TunnelRegisterParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             TunnelRegisterCacheInfo cache = new TunnelRegisterCacheInfo
             {

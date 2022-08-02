@@ -1,20 +1,12 @@
-﻿using Fleck;
-using MessagePack;
-
-namespace client.service.ui.api.clientServer
+﻿namespace client.service.ui.api.clientServer
 {
     public interface IClientService { }
 
-    [MessagePackObject]
     public class ClientServiceResponseInfo
     {
-        [Key(1)]
         public string Path { get; set; } = string.Empty;
-        [Key(2)]
         public long RequestId { get; set; } = 0;
-        [Key(3)]
         public int Code { get; set; } = 0;
-        [Key(4)]
         public object Content { get; set; } = string.Empty;
     }
 
@@ -27,8 +19,6 @@ namespace client.service.ui.api.clientServer
 
     public class ClientServiceParamsInfo
     {
-        //public IWebSocketConnection Connection { get; init; }
-
         public long RequestId { get; set; } = 0;
         public string Content { get; set; } = string.Empty;
 

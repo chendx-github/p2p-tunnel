@@ -119,10 +119,10 @@ namespace server.service
                     }.ToBytes();
                     foreach (ClientsClientInfo client in clients)
                     {
-                        await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+                        await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = client.TcpConnection,
-                            Data = bytes,
+                            Content = bytes,
                             Path = "clients/Execute"
                         }).ConfigureAwait(false);
                     }

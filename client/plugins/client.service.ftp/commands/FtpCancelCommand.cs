@@ -1,17 +1,12 @@
 ﻿using common.libs.extends;
-using MessagePack;
 using System;
-using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpCancelCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.FILE_CANCEL;
 
-        [Key(2)]
         public ulong Md5 { get; set; }
 
         public byte[] ToBytes()
@@ -37,13 +32,10 @@ namespace client.service.ftp.commands
         }
     }
 
-    [MessagePackObject]
     public class FtpCanceledCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.FILE_CANCELED;
 
-        [Key(2)]
         public ulong Md5 { get; set; }
 
         public byte[] ToBytes()

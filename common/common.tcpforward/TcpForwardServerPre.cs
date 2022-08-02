@@ -253,11 +253,12 @@ namespace common.tcpforward
         {
             if (ClientCacheInfo.Get(model.RequestId, out ForwardAsyncUserToken token))
             {
-                if (model.Buffer.Span.Length > 0)
+                var span = model.Buffer.Span;
+                if (span.Length > 0)
                 {
                     try
                     {
-                        token.SourceSocket.Send(model.Buffer.Span, SocketFlags.None);
+                        token.SourceSocket.Send(span, SocketFlags.None);
                     }
                     catch (Exception)
                     {

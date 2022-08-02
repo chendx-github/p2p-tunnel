@@ -1,4 +1,5 @@
 ﻿using client.service.ftp.commands;
+using common.libs.extends;
 using System.Threading.Tasks;
 
 namespace client.service.ftp.client.plugin
@@ -17,7 +18,7 @@ namespace client.service.ftp.client.plugin
         {
             return await Task.FromResult(new FtpResultInfo
             {
-                Data = ftpClient.GetCurrentPath()
+                Data = ftpClient.GetCurrentPath().ToBytes()
             }).ConfigureAwait(false);
         }
     }

@@ -42,33 +42,33 @@ namespace common.socks5
             return (username, password);
         }
 
-        public static IPEndPoint GetRemoteEndPoint(Memory<byte> span)
+        public static IPEndPoint GetRemoteEndPoint(Memory<byte> data)
         {
             //VERSION COMMAND RSV ATYPE  DST.ADDR  DST.PORT
             //去掉 VERSION COMMAND RSV
-            span = span.Slice(3);
+           var span = data.Span.Slice(3);
 
             IPAddress ip = null;
             int index = 0;
-            switch ((Socks5EnumAddressType)span.Span[0])
+            switch ((Socks5EnumAddressType)span[0])
             {
                 case Socks5EnumAddressType.IPV4:
-                    ip = new IPAddress(span.Span.Slice(1, 4));
+                    ip = new IPAddress(span.Slice(1, 4));
                     index = 1 + 4;
                     break;
                 case Socks5EnumAddressType.IPV6:
-                    ip = new IPAddress(span.Span.Slice(1, 16));
+                    ip = new IPAddress(span.Slice(1, 16));
                     index = 1 + 16;
                     break;
                 case Socks5EnumAddressType.Domain:
-                    ip = NetworkHelper.GetDomainIp(Encoding.UTF8.GetString(span.Span.Slice(2, span.Span[1])));
-                    index = 2 + span.Span[1];
+                    ip = NetworkHelper.GetDomainIp(Encoding.UTF8.GetString(span.Slice(2, span[1])));
+                    index = 2 + span[1];
                     break;
 
                 default:
                     break;
             }
-            ushort int16Port = BitConverter.ToUInt16(span.Span.Slice(index, 2));
+            ushort int16Port = span.Slice(index, 2).ToUInt16();
             int port = BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(int16Port) : int16Port;
 
             return new IPEndPoint(ip, port);
@@ -92,7 +92,7 @@ namespace common.socks5
             //VER REP  RSV ATYPE BND.ADDR BND.PORT
 
             byte[] ipaddress = remoteEndPoint.Address.GetAddressBytes();
-            byte[] port = BitConverter.GetBytes(remoteEndPoint.Port);
+            byte[] port = remoteEndPoint.Port.ToBytes();
 
             byte[] res = new byte[6 + ipaddress.Length];
 
@@ -115,7 +115,7 @@ namespace common.socks5
             //RSV占俩字节
 
             byte[] ipaddress = remoteEndPoint.Address.GetAddressBytes();
-            byte[] port = BitConverter.GetBytes(remoteEndPoint.Port);
+            byte[] port = remoteEndPoint.Port.ToBytes();
             byte[] res = new byte[4 + ipaddress.Length + 2 + data.Length];
 
             res[0] = 0;

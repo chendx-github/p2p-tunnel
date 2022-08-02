@@ -1,18 +1,14 @@
 ﻿using common.libs;
 using common.libs.extends;
-using MessagePack;
 using System;
 using System.Net;
 
 namespace common.socks5
 {
-    [MessagePackObject]
     public class Socks5Info
     {
-        [Key(1)]
         public ulong Id { get; set; } = 0;
 
-        [Key(2)]
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
 
         public byte[] Response { get; set; } = new byte[1];
@@ -21,14 +17,14 @@ namespace common.socks5
 
         public byte[] ToBytes()
         {
-            byte[] idBytes = BitConverter.GetBytes(Id);
+            byte[] idBytes = Id.ToBytes();
             int length = idBytes.Length + Data.Length + 1, index = 0;
             byte[] ipBytes = Helper.EmptyArray;
             byte[] portBytes = Helper.EmptyArray;
             if (SourceEP != null)
             {
                 ipBytes = SourceEP.Address.GetAddressBytes();
-                portBytes = BitConverter.GetBytes(SourceEP.Port);
+                portBytes = SourceEP.Port.ToBytes();
                 length += ipBytes.Length + 2;
             }
 
@@ -58,17 +54,18 @@ namespace common.socks5
 
         public void DeBytes(Memory<byte> bytes)
         {
+            var span = bytes.Span;
             int index = 0;
-            Id = bytes.Slice(index, 8).Span.ToUInt64();
+            Id = span.Slice(index, 8).ToUInt64();
             index += 8;
 
-            byte epLength = bytes.Span[index];
+            byte epLength = span[index];
             index += 1;
             if (epLength > 0)
             {
-                IPAddress ip = new IPAddress(bytes.Span.Slice(index, epLength - 2));
+                IPAddress ip = new IPAddress(span.Slice(index, epLength - 2));
                 index += epLength - 2;
-                SourceEP = new IPEndPoint(ip, BitConverter.ToUInt16(bytes.Span.Slice(index, 2)));
+                SourceEP = new IPEndPoint(ip, span.Slice(index, 2).ToUInt16());
                 index += 2;
             }
 

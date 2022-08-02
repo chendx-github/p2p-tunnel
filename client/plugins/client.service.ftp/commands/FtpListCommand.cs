@@ -5,19 +5,16 @@ using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpListCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.LIST;
-        [Key(2)]
         public string Path { get; set; }
 
         public byte[] ToBytes()
         {
             byte cmdByte = (byte)Cmd;
 
-            byte[] path = Path.GetBytes();
+            byte[] path = Path.ToBytes();
             byte[] pathLength = path.Length.ToBytes();
 
             var bytes = new byte[

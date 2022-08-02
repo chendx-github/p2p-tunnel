@@ -59,11 +59,11 @@ namespace client.service.messengers.punchHole
         public async Task Send<T>(SendPunchHoleArg<T> arg) where T : IPunchHoleStepInfo
         {
             IPunchHoleStepInfo msg = arg.Data;
-            await messengerSender.SendOnly(new MessageRequestParamsInfo<PunchHoleParamsInfo>
+            await messengerSender.SendOnly(new MessageRequestWrap
             {
                 Connection = arg.Connection,
                 Path = "punchhole/Execute",
-                Data = new PunchHoleParamsInfo
+                Content = new PunchHoleParamsInfo
                 {
                     Data = arg.Data.ToBytes(),
                     PunchForwardType = msg.ForwardType,
@@ -73,7 +73,7 @@ namespace client.service.messengers.punchHole
                     ToId = arg.ToId,
                     TunnelName = arg.TunnelName,
                     GuessPort = arg.GuessPort
-                }
+                }.ToBytes()
             }).ConfigureAwait(false);
         }
         public async Task<int> GetGuessPort(ServerType serverType)

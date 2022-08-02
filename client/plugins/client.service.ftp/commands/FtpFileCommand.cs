@@ -5,16 +5,11 @@ using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpFileCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; } = FtpCommand.FILE;
-        [Key(2)]
         public long Size { get; set; }
-        [Key(3)]
         public ulong Md5 { get; set; }
-        [Key(4)]
         public string FullName { get; set; }
 
         [IgnoreMember]
@@ -31,7 +26,7 @@ namespace client.service.ftp.commands
 
             byte[] md5Byte = Md5.ToBytes();
 
-            byte[] name = FullName.GetBytes();
+            byte[] name = FullName.ToBytes();
             byte[] nameLength = name.Length.ToBytes();
 
             MetaData = new byte[
@@ -82,12 +77,9 @@ namespace client.service.ftp.commands
 
     }
 
-    [MessagePackObject]
     public class FtpFileEndCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.FILE_END;
-        [Key(2)]
         public ulong Md5 { get; set; }
 
         public byte[] ToBytes()
@@ -113,14 +105,10 @@ namespace client.service.ftp.commands
         }
     }
 
-    [MessagePackObject]
     public class FtpFileErrorCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.FILE_ERROR;
-        [Key(2)]
         public ulong Md5 { get; set; }
-        [Key(3)]
         public string Msg { get; set; }
 
         public byte[] ToBytes()
@@ -128,7 +116,7 @@ namespace client.service.ftp.commands
             byte cmdByte = (byte)Cmd;
             byte[] md5Byte = Md5.ToBytes();
 
-            byte[] msg = Msg.GetBytes();
+            byte[] msg = Msg.ToBytes();
             byte[] msgLength = msg.Length.ToBytes();
 
             var bytes = new byte[

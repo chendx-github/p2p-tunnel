@@ -18,7 +18,7 @@ namespace common.libs.extends
 
         public static string Md5(this string input)
         {
-            MD5 md5Hasher =  MD5.Create();
+            MD5 md5Hasher = MD5.Create();
             byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(input));
             StringBuilder sBuilder = new();
             for (int i = 0; i < data.Length; i++)
@@ -97,9 +97,26 @@ namespace common.libs.extends
             return Array.ConvertAll(input.Split(Helper.SeparatorChar), c => int.Parse(c));
         }
 
-        public static byte[] GetBytes(this string str)
+        public static byte[] ToBytes(this string str)
         {
             return Encoding.UTF8.GetBytes(str);
         }
+        public static string GetString(this Span<byte> span)
+        {
+            return Encoding.UTF8.GetString(span);
+        }
+        public static string GetString(this ReadOnlySpan<byte> span)
+        {
+            return Encoding.UTF8.GetString(span);
+        }
+        public static string GetString(this Memory<byte> span)
+        {
+            return Encoding.UTF8.GetString(span.Span);
+        }
+        public static string GetString(this ReadOnlyMemory<byte> span)
+        {
+            return Encoding.UTF8.GetString(span.Span);
+        }
+
     }
 }

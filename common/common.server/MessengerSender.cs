@@ -15,8 +15,8 @@ namespace common.server
         private NumberSpace requestIdNumberSpace = new NumberSpace(0);
         private WheelTimer<TimeoutState> wheelTimer = new WheelTimer<TimeoutState>();
         private ConcurrentDictionary<ulong, WheelTimerTimeout<TimeoutState>> sends = new ConcurrentDictionary<ulong, WheelTimerTimeout<TimeoutState>>();
-        private Memory<byte> sendOnlyPath = "relay/sendonly".GetBytes();
-        private Memory<byte> sendReplyPath = "relay/sendreply".GetBytes();
+        private Memory<byte> sendOnlyPath = "relay/sendonly".ToBytes();
+        private Memory<byte> sendReplyPath = "relay/sendreply".ToBytes();
 
         public MessengerSender()
         {
@@ -28,7 +28,7 @@ namespace common.server
         /// <typeparam name="T"></typeparam>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public async Task<MessageResponeInfo> SendReply<T>(MessageRequestParamsInfo<T> msg)
+        public async Task<MessageResponeInfo> SendReply(MessageRequestWrap msg)
         {
             if (msg.RequestId == 0)
             {
@@ -49,7 +49,7 @@ namespace common.server
         /// <typeparam name="T"></typeparam>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public async Task<bool> SendOnly<T>(MessageRequestParamsInfo<T> msg)
+        public async Task<bool> SendOnly(MessageRequestWrap msg)
         {
             try
             {
@@ -63,33 +63,24 @@ namespace common.server
                     return false;
                 }
 
-                MessageRequestWrap wrap = new MessageRequestWrap();
-                wrap.RequestId = msg.RequestId;
-
                 if (msg.Connection.Relay)
                 {
-                    wrap.Content = new RelayParamsInfo
+                    msg.Content = new RelayParamsInfo
                     {
-                        Data = msg.Data.ToBytes(),
-                        Path = wrap.Path,
+                        Data = msg.Content,
+                        Path = msg.MemoryPath,
                         ToId = msg.Connection.ConnectId
                     }.ToBytes();
-                    wrap.Path = reply ? sendReplyPath : sendOnlyPath;
-                }
-                else
-                {
-                    wrap.Path = msg.MemoryPath;
-                    wrap.Content = msg.Data.ToBytes();
+                    msg.MemoryPath = reply ? sendReplyPath : sendOnlyPath;
                 }
                 if (msg.Connection.EncodeEnabled)
                 {
-                    wrap.Content = msg.Connection.Crypto.Encode(wrap.Content);
+                    msg.Content = msg.Connection.Crypto.Encode(msg.Content);
                 }
 
-                (byte[] bytes, int length) = wrap.ToArray(msg.Connection.ServerType, true);
+                byte[] bytes = msg.ToArray(msg.Connection.ServerType, out int length, true);
                 bool res = await msg.Connection.Send(bytes, length).ConfigureAwait(false);
-                wrap.Return(bytes);
-                // wrap.Reset();
+                msg.Return(bytes);
 
                 if (res & msg.Connection.ServerType == ServerType.UDP)
                 {
@@ -108,24 +99,19 @@ namespace common.server
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public async ValueTask ReplyOnly(MessageResponseParamsInfo msg)
+        public async ValueTask ReplyOnly(MessageResponseWrap msg)
         {
             try
             {
-                MessageResponseWrap wrap = new MessageResponseWrap
-                {
-                    RequestId = msg.RequestId,
-                    Code = msg.Code,
-                    Content = msg.Data
-                };
+
                 if (msg.Connection.EncodeEnabled)
                 {
-                    wrap.Content = msg.Connection.Crypto.Encode(wrap.Content);
+                    msg.Content = msg.Connection.Crypto.Encode(msg.Content);
                 }
 
-                (byte[] bytes, int length) = wrap.ToArray(msg.Connection.ServerType, true);
+                (byte[] bytes, int length) = msg.ToArray(msg.Connection.ServerType, true);
                 bool res = await msg.Connection.Send(bytes, length).ConfigureAwait(false);
-                wrap.Return(bytes);
+                msg.Return(bytes);
                 //wrap.Reset();
 
                 if (res & msg.Connection.ServerType == ServerType.UDP)
@@ -147,7 +133,7 @@ namespace common.server
             if (sends.TryRemove(wrap.RequestId, out WheelTimerTimeout<TimeoutState> timeout))
             {
                 timeout.Cancel();
-                timeout.Task.State.Tcs.SetResult(new MessageResponeInfo { Code = wrap.Code, Data = wrap.Memory });
+                timeout.Task.State.Tcs.SetResult(new MessageResponeInfo { Code = wrap.Code, Data = wrap.Content });
             }
         }
 

@@ -3,20 +3,30 @@ using common.libs.extends;
 using System;
 using System.Buffers;
 using System.ComponentModel;
-using System.Text;
 
 namespace common.server.model
 {
     public class MessageRequestWrap
     {
-        public Memory<byte> Path { get; set; } = Memory<byte>.Empty;
+        public IConnection Connection { get; set; }
+        public int Timeout { get; set; } = 15000;
+
+
+        public string Path
+        {
+            set
+            {
+                MemoryPath = value.ToLower().ToBytes();
+            }
+        }
+        public Memory<byte> MemoryPath { get; set; } = Memory<byte>.Empty;
 
         public ulong RequestId { get; set; } = 0;
+
         /// <summary>
         /// 发送数据
         /// </summary>
-        public byte[] Content { get; set; } = Helper.EmptyArray;
-
+        public Memory<byte> Content { get; set; } = Helper.EmptyArray;
         /// <summary>
         /// 接收数据
         /// </summary>
@@ -26,16 +36,15 @@ namespace common.server.model
         /// 转包
         /// </summary>
         /// <returns></returns>
-        public (byte[] data, int length) ToArray(ServerType type, bool pool = false)
+        public byte[] ToArray(ServerType type, out int length, bool pool = false)
         {
             byte typeByte = (byte)MessageTypes.REQUEST;
             byte[] requestIdByte = RequestId.ToBytes();
-            byte[] pathLengthByte = Path.Length.ToBytes();
 
-            int length = (type == ServerType.TCP ? 4 : 0)
+            length = (type == ServerType.TCP ? 4 : 0)
                 + 1
                 + requestIdByte.Length
-                + pathLengthByte.Length + Path.Length
+                + 1 + MemoryPath.Length
                 + Content.Length;
 
             byte[] res = pool ? ArrayPool<byte>.Shared.Rent(length) : new byte[length];
@@ -55,16 +64,16 @@ namespace common.server.model
             Array.Copy(requestIdByte, 0, res, index, requestIdByte.Length);
             index += requestIdByte.Length;
 
-            Array.Copy(pathLengthByte, 0, res, index, pathLengthByte.Length);
-            index += pathLengthByte.Length;
+            res[index] = (byte)MemoryPath.Length;
+            index += 1;
 
-            Path.Span.CopyTo(res.AsSpan(index, Path.Length));
-            index += Path.Length;
+            MemoryPath.CopyTo(res.AsMemory(index, MemoryPath.Length));
+            index += MemoryPath.Length;
 
-            Array.Copy(Content, 0, res, index, Content.Length);
+            Content.CopyTo(res.AsMemory(index, Content.Length));
             index += Content.Length;
 
-            return (res, length);
+            return res;
         }
         /// <summary>
         /// 解包
@@ -72,15 +81,16 @@ namespace common.server.model
         /// <param name="bytes"></param>
         public void FromArray(Memory<byte> memory)
         {
+            var span = memory.Span;
             int index = 1;
 
-            RequestId = memory.Span.Slice(index).ToUInt64();
+            RequestId = span.Slice(index).ToUInt64();
             index += 8;
 
-            int pathLength = memory.Span.Slice(index).ToInt32();
-            index += 4;
+            int pathLength = span[index];
+            index += 1;
 
-            Path = memory.Slice(index, pathLength);
+            MemoryPath = memory.Slice(index, pathLength);
             index += pathLength;
 
             Memory = memory.Slice(index, memory.Length - index);
@@ -93,23 +103,17 @@ namespace common.server.model
 
         public void Reset()
         {
-            Path = Memory<byte>.Empty;
+            MemoryPath = Memory<byte>.Empty;
             Content = Helper.EmptyArray;
             Memory = Helper.EmptyArray;
         }
     }
     public class MessageResponseWrap
     {
+        public IConnection Connection { get; set; }
         public MessageResponeCodes Code { get; set; } = MessageResponeCodes.OK;
         public ulong RequestId { get; set; } = 0;
-        /// <summary>
-        /// 发送数据
-        /// </summary>
         public Memory<byte> Content { get; set; } = Helper.EmptyArray;
-        /// <summary>
-        /// 接收数据
-        /// </summary>
-        public Memory<byte> Memory { get; set; } = Helper.EmptyArray;
 
         /// <summary>
         /// 转包
@@ -154,15 +158,16 @@ namespace common.server.model
         /// <param name="bytes"></param>
         public void FromArray(Memory<byte> memory)
         {
+            var span = memory.Span;
             int index = 1;
 
-            Code = (MessageResponeCodes)memory.Span[index];
+            Code = (MessageResponeCodes)span[index];
             index += 1;
 
-            RequestId = memory.Span.Slice(index).ToUInt64();
+            RequestId = span.Slice(index).ToUInt64();
             index += 8;
 
-            Memory = memory.Slice(index, memory.Length - index);
+            Content = memory.Slice(index, memory.Length - index);
         }
 
         public void Return(byte[] array)
@@ -173,7 +178,7 @@ namespace common.server.model
         public void Reset()
         {
             Content = Helper.EmptyArray;
-            Memory = Helper.EmptyArray;
+            Content = Helper.EmptyArray;
         }
     }
 
@@ -201,29 +206,4 @@ namespace common.server.model
         RESPONSE = 1
     }
 
-    public class MessageRequestParamsInfo<T>
-    {
-        public IConnection Connection { get; set; }
-
-        public string Path
-        {
-            set
-            {
-                MemoryPath = value.ToLower().GetBytes().AsMemory();
-            }
-        }
-        public Memory<byte> MemoryPath { get; set; }
-
-        public T Data { get; set; } = default;
-        public ulong RequestId { get; set; } = 0;
-        public int Timeout { get; set; } = 15000;
-    }
-
-    public class MessageResponseParamsInfo
-    {
-        public IConnection Connection { get; set; }
-        public Memory<byte> Data { get; set; } = Helper.EmptyArray;
-        public ulong RequestId { get; set; } = 0;
-        public MessageResponeCodes Code { get; set; } = MessageResponeCodes.OK;
-    }
 }

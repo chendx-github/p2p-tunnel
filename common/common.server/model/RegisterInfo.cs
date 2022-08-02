@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using common.libs.extends;
+using MessagePack;
 using System;
 using System.ComponentModel;
 using System.Net;
@@ -82,19 +83,37 @@ namespace common.server.model
         }
     }
 
-    [MessagePackObject]
     public class TunnelRegisterParamsInfo
     {
         public TunnelRegisterParamsInfo() { }
 
-        [Key(1)]
         public string TunnelName { get; set; } = string.Empty;
 
-        [Key(2)]
         public int LocalPort { get; set; } = 0;
 
-        [Key(3)]
         public int Port { get; set; } = 0;
+
+        public byte[] ToBytes()
+        {
+            byte[] lportBytes = LocalPort.ToBytes();
+            byte[] portBytes = Port.ToBytes();
+            byte[] tnameBytes = TunnelName.ToBytes();
+
+            var bytes = new byte[lportBytes.Length + portBytes.Length + tnameBytes.Length];
+
+            Array.Copy(lportBytes, 0, bytes, 0, lportBytes.Length);
+            Array.Copy(portBytes, 0, bytes, 4, portBytes.Length);
+            Array.Copy(tnameBytes, 0, bytes, 8, tnameBytes.Length);
+
+            return bytes;
+        }
+        public void DeBytes(Memory<byte> data)
+        {
+            var span = data.Span;
+            LocalPort = span.Slice(0, 4).ToInt32();
+            Port = span.Slice(4, 4).ToInt32();
+            TunnelName = span.Slice(8).GetString();
+        }
     }
 
     [MessagePackObject]

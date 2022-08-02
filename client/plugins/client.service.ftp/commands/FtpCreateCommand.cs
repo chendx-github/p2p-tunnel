@@ -1,24 +1,20 @@
 ﻿using common.libs.extends;
-using MessagePack;
 using System;
 using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpCreateCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.CREATE;
 
-        [Key(2)]
         public string Path { get; set; }
 
         public byte[] ToBytes()
         {
             byte cmdByte = (byte)Cmd;
 
-            byte[] path = Path.GetBytes();
+            byte[] path = Path.ToBytes();
             byte[] pathLength = path.Length.ToBytes();
 
             var bytes = new byte[

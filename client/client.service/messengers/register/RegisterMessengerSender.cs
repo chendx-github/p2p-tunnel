@@ -31,11 +31,11 @@ namespace client.service.messengers.register
 
         public async Task<RegisterResult> Register(RegisterParams param)
         {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<RegisterParamsInfo>
+            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = registerState.UdpConnection,
                 Path = "register/Execute",
-                Data = new RegisterParamsInfo
+                Content = new RegisterParamsInfo
                 {
                     Id = 0,
                     Name = param.ClientName,
@@ -45,7 +45,7 @@ namespace client.service.messengers.register
                     LocalTcpPort = param.LocalTcpPort,
                     LocalUdpPort = param.LocalUdpPort,
                     Key = param.Key
-                },
+                }.ToBytes(),
                 Timeout = param.Timeout,
             }).ConfigureAwait(false);
             if (result.Code != MessageResponeCodes.OK)
@@ -58,11 +58,11 @@ namespace client.service.messengers.register
             {
                 return new RegisterResult { NetState = result, Data = res };
             }
-            MessageResponeInfo tcpResult = await messengerSender.SendReply(new MessageRequestParamsInfo<RegisterParamsInfo>
+            MessageResponeInfo tcpResult = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = registerState.TcpConnection,
                 Path = "register/Execute",
-                Data = new RegisterParamsInfo
+                Content = new RegisterParamsInfo
                 {
                     Id = res.Id,
                     Name = param.ClientName,
@@ -71,7 +71,7 @@ namespace client.service.messengers.register
                     LocalTcpPort = param.LocalTcpPort,
                     LocalUdpPort = param.LocalUdpPort,
                     Key = param.Key,
-                },
+                }.ToBytes(),
                 Timeout = param.Timeout,
             }).ConfigureAwait(false);
 
@@ -85,10 +85,10 @@ namespace client.service.messengers.register
         }
         public async Task<bool> Notify()
         {
-            return await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return await messengerSender.SendOnly(new MessageRequestWrap
             {
                 Connection = registerState.TcpConnection,
-                Data = Helper.EmptyArray,
+                Content = Helper.EmptyArray,
                 Path = "register/notify"
             }).ConfigureAwait(false);
         }
@@ -97,11 +97,11 @@ namespace client.service.messengers.register
         {
             var connection = GetConnection(serverType);
 
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
                 Path = "register/port",
-                Data = Helper.EmptyArray,
+                Content = Helper.EmptyArray,
             }).ConfigureAwait(false);
 
             //connection.Disponse();
@@ -131,10 +131,10 @@ namespace client.service.messengers.register
 
         public async Task<TunnelRegisterInfo> TunnelInfo(IConnection connection)
         {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
-                Data = Helper.EmptyArray,
+                Content = Helper.EmptyArray,
                 Path = "register/TunnelInfo"
             }).ConfigureAwait(false);
             if (result.Code != MessageResponeCodes.OK)
@@ -146,15 +146,15 @@ namespace client.service.messengers.register
         }
         public async Task<TunnelRegisterResultInfo> TunnelRegister(TunnelRegisterParams param)
         {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestParamsInfo<TunnelRegisterParamsInfo>
+            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = param.Connection,
-                Data = new TunnelRegisterParamsInfo
+                Content = new TunnelRegisterParamsInfo
                 {
                     LocalPort = param.LocalPort,
                     Port = param.Port,
                     TunnelName = param.TunnelName
-                },
+                }.ToBytes(),
                 Path = "register/tunnel"
             }).ConfigureAwait(false);
             if (result.Code != MessageResponeCodes.OK)

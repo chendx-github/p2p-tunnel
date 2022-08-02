@@ -1,4 +1,5 @@
 ﻿using client.service.ftp.commands;
+using common.libs.extends;
 using System.Threading.Tasks;
 
 namespace client.service.ftp.server.plugin
@@ -19,7 +20,7 @@ namespace client.service.ftp.server.plugin
 
             FtpListCommand cmd = new FtpListCommand();
             cmd.DeBytes(arg.Connection.ReceiveRequestWrap.Memory);
-            return new FtpResultInfo { Data = ftpServer.GetFiles(cmd, arg) };
+            return new FtpResultInfo { Data = ftpServer.GetFiles(cmd, arg).ToBytes() };
         }
     }
 }

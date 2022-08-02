@@ -18,6 +18,19 @@ namespace common.libs.extends
             }
             return MessagePackSerializer.Serialize(obj, options);
         }
+        public static Memory<byte> ToMemory<T>(this T obj)
+        {
+            if (obj is byte[] bytes)
+            {
+                return bytes;
+            }
+            if (obj is Memory<byte> memorys)
+            {
+                return memorys;
+            }
+            return MessagePackSerializer.Serialize(obj, options);
+        }
+
         public static byte[] ToBytesWithCompression<T>(this T obj)
         {
             return MessagePackSerializer.Serialize(obj, lz4Options);

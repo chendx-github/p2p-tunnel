@@ -14,95 +14,95 @@ namespace common.socks5
 
         public bool Request(Socks5Info data, IConnection connection)
         {
-            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/request",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).Result;
         }
         public void RequestResponse(Socks5Info data, IConnection connection)
         {
-            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/requestresponse",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
 
         public bool Auth(Socks5Info data, IConnection connection)
         {
-            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/auth",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).Result;
         }
         public void AuthResponse(Socks5Info data, IConnection connection)
         {
-            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/authresponse",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
 
         public bool Command(Socks5Info data, IConnection connection)
         {
-            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/command",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).Result;
         }
         public void CommandResponse(Socks5Info data, IConnection connection)
         {
-            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/commandresponse",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
 
         public bool Forward(Socks5Info data, IConnection connection)
         {
-            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/forward",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).Result;
         }
         public bool ForwardUdp(Socks5Info data, IConnection connection)
         {
-            return messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            return messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/forwardudp",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).Result;
         }
         public void Response(Socks5Info data, IConnection connection)
         {
-            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/response",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
         public void ResponseUdp(Socks5Info data, IConnection connection)
         {
-            _ = messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/responseudp",
                 Connection = connection,
-                Data = data.ToBytes()
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
 

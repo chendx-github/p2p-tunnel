@@ -21,7 +21,8 @@ namespace server.service.manager
 
         public async Task<bool> Execute(IConnection connection)
         {
-            WebRTCConnectionInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<WebRTCConnectionInfo>();
+            WebRTCConnectionInfo model = new WebRTCConnectionInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             //A已注册
             if (clientRegisterCaching.Get(connection.ConnectId, out RegisterCacheInfo source))
@@ -33,11 +34,11 @@ namespace server.service.manager
                     if (source.GroupId == target.GroupId)
                     {
                         model.FromId = connection.ConnectId;
-                        return await messengerSender.SendOnly(new MessageRequestParamsInfo<WebRTCConnectionInfo>
+                        return await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Data = model,
-                            MemoryPath = connection.ReceiveRequestWrap.Path,
+                            Content = connection.ReceiveRequestWrap.Memory,
+                            MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);
                     }

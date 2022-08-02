@@ -19,11 +19,11 @@ namespace client.service.messengers.heart
         /// <param name="arg"></param>
         public async Task<MessageResponeInfo> Heart(IConnection connection)
         {
-            return await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            return await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
                 Path = "heart/Execute",
-                Data = Helper.EmptyArray
+                Content = Helper.EmptyArray
             }).ConfigureAwait(false);
         }
     }

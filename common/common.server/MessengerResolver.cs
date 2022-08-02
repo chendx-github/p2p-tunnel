@@ -44,7 +44,7 @@ namespace common.server
             string path = type.Name.Replace("Messenger", "");
             foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
-                Memory<byte> key = $"{path}/{method.Name}".ToLower().GetBytes().AsMemory();
+                Memory<byte> key = $"{path}/{method.Name}".ToLower().ToBytes().AsMemory();
                 if (!messengers.ContainsKey(key))
                 {
                     MessengerCacheInfo cache = new MessengerCacheInfo
@@ -74,7 +74,7 @@ namespace common.server
                 responseWrap.FromArray(receive);
                 if (connection.EncodeEnabled)
                 {
-                    responseWrap.Memory = connection.Crypto.Decode(responseWrap.Memory);
+                    responseWrap.Content = connection.Crypto.Decode(responseWrap.Content);
                 }
                 messengerSender.Response(responseWrap);
                 return;
@@ -89,11 +89,11 @@ namespace common.server
             try
             {
                 //404,没这个插件
-                if (!messengers.ContainsKey(requestWrap.Path))
+                if (!messengers.ContainsKey(requestWrap.MemoryPath))
                 {
 
-                    Logger.Instance.Error($"{requestWrap.Path.Span.GetString()},{receive.Length},{connection.ServerType}, not found");
-                    await messengerSender.ReplyOnly(new MessageResponseParamsInfo
+                    Logger.Instance.Error($"{requestWrap.MemoryPath.Span.GetString()},{receive.Length},{connection.ServerType}, not found");
+                    await messengerSender.ReplyOnly(new MessageResponseWrap
                     {
                         Connection = connection,
                         RequestId = requestWrap.RequestId,
@@ -102,19 +102,19 @@ namespace common.server
                     return;
                 }
 
-                MessengerCacheInfo plugin = messengers[requestWrap.Path];
+                MessengerCacheInfo plugin = messengers[requestWrap.MemoryPath];
 
                 if (middlewareTransfer != null)
                 {
                     var res = middlewareTransfer.Execute(connection);
                     if (!res.Item1)
                     {
-                        await messengerSender.ReplyOnly(new MessageResponseParamsInfo
+                        await messengerSender.ReplyOnly(new MessageResponseWrap
                         {
                             Connection = connection,
                             RequestId = requestWrap.RequestId,
                             Code = MessageResponeCodes.ERROR,
-                            Data = res.Item2
+                            Content = res.Item2
                         }).ConfigureAwait(false);
                         return;
                     }
@@ -145,17 +145,17 @@ namespace common.server
                     resultObject = resultAsync;
                 }
 
-                await messengerSender.ReplyOnly(new MessageResponseParamsInfo
+                await messengerSender.ReplyOnly(new MessageResponseWrap
                 {
                     Connection = connection,
-                    Data = resultObject != null ? resultObject.ToBytes() : Helper.EmptyArray,
+                    Content = resultObject != null ? resultObject.ToBytes() : Helper.EmptyArray,
                     RequestId = requestWrap.RequestId
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 Logger.Instance.Error(ex);
-                await messengerSender.ReplyOnly(new MessageResponseParamsInfo
+                await messengerSender.ReplyOnly(new MessageResponseWrap
                 {
                     Connection = connection,
                     RequestId = requestWrap.RequestId,

@@ -25,9 +25,9 @@ namespace client.service.ui.api.manager
         {
             if (registerState.TcpConnection != null)
             {
-                var resp = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                var resp = await messengerSender.SendReply(new MessageRequestWrap
                 {
-                    Data = Helper.EmptyArray,
+                    Content = Helper.EmptyArray,
                     Path = "Counter/Info",
                     Connection = registerState.TcpConnection,
                     Timeout = 15000

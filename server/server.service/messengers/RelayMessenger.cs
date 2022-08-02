@@ -30,7 +30,8 @@ namespace server.service.messengers
                 return false;
             }
 
-            RelayParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<RelayParamsInfo>();
+            RelayParamsInfo model = new RelayParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             //A已注册
             if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo source))
@@ -41,10 +42,10 @@ namespace server.service.messengers
                     //是否在同一个组
                     if (source.GroupId == target.GroupId)
                     {
-                        return await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+                        return await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Data = model.Data,
+                            Content = model.Data,
                             MemoryPath = model.Path,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);
@@ -61,7 +62,8 @@ namespace server.service.messengers
                 return Helper.EmptyArray;
             }
 
-            RelayParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<RelayParamsInfo>();
+            RelayParamsInfo model = new RelayParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             //A已注册
             if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo source))
@@ -72,10 +74,10 @@ namespace server.service.messengers
                     //是否在同一个组
                     if (source.GroupId == target.GroupId)
                     {
-                        return (await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                        return (await messengerSender.SendReply(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Data = model.Data,
+                            Content = model.Data,
                             MemoryPath = model.Path,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false)).Data;

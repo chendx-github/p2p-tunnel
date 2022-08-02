@@ -1,6 +1,7 @@
 ﻿using client.messengers.clients;
 using client.service.ftp.commands;
 using common.libs;
+using common.libs.extends;
 using common.server;
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ namespace client.service.ftp
                             return new FtpResultInfo
                             {
                                 Code = FtpResultInfo.FtpResultCodes.UNKNOW,
-                                Data = ex.Message
+                                Data = ex.Message.ToBytes()
                             }.ToBytes();
                         }
                     }

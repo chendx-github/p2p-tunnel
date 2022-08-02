@@ -66,7 +66,7 @@ namespace common.tcpforward
             sb.Append("Access-Control-Allow-Origin: *\r\n");
             sb.Append("\r\n");
 
-            var headerBytes = sb.ToString().GetBytes();
+            var headerBytes = sb.ToString().ToBytes();
             var res = new byte[headerBytes.Length + bytes.Length];
 
             Array.Copy(headerBytes, 0, res, 0, headerBytes.Length);

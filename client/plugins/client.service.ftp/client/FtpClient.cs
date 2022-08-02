@@ -163,7 +163,7 @@ namespace client.service.ftp.client
                 }
                 else
                 {
-                    throw new Exception(result.ReadData.DeBytes<string>());
+                    throw new Exception(result.ReadData.Span.GetString());
                 }
             }
             else

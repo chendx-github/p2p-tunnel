@@ -60,7 +60,9 @@ namespace server.service.tcpforward
 
             try
             {
-                TcpForwardUnRegisterParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<TcpForwardUnRegisterParamsInfo>();
+                TcpForwardUnRegisterParamsInfo model = new TcpForwardUnRegisterParamsInfo();
+                model.DeBytes(connection.ReceiveRequestWrap.Memory);
+
                 if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo source))
                 {
                     if (model.AliveType == TcpForwardAliveTypes.WEB)
@@ -90,7 +92,9 @@ namespace server.service.tcpforward
 
             try
             {
-                TcpForwardRegisterParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<TcpForwardRegisterParamsInfo>();
+                TcpForwardRegisterParamsInfo model = new TcpForwardRegisterParamsInfo();
+                model.DeBytes(connection.ReceiveRequestWrap.Memory);
+
                 //取出注册缓存，没取出来就说明没注册
                 if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo source))
                 {

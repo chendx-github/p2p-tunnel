@@ -60,14 +60,14 @@ namespace client.service.ui.api.webrtc
                     }
                 }
 
-                MessageResponeInfo resp = await messengerSender.SendReply(new MessageRequestParamsInfo<WebRTCConnectionInfo>
+                MessageResponeInfo resp = await messengerSender.SendReply(new MessageRequestWrap
                 {
-                    Data = new WebRTCConnectionInfo
+                    Content = new WebRTCConnectionInfo
                     {
                         FromId = registerState.TcpConnection.ConnectId,
                         ToId = model.ToId,
                         Data = model.Data
-                    },
+                    }.ToBytes(),
                     Path = "webrtc/execute",
                     Connection = connection,
                     Timeout = 15000

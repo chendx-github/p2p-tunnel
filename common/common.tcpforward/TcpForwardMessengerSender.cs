@@ -16,11 +16,11 @@ namespace common.tcpforward
         public SimpleSubPushHandler<TcpForwardInfo> OnRequestHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
         public async Task SendRequest(TcpForwardInfo arg)
         {
-            await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            await messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "TcpForward/Request",
                 Connection = arg.Connection,
-                Data = arg.ToBytes()
+                Content = arg.ToBytes()
             }).ConfigureAwait(false);
         }
         public void OnRequest(TcpForwardInfo data)
@@ -31,11 +31,11 @@ namespace common.tcpforward
         public SimpleSubPushHandler<TcpForwardInfo> OnResponseHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
         public async Task SendResponse(TcpForwardInfo arg)
         {
-            await messengerSender.SendOnly(new MessageRequestParamsInfo<byte[]>
+            await messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "TcpForward/Response",
                 Connection = arg.Connection,
-                Data = arg.ToBytes()
+                Content = arg.ToBytes()
             }).ConfigureAwait(false);
         }
         public void OnResponse(TcpForwardInfo data)
@@ -45,30 +45,30 @@ namespace common.tcpforward
 
         public async Task<MessageResponeInfo> GetPorts(IConnection Connection)
         {
-            return await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+            return await messengerSender.SendReply(new MessageRequestWrap
             {
                 Path = "TcpForward/GetPorts",
                 Connection = Connection,
-                Data = Helper.EmptyArray
+                Content = Helper.EmptyArray
             }).ConfigureAwait(false);
         }
 
         public async Task<MessageResponeInfo> UnRegister(IConnection Connection, TcpForwardUnRegisterParamsInfo data)
         {
-            return await messengerSender.SendReply(new MessageRequestParamsInfo<TcpForwardUnRegisterParamsInfo>
+            return await messengerSender.SendReply(new  MessageRequestWrap
             {
                 Path = "TcpForward/UnRegister",
                 Connection = Connection,
-                Data = data
+                Content = data.ToBytes()
             }).ConfigureAwait(false);
         }
         public async Task<MessageResponeInfo> Register(IConnection Connection, TcpForwardRegisterParamsInfo data)
         {
-            return await messengerSender.SendReply(new MessageRequestParamsInfo<TcpForwardRegisterParamsInfo>
+            return await messengerSender.SendReply(new MessageRequestWrap
             {
                 Path = "TcpForward/Register",
                 Connection = Connection,
-                Data = data
+                Content = data.ToBytes(),
             }).ConfigureAwait(false);
         }
     }

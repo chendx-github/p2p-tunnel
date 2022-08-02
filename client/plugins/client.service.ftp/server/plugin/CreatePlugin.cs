@@ -1,4 +1,5 @@
 ﻿using client.service.ftp.commands;
+using common.libs.extends;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace client.service.ftp.server.plugin
                 List<string> errs = ftpServer.Create(cmd, arg);
                 if (errs.Any())
                 {
-                    return new FtpResultInfo { Code = FtpResultInfo.FtpResultCodes.UNKNOW, Data = string.Join(",", errs) };
+                    return new FtpResultInfo { Code = FtpResultInfo.FtpResultCodes.UNKNOW, Data = string.Join(",", errs).ToBytes() };
                 }
             }
             return new FtpResultInfo();

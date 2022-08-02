@@ -1,5 +1,4 @@
-﻿using MessagePack;
-using common.server.model;
+﻿using common.server.model;
 using System;
 using System.Text.Json.Serialization;
 using common.server;
@@ -10,38 +9,25 @@ namespace client.messengers.clients
     /// <summary>
     /// 客户端信息
     /// </summary>
-    [Serializable, MessagePackObject]
     public class ClientInfo
     {
-        [Key(1)]
         public bool UdpConnecting { get; set; } = false;
-        [Key(2)]
         public bool TcpConnecting { get; set; } = false;
-        [Key(3)]
         public bool UdpConnected { get => UdpConnection != null && UdpConnection.Connected; }
-        [Key(4)]
         public bool TcpConnected { get => TcpConnection != null && TcpConnection.Connected; }
 
-        [Key(5)]
         public string Name { get; set; } = string.Empty;
-        [Key(6)]
         public string Mac { get; set; } = string.Empty;
-        [Key(7)]
         public string Ip { get; set; } = string.Empty;
-
-        [Key(8)]
         public ulong Id { get; set; } = 0;
 
 
-        [Key(9)]
         public ClientConnectTypes UdpConnectType { get; set; } = ClientConnectTypes.P2P;
-
-        [Key(10)]
         public ClientConnectTypes TcpConnectType { get; set; } = ClientConnectTypes.P2P;
 
-        [JsonIgnore, IgnoreMember]
+        [JsonIgnore]
         public IConnection TcpConnection { get; set; } = null;
-        [JsonIgnore, IgnoreMember]
+        [JsonIgnore]
         public IConnection UdpConnection { get; set; } = null;
 
         public void Offline()

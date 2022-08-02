@@ -19,20 +19,14 @@ namespace common.tcpforward
         public Memory<byte> Endpoint { get; set; }
     }
 
-    [MessagePackObject]
     public class TcpForwardInfo
     {
         public TcpForwardInfo() { }
 
-        [Key(1)]
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
-        [Key(2)]
         public TcpForwardTypes ForwardType { get; set; } = TcpForwardTypes.FORWARD;
-        [Key(3)]
         public ulong RequestId { get; set; } = 0;
-        [Key(4)]
         public Memory<byte> TargetEndpoint { get; set; }
-        [Key(5)]
         public Memory<byte> Buffer { get; set; } = Helper.EmptyArray;
 
         public IConnection Connection { get; set; }
@@ -72,21 +66,22 @@ namespace common.tcpforward
 
         public void DeBytes(in Memory<byte> memory)
         {
+            var span = memory.Span;
             int index = 0;
 
-            AliveType = (TcpForwardAliveTypes)memory.Span[index];
+            AliveType = (TcpForwardAliveTypes)span[index];
             index++;
 
-            ForwardType = (TcpForwardTypes)memory.Span[index];
+            ForwardType = (TcpForwardTypes)span[index];
             index++;
 
-            byte endpointLength = memory.Span[index];
+            byte endpointLength = span[index];
             index++;
 
             TargetEndpoint = memory.Slice(index, endpointLength);
             index += endpointLength;
 
-            RequestId = memory.Span.Slice(index).ToUInt64();
+            RequestId = span.Slice(index).ToUInt64();
             index += 8;
 
             Buffer = memory.Slice(index);

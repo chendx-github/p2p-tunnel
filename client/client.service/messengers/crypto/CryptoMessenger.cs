@@ -34,8 +34,7 @@ namespace client.service.messengers.crypto
             if (connection.ReceiveRequestWrap.Memory.Length > 0)
             {
                 var memory = asymmetricCrypto.Decode(connection.ReceiveRequestWrap.Memory);
-                CryptoSetParamsInfo model = memory.DeBytes<CryptoSetParamsInfo>();
-                password = model.Password;
+                password = memory.GetString();
             }
             else
             {
@@ -62,9 +61,7 @@ namespace client.service.messengers.crypto
 
         public bool Test(IConnection connection)
         {
-            CryptoTestParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<CryptoTestParamsInfo>();
-
-            Console.WriteLine($"{connection.ServerType},encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(model.Content).Span)}");
+            Console.WriteLine($"{connection.ServerType},encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(connection.ReceiveRequestWrap.Memory).Span)}");
 
             return true;
         }

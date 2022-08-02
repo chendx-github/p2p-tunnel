@@ -110,71 +110,57 @@ namespace client.messengers.register
     /// <summary>
     /// 远程信息
     /// </summary>
-    [MessagePackObject]
     public class RemoteInfo
     {
         /// <summary>
         /// 客户端在远程的ip
         /// </summary>
-        [Key(1)]
         public IPAddress Ip { get; set; } = IPAddress.Any;
         /// <summary>
         /// 客户端在远程的TCP端口
         /// </summary>
-        [Key(2)]
         public int UdpPort { get; set; } = 0;
 
-        [Key(3)]
         public int TcpPort { get; set; } = 0;
         /// <summary>
         /// 客户端连接ID
         /// </summary>
-        [Key(4)]
         public ulong ConnectId { get; set; } = 0;
 
-        [Key(5)]
         public bool Relay { get; set; } = false;
     }
 
     /// <summary>
     /// 本地信息
     /// </summary>
-    [MessagePackObject]
     public class LocalInfo
     {
         /// <summary>
         /// 外网距离
         /// </summary>
-        [Key(1)]
         public int RouteLevel { get; set; } = 0;
         /// <summary>
         /// 本地mac地址
         /// </summary>
-        [Key(2)]
         public string Mac { get; set; } = string.Empty;
         /// <summary>
         /// 本地UDP端口
         /// </summary>
-        [Key(3)]
         public int UdpPort { get; set; } = 0;
         /// <summary>
         /// 本地TCP端口
         /// </summary>
-        [Key(4)]
         public int TcpPort { get; set; } = 0;
 
-        [Key(5)]
         public IPAddress LocalIp { get; set; } = IPAddress.Any;
 
         /// <summary>
         /// 是否正在连接服务器
         /// </summary>
-        [Key(6)]
         public bool IsConnecting { get; set; } = false;
         /// <summary>
         /// UDP是否已连接服务器
         /// </summary>
-        [Key(7)]
         public bool UdpConnected { get; set; } = false;
 
         [System.Text.Json.Serialization.JsonIgnore]
@@ -184,7 +170,6 @@ namespace client.messengers.register
         /// <summary>
         /// TCP是否已连接服务器
         /// </summary>
-        [Key(8)]
         public bool TcpConnected
         {
             get

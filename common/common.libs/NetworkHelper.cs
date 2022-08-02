@@ -191,7 +191,7 @@ namespace common.libs
         /// <returns></returns>
         public static Memory<byte> EndpointToArray(string ip, int port)
         {
-            return EndpointToArray(ip.GetBytes(), port.ToBytes());
+            return EndpointToArray(ip.ToBytes(), port.ToBytes());
         }
         /// <summary>
         /// 地址转数组，端口必须4字节
@@ -223,8 +223,9 @@ namespace common.libs
         /// <returns></returns>
         public static IPEndPoint EndpointFromArray(Memory<byte> array)
         {
-            string ip = array.Span.Slice(0, array.Length - 4).GetString();
-            int port = array.Span.Slice(array.Length - 4, 4).ToInt32();
+            var span = array.Span;
+            string ip = span.Slice(0, array.Length - 4).GetString();
+            int port = span.Slice(array.Length - 4, 4).ToInt32();
             return new IPEndPoint(GetDomainIp(ip), port);
         }
 

@@ -5,20 +5,17 @@ using System.Text;
 
 namespace client.service.ftp.commands
 {
-    [MessagePackObject]
     public class FtpSetCurrentPathCommand : IFtpCommandBase
     {
-        [Key(1)]
         public FtpCommand Cmd { get; set; } = FtpCommand.CURRENT_PATH_SET;
 
-        [Key(2)]
         public string Path { get; set; }
 
         public byte[] ToBytes()
         {
             byte cmdByte = (byte)Cmd;
 
-            byte[] path = Path.GetBytes();
+            byte[] path = Path.ToBytes();
             byte[] pathLength = path.Length.ToBytes();
 
             var bytes = new byte[

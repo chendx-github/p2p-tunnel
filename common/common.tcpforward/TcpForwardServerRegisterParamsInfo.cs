@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using common.libs.extends;
+using MessagePack;
 using System;
 using System.ComponentModel;
 using System.Net;
@@ -8,38 +9,132 @@ namespace common.tcpforward
     /// <summary>
     /// Tcp转发
     /// </summary>
-    [MessagePackObject]
     public class TcpForwardRegisterParamsInfo
     {
         public TcpForwardRegisterParamsInfo() { }
 
-        [Key(1)]
         public string SourceIp { get; set; } = IPAddress.Any.ToString();
-        [Key(2)]
         public int SourcePort { get; set; } = 8080;
-        [Key(3)]
         public string TargetName { get; set; } = string.Empty;
-        [Key(4)]
         public string TargetIp { get; set; } = IPAddress.Loopback.ToString();
-        [Key(5)]
         public int TargetPort { get; set; } = 8080;
-        [Key(6)]
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
-        [Key(7)]
         public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
+
+        public byte[] ToBytes()
+        {
+            byte[] sportBytes = SourcePort.ToBytes();
+            byte[] tportBytes = TargetPort.ToBytes();
+
+            byte[] sipBytes = SourceIp.ToBytes();
+            byte[] tipBytes = TargetIp.ToBytes();
+
+            byte[] tnameBytes = TargetName.ToBytes();
+
+            byte[] bytes = new byte[1 + 1 + sportBytes.Length + tportBytes.Length + sipBytes.Length + tipBytes.Length + tnameBytes.Length];
+
+            int index = 0;
+
+            bytes[index] = (byte)AliveType;
+            index += 1;
+
+            bytes[index] = (byte)TunnelType;
+            index += 1;
+
+            bytes[index] = sportBytes[0];
+            bytes[index + 1] = sportBytes[1];
+            index += 2;
+
+            bytes[index] = tportBytes[0];
+            bytes[index + 1] = tportBytes[1];
+            index += 2;
+
+            bytes[index] = (byte)sipBytes.Length;
+            Array.Copy(sipBytes, 0, bytes, index + 1, sipBytes.Length);
+            index += 1 + sipBytes.Length;
+
+            bytes[index] = (byte)tipBytes.Length;
+            Array.Copy(tipBytes, 0, bytes, index + 1, tipBytes.Length);
+            index += 1 + tipBytes.Length;
+
+            bytes[index] = (byte)tnameBytes.Length;
+            Array.Copy(tnameBytes, 0, bytes, index + 1, tnameBytes.Length);
+            index += 1 + tnameBytes.Length;
+
+            return bytes;
+
+        }
+        public void DeBytes(Memory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            AliveType = (TcpForwardAliveTypes)span[index];
+            index += 1;
+
+            TunnelType = (TcpForwardTunnelTypes)span[index];
+            index += 1;
+
+            SourcePort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+
+            TargetPort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+
+            SourceIp = span.Slice(index + 1, span[index]).GetString();
+            index += 1 + span[index];
+
+            TargetIp = span.Slice(index + 1, span[index]).GetString();
+            index += 1 + span[index];
+
+            TargetName = span.Slice(index + 1, span[index]).GetString();
+            index += 1 + span[index];
+        }
+
     }
 
-    [MessagePackObject]
     public class TcpForwardUnRegisterParamsInfo
     {
         public TcpForwardUnRegisterParamsInfo() { }
 
-        [Key(1)]
         public string SourceIp { get; set; } = IPAddress.Any.ToString();
-        [Key(2)]
         public int SourcePort { get; set; } = 8080;
-        [Key(3)]
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
+
+        public byte[] ToBytes()
+        {
+            byte[] ipBytes = SourceIp.ToBytes();
+            byte[] portBytes = SourcePort.ToBytes();
+            byte[] bytes = new byte[1 + ipBytes.Length + portBytes.Length];
+
+            int index = 0;
+
+            bytes[index] = (byte)AliveType;
+            index += 1;
+
+            bytes[index] = portBytes[0];
+            bytes[index + 1] = portBytes[1];
+            index += 2;
+
+            Array.Copy(ipBytes, 0, bytes, index, ipBytes.Length);
+            index += ipBytes.Length;
+
+            return bytes;
+        }
+
+        public void DeBytes(Memory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            AliveType = (TcpForwardAliveTypes)span[index];
+            index += 1;
+
+            SourcePort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+
+            SourceIp = span.Slice(index).GetString();
+        }
     }
 
     [MessagePackObject]

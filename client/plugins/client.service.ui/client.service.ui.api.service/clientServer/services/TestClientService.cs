@@ -35,9 +35,9 @@ namespace client.service.ui.api.service.clientServer.services
                 watch.Start();
                 for (int i = 0; i < param.Count; i++)
                 {
-                    await messengerSender.SendOnly(new common.server.model.MessageRequestParamsInfo<byte[]>
+                    await messengerSender.SendOnly(new common.server.model.MessageRequestWrap
                     {
-                        Data = bytes,
+                        Content = bytes,
                         Path = "Test/Packet",
                         Connection = client.TcpConnection,
                         Timeout = 0

@@ -61,16 +61,11 @@ namespace client.service.ui.api.service.clientServer.services
         public ServerConfig ServerConfig { get; set; } = new ServerConfig();
     }
 
-    [MessagePackObject]
     public class RegisterInfo
     {
-        [Key(1)]
         public ClientConfig ClientConfig { get; set; } = new ClientConfig();
-        [Key(2)]
         public ServerConfig ServerConfig { get; set; } = new ServerConfig();
-        [Key(3)]
         public LocalInfo LocalInfo { get; set; } = new LocalInfo();
-        [Key(4)]
         public RemoteInfo RemoteInfo { get; set; } = new RemoteInfo();
     }
 }

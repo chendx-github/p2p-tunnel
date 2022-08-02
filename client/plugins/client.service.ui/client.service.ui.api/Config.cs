@@ -64,23 +64,17 @@ namespace client.service.ui.api
     /// <summary>
     /// 本地web管理端配置
     /// </summary>
-    [MessagePackObject]
     public class WebConfig
     {
-        [Key(1)]
         public int Port { get; set; } = 8098;
-        [Key(2)]
         public string Root { get; set; } = "./web";
-        [Key(3)]
         public IPAddress BindIp { get; set; } = IPAddress.Loopback;
 
     }
     [MessagePackObject]
     public class WebsocketConfig
     {
-        [Key(1)]
         public int Port { get; set; } = 8098;
-        [Key(2)]
         public IPAddress BindIp { get; set; } = IPAddress.Loopback;
     }
 }

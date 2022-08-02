@@ -28,11 +28,11 @@ namespace client.service.messengers.crypto
                 byte[] encodedData = Helper.EmptyArray;
                 if (string.IsNullOrWhiteSpace(password))
                 {
-                    MessageResponeInfo publicKeyResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    MessageResponeInfo publicKeyResponse = await messengerSender.SendReply(new MessageRequestWrap
                     {
                         Connection = tcp ?? udp,
                         Path = "crypto/key",
-                        Data = Helper.EmptyArray
+                        Content = Helper.EmptyArray
                     }).ConfigureAwait(false);
                     if (publicKeyResponse.Code != MessageResponeCodes.OK)
                     {
@@ -42,33 +42,33 @@ namespace client.service.messengers.crypto
                     string publicKey = publicKeyResponse.Data.DeBytes<string>();
                     IAsymmetricCrypto encoder = cryptoFactory.CreateAsymmetric(new RsaKey { PublicKey = publicKey, PrivateKey = string.Empty });
                     password = StringHelper.RandomPasswordStringMd5();
-                    encodedData = encoder.Encode(new CryptoSetParamsInfo { Password = password }.ToBytes());
+                    encodedData = encoder.Encode(password.ToBytes());
                     encoder.Dispose();
                 }
 
                 ICrypto crypto = cryptoFactory.CreateSymmetric(password);
                 if (tcp != null)
                 {
-                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestWrap
                     {
                         Connection = tcp,
                         Path = "crypto/set",
-                        Data = encodedData
+                        Content = encodedData
                     }).ConfigureAwait(false);
-                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).DeBytes<bool>() == false)
+                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).GetBool() == false)
                     {
                         return null;
                     }
                 }
                 if (udp != null)
                 {
-                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestParamsInfo<byte[]>
+                    MessageResponeInfo setResponse = await messengerSender.SendReply(new MessageRequestWrap
                     {
                         Connection = udp,
                         Path = "crypto/set",
-                        Data = encodedData
+                        Content = encodedData
                     }).ConfigureAwait(false);
-                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).DeBytes<bool>() == false)
+                    if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).GetBool() == false)
                     {
                         return null;
                     }
@@ -85,14 +85,11 @@ namespace client.service.messengers.crypto
 
         public async Task<bool> Test(IConnection connection)
         {
-            MessageResponeInfo resp = await messengerSender.SendReply(new MessageRequestParamsInfo<CryptoTestParamsInfo>
+            MessageResponeInfo resp = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
                 Path = "crypto/test",
-                Data = new CryptoTestParamsInfo
-                {
-                    Content = connection.Crypto.Encode(Encoding.UTF8.GetBytes("test"))
-                }
+                Content = connection.Crypto.Encode(Encoding.UTF8.GetBytes("test"))
             }).ConfigureAwait(false);
 
             return resp.Code == MessageResponeCodes.OK;

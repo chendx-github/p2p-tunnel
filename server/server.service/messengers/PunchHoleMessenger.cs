@@ -49,11 +49,11 @@ namespace server.service.messengers
                         }
 
                         model.FromId = connection.ConnectId;
-                        return await messengerSender.SendOnly(new MessageRequestParamsInfo<PunchHoleParamsInfo>
+                        return await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Data = model,
-                            MemoryPath = connection.ReceiveRequestWrap.Path,
+                            Content = connection.ReceiveRequestWrap.Memory,
+                            MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);
                     }
