@@ -1,4 +1,5 @@
-﻿using common.socks5;
+﻿using common.server;
+using common.socks5;
 
 namespace server.service.socks5
 {
@@ -8,37 +9,13 @@ namespace server.service.socks5
         {
         }
 
-        public bool HandleRequest(Socks5Info data)
-        {
-            return true;
-        }
-
-        public bool HandleAuth(Socks5Info data)
-        {
-            return true;
-        }
-
-        public bool HandleCommand(Socks5Info data)
-        {
-            return true;
-        }
-
-        public bool HndleForward(Socks5Info data)
-        {
-            return true;
-        }
-        public bool HndleForwardUdp(Socks5Info data)
-        {
-            return true;
-        }
-
-        public void Close(ulong id)
-        {
-        }
         public void Flush()
         {
         }
 
-        
+        public void InputData(IConnection connection)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

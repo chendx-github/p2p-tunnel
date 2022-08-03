@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace common.socks5
 {
@@ -12,23 +13,25 @@ namespace common.socks5
     {
         private Socket socket;
         private UdpClient udpClient;
-        private IPEndPoint endpoint;
-        private ConcurrentDictionary<ulong, AsyncUserToken> connections = new();
+        public IPEndPoint DistEndpoint { get; private set; }
+        public byte Version { get; private set; } = 5;
 
+        private readonly ConcurrentDictionary<ulong, AsyncUserToken> connections = new();
         private readonly NumberSpace numberSpace = new NumberSpace(0);
 
-        private readonly ISocks5ClientHandler socks5Handler;
+        public Func<Socks5Info, bool> OnData { get; set; }
+        public Action<ulong> OnClose { get; set; }
+
         private readonly Config config;
-        public Socks5ClientListener(ISocks5ClientHandler socks5Handler, Config config)
+        public Socks5ClientListener(Config config)
         {
-            this.socks5Handler = socks5Handler;
             this.config = config;
         }
 
         public void Start(int port)
         {
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
-            endpoint = new IPEndPoint(IPAddress.Loopback, port);
+            DistEndpoint = new IPEndPoint(IPAddress.Loopback, port);
 
             socket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -68,7 +71,6 @@ namespace common.socks5
                     break;
             }
         }
-
         private void StartAccept(SocketAsyncEventArgs acceptEventArg)
         {
             acceptEventArg.AcceptSocket = null;
@@ -90,17 +92,15 @@ namespace common.socks5
             BindReceive(e.AcceptSocket);
             StartAccept(e);
         }
-
-        public void BindReceive(Socket socket)
+        private void BindReceive(Socket socket)
         {
             ulong id = numberSpace.Increment();
             AsyncUserToken token = new AsyncUserToken
             {
                 Socket = socket,
-                Id = id,
                 DataWrap = new Socks5Info { Id = id }
             };
-            connections.TryAdd(token.Id, token);
+            connections.TryAdd(token.DataWrap.Id, token);
             SocketAsyncEventArgs readEventArgs = new SocketAsyncEventArgs
             {
                 UserToken = token,
@@ -123,7 +123,8 @@ namespace common.socks5
                 {
                     Memory<byte> buffer = e.Buffer.AsMemory(e.Offset, e.BytesTransferred);
                     token.DataWrap.Data = buffer;
-                    ExecuteHandle(token);
+
+                    ExecuteHandle(token.DataWrap);
 
                     if (token.Socket.Available > 0)
                     {
@@ -134,7 +135,7 @@ namespace common.socks5
                             if (length > 0)
                             {
                                 token.DataWrap.Data = arr.AsMemory(0, length);
-                                ExecuteHandle(token);
+                                ExecuteHandle(token.DataWrap);
                             }
                         }
                         ArrayPool<byte>.Shared.Return(arr);
@@ -161,15 +162,16 @@ namespace common.socks5
                 Logger.Instance.DebugError(ex);
             }
         }
+        Socks5Info udpInfo = new Socks5Info { Id = 0, Socks5Step = Socks5EnumStep.ForwardUdp };
         private void ProcessReceiveUdp(IAsyncResult result)
         {
             IPEndPoint rep = null;
             try
             {
-                byte[] data = udpClient.EndReceive(result, ref rep);
+                udpInfo.Data = udpClient.EndReceive(result, ref rep);
+                udpInfo.SourceEP = rep;
 
-                Socks5Info info = new Socks5Info { Id = 0, Data = data, SourceEP = rep };
-                socks5Handler.HndleForwardUdp(info);
+                ExecuteHandle(udpInfo);
 
                 result = udpClient.BeginReceive(ProcessReceiveUdp, null);
             }
@@ -177,31 +179,14 @@ namespace common.socks5
             {
             }
         }
-
-        private void ExecuteHandle(AsyncUserToken token)
+        private void ExecuteHandle(Socks5Info info)
         {
-            bool closeFlag = true;
-            if (token.Socks5Step >= Socks5EnumStep.Forward)
+            if (OnData != null)
             {
-                closeFlag = socks5Handler.HndleForward(token.DataWrap);
-            }
-            else if (token.Socks5Step == Socks5EnumStep.Request)
-            {
-                token.Version = token.DataWrap.Data.Span[0];
-                closeFlag = socks5Handler.HandleRequest(token.DataWrap);
-            }
-            else if (token.Socks5Step == Socks5EnumStep.Auth)
-            {
-                token.Version = token.DataWrap.Data.Span[0];
-                closeFlag = socks5Handler.HandleAuth(token.DataWrap);
-            }
-            else if (token.Socks5Step == Socks5EnumStep.Command)
-            {
-                closeFlag = socks5Handler.HandleCommand(token.DataWrap);
-            }
-            if (!closeFlag)
-            {
-                CloseClientSocket(token.Id);
+                if (!OnData(info))
+                {
+                    CloseClientSocket(info.Id);
+                }
             }
         }
 
@@ -221,119 +206,43 @@ namespace common.socks5
             }
         }
 
-        public void RequestResponse(ulong id, Socks5EnumAuthType socks5EnumAuthType)
+        public void Response(Socks5Info info)
         {
-            if (socks5EnumAuthType == Socks5EnumAuthType.NotSupported)
+            if (connections.TryGetValue(info.Id, out AsyncUserToken token))
             {
-                CloseClientSocket(id);
-            }
-            else
-            {
-                if (connections.TryGetValue(id, out AsyncUserToken token))
+                if (info.Data.Length == 0)
                 {
-                    if (socks5EnumAuthType == Socks5EnumAuthType.NoAuth)
-                    {
-                        token.Socks5Step = Socks5EnumStep.Command;
-                    }
-                    else
-                    {
-                        token.Socks5Step = Socks5EnumStep.Auth;
-                    }
-
-                    token.Socket.Send(new byte[] { token.Version, (byte)socks5EnumAuthType });
-                }
-            }
-        }
-        public void AuthResponse(ulong id, Socks5EnumAuthState socks5EnumAuthState)
-        {
-            if (socks5EnumAuthState != Socks5EnumAuthState.Success)
-            {
-                CloseClientSocket(id);
-            }
-            else
-            {
-                if (connections.TryGetValue(id, out AsyncUserToken token))
-                {
-                    if (socks5EnumAuthState == Socks5EnumAuthState.Success)
-                    {
-                        token.Socks5Step = Socks5EnumStep.Command;
-                    }
-                    token.Socket.Send(new byte[] { token.Version, (byte)socks5EnumAuthState });
-                }
-            }
-        }
-        public void CommandResponse(ulong id, Socks5EnumResponseCommand socks5EnumResponseCommand)
-        {
-            if (socks5EnumResponseCommand != Socks5EnumResponseCommand.ConnecSuccess)
-            {
-                CloseClientSocket(id);
-            }
-            else
-            {
-                if (connections.TryGetValue(id, out AsyncUserToken token))
-                {
-                    if (socks5EnumResponseCommand == Socks5EnumResponseCommand.ConnecSuccess)
-                    {
-                        token.Socks5Step = Socks5EnumStep.Forward;
-                    }
-                    var resp = Socks5Parser.MakeConnectResponse(endpoint, (byte)socks5EnumResponseCommand);
-                    token.Socket.Send(resp);
-                    if (socks5EnumResponseCommand == Socks5EnumResponseCommand.ConnecSuccess)
-                    {
-                        token.Socks5Step = Socks5EnumStep.UnKnow;
-                    }
-                    if (token.Buffer.Size > 0)
-                    {
-                        token.Socket.Send(token.Buffer.Data.Slice(0, token.Buffer.Size).Span);
-                        token.Buffer.Clear(true);
-                    }
-                    if (token.CloseFlag)
-                    {
-                        CloseClientSocket(token.Id);
-                    }
-                }
-            }
-        }
-        public void Response(ulong id, Memory<byte> memory)
-        {
-            if (connections.TryGetValue(id, out AsyncUserToken token))
-            {
-                if (token.Socks5Step == Socks5EnumStep.UnKnow)
-                {
-                    if (memory.Length == 0)
-                    {
-                        CloseClientSocket(id);
-                    }
-                    else
-                    {
-                        token.Socket.Send(memory.Span);
-                    }
+                    CloseClientSocket(info.Id);
                 }
                 else
                 {
-                    if (memory.Length == 0)
+                    Socks5EnumStep step = token.DataWrap.Socks5Step;
+                    token.DataWrap.Socks5Step = info.Socks5Step;
+                    if (step == Socks5EnumStep.ForwardUdp)
                     {
-                        token.CloseFlag = true;
+                        udpClient.Send(info.Data.Span, info.SourceEP);
                     }
                     else
                     {
-                        token.Buffer.AddRange(memory, memory.Length);
+                        token.Socket.Send(info.Data.Span);
                     }
+
                 }
             }
-        }
-        public void ResponseUdp(Socks5Info info)
-        {
-            udpClient.Send(Socks5Parser.MakeUdpResponse(endpoint, info.Data).Span, info.SourceEP);
         }
 
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
             e.Dispose();
-            token.Clear();
-            connections.TryRemove(token.Id, out _);
-            socks5Handler.Close(token.Id);
+            if (token.Disposabled == false && connections.TryRemove(token.DataWrap.Id, out _))
+            {
+                if (OnClose != null && token.Disposabled == false)
+                {
+                    OnClose(token.DataWrap.Id);
+                }
+                token.Clear();
+            }
         }
         private void CloseClientSocket(ulong id)
         {
@@ -343,6 +252,10 @@ namespace common.socks5
             }
         }
 
+        public void Close(ulong id)
+        {
+            CloseClientSocket(id);
+        }
         public void Stop()
         {
             socket?.SafeClose();
@@ -355,18 +268,14 @@ namespace common.socks5
         }
     }
 
+
     public class AsyncUserToken
     {
-        public Socks5EnumStep Socks5Step { get; set; } = Socks5EnumStep.Request;
-        public byte Version { get; set; } = 0;
-        public ulong Id { get; set; } = 0;
         public Socket Socket { get; set; }
-        public ReceiveDataBuffer Buffer { get; set; } = new ReceiveDataBuffer();
-        public bool CloseFlag { get; set; } = false;
-
         public byte[] PoolBuffer { get; set; }
-
         public Socks5Info DataWrap { get; set; }
+
+        public bool Disposabled { get; private set; } = false;
 
         public void Clear()
         {
@@ -374,10 +283,9 @@ namespace common.socks5
             {
                 ArrayPool<byte>.Shared.Return(PoolBuffer);
             }
-
-            Buffer.Clear(true);
             Socket?.SafeClose();
             DataWrap = null;
+            Disposabled = true;
         }
     }
 

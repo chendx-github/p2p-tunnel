@@ -7,6 +7,9 @@ namespace common.socks5
 {
     public class Socks5Info
     {
+        public byte Version { get; set; } = 0;
+        public Socks5EnumStep Socks5Step { get; set; } = Socks5EnumStep.Request;
+
         public ulong Id { get; set; } = 0;
 
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
@@ -18,7 +21,7 @@ namespace common.socks5
         public byte[] ToBytes()
         {
             byte[] idBytes = Id.ToBytes();
-            int length = idBytes.Length + Data.Length + 1, index = 0;
+            int length = 1 + 1 + idBytes.Length + Data.Length + 1, index = 0;
             byte[] ipBytes = Helper.EmptyArray;
             byte[] portBytes = Helper.EmptyArray;
             if (SourceEP != null)
@@ -29,6 +32,12 @@ namespace common.socks5
             }
 
             byte[] bytes = new byte[length];
+            bytes[index] = (byte)Socks5Step;
+            index += 1;
+
+            bytes[index] = Version;
+            index += 1;
+
             Array.Copy(idBytes, 0, bytes, index, idBytes.Length);
             index += idBytes.Length;
 
@@ -56,6 +65,13 @@ namespace common.socks5
         {
             var span = bytes.Span;
             int index = 0;
+
+            Socks5Step = (Socks5EnumStep)span[index];
+            index += 1;
+
+            Version = span[index];
+            index += 1;
+
             Id = span.Slice(index, 8).ToUInt64();
             index += 8;
 
@@ -72,17 +88,11 @@ namespace common.socks5
             Data = bytes.Slice(index);
         }
 
-        public static (ulong id, Memory<byte> data) Read(Memory<byte> data)
+        public static Socks5Info Debytes(Memory<byte> data)
         {
-            int index = 0;
-            ulong id = data.Slice(0, 8).Span.ToUInt64();
-            index += 8;
-
-            index += data.Span[index];
-            index += 1;
-
-            Memory<byte> res = data.Slice(index);
-            return (id, res);
+            Socks5Info info = new Socks5Info();
+            info.DeBytes(data);
+            return info;
         }
     }
     /// <summary>
@@ -106,7 +116,7 @@ namespace common.socks5
         /// 转发
         /// </summary>
         Forward = 4,
-        UnKnow = 5,
+        ForwardUdp = 5,
     }
 
     /// <summary>

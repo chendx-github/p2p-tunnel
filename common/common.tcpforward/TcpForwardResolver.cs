@@ -217,7 +217,6 @@ namespace common.tcpforward
         private void Receive(TcpForwardInfo arg, byte[] data, int offset, int length)
         {
             arg.Buffer = data.AsMemory(offset, length);
-            //Logger.Instance.DebugError($"serverType2:{arg.Connection.ServerType},{arg.Data.RequestId},{arg.Connection.ConnectId},RequestId:{arg.Data.RequestId}");
             tcpForwardMessengerSender.SendResponse(arg).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
@@ -256,7 +255,7 @@ namespace common.tcpforward
 
         public int GetHashCode(ConnectionKey obj)
         {
-            return 0;
+            return obj.RequestId.GetHashCode() ^ obj.ConnectId.GetHashCode();
         }
     }
     public readonly struct ConnectionKey
