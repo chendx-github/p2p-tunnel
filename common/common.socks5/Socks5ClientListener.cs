@@ -125,6 +125,7 @@ namespace common.socks5
                     token.DataWrap.Data = buffer;
 
                     ExecuteHandle(token.DataWrap);
+                    token.DataWrap.Data = Helper.EmptyArray;
 
                     if (token.Socket.Available > 0)
                     {
@@ -136,6 +137,7 @@ namespace common.socks5
                             {
                                 token.DataWrap.Data = arr.AsMemory(0, length);
                                 ExecuteHandle(token.DataWrap);
+                                token.DataWrap.Data = Helper.EmptyArray;
                             }
                         }
                         ArrayPool<byte>.Shared.Return(arr);
@@ -172,6 +174,7 @@ namespace common.socks5
                 udpInfo.SourceEP = rep;
 
                 ExecuteHandle(udpInfo);
+                udpInfo.Data = Helper.EmptyArray;
 
                 result = udpClient.BeginReceive(ProcessReceiveUdp, null);
             }

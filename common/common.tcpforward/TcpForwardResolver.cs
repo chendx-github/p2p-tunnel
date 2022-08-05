@@ -19,7 +19,6 @@ namespace common.tcpforward
 
         Semaphore maxNumberAcceptedClients;
 
-
         public TcpForwardResolver(TcpForwardMessengerSender tcpForwardMessengerSender, Config config)
         {
             this.tcpForwardMessengerSender = tcpForwardMessengerSender;
@@ -226,7 +225,6 @@ namespace common.tcpforward
     {
         public Socket TargetSocket { get; set; }
         public ConnectionKey Key { get; set; }
-
         public TcpForwardInfo SendArg { get; set; }
 
         public byte[] Buffer { get; set; }

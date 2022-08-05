@@ -1,0 +1,14 @@
+﻿{
+  "Tunnels": [
+    /*
+    {
+      "ID": 2,
+      "Port": 8001,
+      "TargetIp": "127.0.0.1",
+      "TargetPort": 3389,
+      "Name": "", //目标客户端名
+      "TunnelType": 8 //2只tcp 4只udp 8优先tcp 16优先udp
+    }
+  */
+  ]
+}

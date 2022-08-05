@@ -10,18 +10,13 @@ namespace common.tcpforward
     public struct ListeningChangeInfo
     {
         public int Port { get; set; }
-        public bool Listening { get; set; }
-    }
-
-    public class TcpForwardTargetInfo
-    {
-        public IConnection Connection { get; set; }
-        public Memory<byte> Endpoint { get; set; }
+        public bool State { get; set; }
     }
 
     public class TcpForwardInfo
     {
         public TcpForwardInfo() { }
+        public int SourcePort { get; set; } = 0;
 
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
         public TcpForwardTypes ForwardType { get; set; } = TcpForwardTypes.FORWARD;
@@ -86,12 +81,6 @@ namespace common.tcpforward
 
             Buffer = memory.Slice(index);
         }
-    }
-    public class TcpForwardRequestInfo
-    {
-        public IConnection Connection { get; set; }
-        public int SourcePort { get; set; } = 0;
-        public TcpForwardInfo Msg { get; set; }
     }
 
     [Flags]

@@ -20,15 +20,16 @@ namespace common.socks5
 
         private readonly Socks5MessengerSender socks5MessengerSender;
         private readonly Config config;
-        private readonly WheelTimer<UdpToken> wheelTimer = new WheelTimer<UdpToken>();
+        private readonly WheelTimer<object> wheelTimer;
 
         Semaphore maxNumberAcceptedClients;
-        public Socks5ServerHandler(Socks5MessengerSender socks5MessengerSender, Config config)
+        public Socks5ServerHandler(Socks5MessengerSender socks5MessengerSender, Config config, WheelTimer<object> wheelTimer)
         {
             this.socks5MessengerSender = socks5MessengerSender;
             this.config = config;
             maxNumberAcceptedClients = new Semaphore(config.NumConnections, config.NumConnections);
 
+            this.wheelTimer = wheelTimer;
             TimeoutUdp();
 
             handles = new Dictionary<Socks5EnumStep, Action<IConnection>> {
@@ -114,20 +115,20 @@ namespace common.socks5
                     udpConnections.AddOrUpdate(key, token, (a, b) => token);
 
                     _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
-
+                    token.Data.Data = Helper.EmptyArray;
                     IAsyncResult result = socket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref token.TempRemoteEP, ReceiveCallbackUdp, token);
                 }
                 else
                 {
                     _ = token.TargetSocket.SendTo(sendData.Span, SocketFlags.None, remoteEndPoint);
+                    token.Data.Data = Helper.EmptyArray;
                 }
                 token.Update();
-
             }
         }
         private void TimeoutUdp()
         {
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<UdpToken>
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object>
             {
                 State = null,
                 Callback = (timeout) =>
@@ -156,6 +157,7 @@ namespace common.socks5
 
                     token.Update();
                     socks5MessengerSender.Response(token.Data, token.Connection);
+                    token.Data.Data = Helper.EmptyArray;
                 }
                 result = token.TargetSocket.BeginReceiveFrom(token.PoolBuffer, 0, token.PoolBuffer.Length, SocketFlags.None, ref token.TempRemoteEP, ReceiveCallbackUdp, token);
             }
@@ -338,7 +340,7 @@ namespace common.socks5
                     int length = e.BytesTransferred;
                     token.Data.Data = e.Buffer.AsMemory(offset, length);
                     socks5MessengerSender.Response(token.Data, token.Connection);
-
+                    token.Data.Data = Helper.EmptyArray;
 
                     if (token.TargetSocket.Available > 0)
                     {
@@ -350,6 +352,7 @@ namespace common.socks5
                             {
                                 token.Data.Data = arr.AsMemory(0, length);
                                 socks5MessengerSender.Response(token.Data, token.Connection);
+                                token.Data.Data = Helper.EmptyArray;
                             }
                         }
                         ArrayPool<byte>.Shared.Return(arr);

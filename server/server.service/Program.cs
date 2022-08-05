@@ -10,6 +10,7 @@ using server.service.manager;
 using System.Linq;
 using common.socks5;
 using server.service.socks5;
+using server.service.udpforward;
 
 namespace server.service
 {
@@ -29,14 +30,15 @@ namespace server.service
             Assembly[] assemblys = new Assembly[] {
                 typeof(CounterMessenger).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
+                typeof(UdpForwardMessenger).Assembly,
                 typeof(WebRTCMessenger).Assembly,
                 typeof(Socks5Messenger).Assembly,
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 
-            serviceCollection.AddMiddleware(assemblys).AddMessenger(assemblys).AddTcpServer().AddUdpServer().AddTcpForwardPlugin().AddSocks5();
+            serviceCollection.AddMiddleware(assemblys).AddMessenger(assemblys).AddTcpServer().AddUdpServer().AddTcpForwardPlugin().AddUdpForwardPlugin().AddSocks5();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            serviceProvider.UseMiddleware(assemblys).UseMessenger(assemblys).UseTcpServer().UseUdpServer().UseTcpForwardPlugin().UseSocks5();
+            serviceProvider.UseMiddleware(assemblys).UseMessenger(assemblys).UseTcpServer().UseUdpServer().UseTcpForwardPlugin().UseUdpForwardPlugin().UseSocks5();
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Info("没什么报红的，就说明运行成功了");

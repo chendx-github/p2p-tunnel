@@ -10,7 +10,7 @@ namespace server.service.tcpforward
         {
             services.AddSingleton<common.tcpforward.Config>();//启动器
             services.AddSingleton<ITcpForwardServer, TcpForwardServerPre>(); //监听服务
-            services.AddSingleton<TcpForwardMessengerSender, TcpForwardMessengerSender>(); //消息发送
+            services.AddSingleton<TcpForwardMessengerSender>(); //消息发送
             services.AddSingleton<TcpForwardTransfer>();//启动器
 
             services.AddSingleton<ITcpForwardTargetProvider, TcpForwardTargetProvider>(); //目标提供器

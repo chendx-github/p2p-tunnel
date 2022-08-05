@@ -33,8 +33,7 @@ namespace client.service.tcpforward
         public List<ServerForwardItemInfo> serverForwards = new List<ServerForwardItemInfo>();
         private readonly IConfigDataProvider<ServerForwardConfigInfo> serverConfigDataProvider;
 
-        private readonly common.tcpforward.Config config;
-        private readonly client.Config clientConfig;
+        private readonly Config clientConfig;
         private readonly RegisterStateInfo registerStateInfo;
         private readonly ui.api.Config uiconfig;
 
@@ -48,7 +47,7 @@ namespace client.service.tcpforward
             IConfigDataProvider<ServerForwardConfigInfo> serverConfigDataProvider,
 
             common.tcpforward.Config config,
-            client.Config clientConfig,
+            Config clientConfig,
             RegisterStateInfo registerStateInfo,
 
            TcpForwardMessengerSender tcpForwardMessengerSender,
@@ -59,7 +58,6 @@ namespace client.service.tcpforward
 
             this.serverConfigDataProvider = serverConfigDataProvider;
 
-            this.config = config;
             this.clientConfig = clientConfig;
             this.registerStateInfo = registerStateInfo;
 
@@ -73,11 +71,22 @@ namespace client.service.tcpforward
             tcpForwardServer.Init(config.NumConnections, config.BufferSize);
             tcpForwardServer.OnListeningChange.Sub((model) =>
             {
-                P2PListenInfo listen = GetP2PByPort(model.Port);
-                if (listen != null)
+                if (model.Port == 0)
                 {
-                    listen.Listening = model.Listening;
+                    p2pListens.ForEach(c =>
+                    {
+                        c.Listening = model.State;
+                    });
                 }
+                else
+                {
+                    P2PListenInfo listen = GetP2PByPort(model.Port);
+                    if (listen != null)
+                    {
+                        listen.Listening = model.State;
+                    }
+                }
+
             });
             registerStateInfo.OnRegisterStateChange.Sub((state) =>
             {
@@ -447,7 +456,7 @@ namespace client.service.tcpforward
             TcpForwardRegisterResult result = resp.Data.DeBytes<TcpForwardRegisterResult>();
             if (result.Code != TcpForwardRegisterResultCodes.OK)
             {
-                return result.Code.GetDesc((byte)result.Code);
+                return $"{result.Code.GetDesc((byte)result.Code)},{result.Msg}";
             }
 
             serverForwards.Add(forward);
@@ -547,7 +556,7 @@ namespace client.service.tcpforward
             else
             {
                 TcpForwardRegisterResult result = resp.Data.DeBytes<TcpForwardRegisterResult>();
-                sb.Append($" 【{result.Code.GetDesc((byte)result.Code)}】{result.Msg}");
+                sb.Append($" 【{result.Code.GetDesc((byte)result.Code)},{result.Msg}】{result.Msg}");
                 success = result.Code == TcpForwardRegisterResultCodes.OK;
             }
             if (success)

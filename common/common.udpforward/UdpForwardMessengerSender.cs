@@ -1,46 +1,47 @@
 ﻿using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using System.Threading.Tasks;
 
-namespace common.tcpforward
+namespace common.udpforward
 {
-    public class TcpForwardMessengerSender
+    public class UdpForwardMessengerSender
     {
         private readonly MessengerSender messengerSender;
-        public TcpForwardMessengerSender(MessengerSender messengerSender)
+        public UdpForwardMessengerSender(MessengerSender messengerSender)
         {
             this.messengerSender = messengerSender;
         }
 
-        public SimpleSubPushHandler<TcpForwardInfo> OnRequestHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
-        public async Task SendRequest(TcpForwardInfo arg)
+        public SimpleSubPushHandler<UdpForwardInfo> OnRequestHandler { get; } = new SimpleSubPushHandler<UdpForwardInfo>();
+        public async Task SendRequest(UdpForwardInfo arg)
         {
             var res = messengerSender.SendOnly(new MessageRequestWrap
             {
-                Path = "TcpForward/Request",
+                Path = "UdpForward/Request",
                 Connection = arg.Connection,
                 Content = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
-        public void OnRequest(TcpForwardInfo data)
+        public void OnRequest(UdpForwardInfo data)
         {
             OnRequestHandler.Push(data);
         }
 
-        public SimpleSubPushHandler<TcpForwardInfo> OnResponseHandler { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
-        public async Task SendResponse(TcpForwardInfo arg)
+        public SimpleSubPushHandler<UdpForwardInfo> OnResponseHandler { get; } = new SimpleSubPushHandler<UdpForwardInfo>();
+        public async Task SendResponse(UdpForwardInfo arg)
         {
             var res = messengerSender.SendOnly(new MessageRequestWrap
             {
-                Path = "TcpForward/Response",
+                Path = "UdpForward/Response",
                 Connection = arg.Connection,
                 Content = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
-        public void OnResponse(TcpForwardInfo data)
+        public void OnResponse(UdpForwardInfo data)
         {
             OnResponseHandler.Push(data);
         }
@@ -49,28 +50,28 @@ namespace common.tcpforward
         {
             return await messengerSender.SendReply(new MessageRequestWrap
             {
-                Path = "TcpForward/GetPorts",
+                Path = "UdpForward/GetPorts",
                 Connection = Connection,
                 Content = Helper.EmptyArray
             }).ConfigureAwait(false);
         }
 
-        public async Task<MessageResponeInfo> UnRegister(IConnection Connection, TcpForwardUnRegisterParamsInfo data)
+        public async Task<MessageResponeInfo> UnRegister(IConnection Connection, ushort port)
         {
             return await messengerSender.SendReply(new MessageRequestWrap
             {
-                Path = "TcpForward/UnRegister",
+                Path = "UdpForward/UnRegister",
                 Connection = Connection,
-                Content = data.ToBytes()
+                Content = port.ToBytes()
             }).ConfigureAwait(false);
         }
-        public async Task<MessageResponeInfo> Register(IConnection Connection, TcpForwardRegisterParamsInfo data)
+        public async Task<MessageResponeInfo> Register(IConnection Connection, UdpForwardRegisterParamsInfo param)
         {
             return await messengerSender.SendReply(new MessageRequestWrap
             {
-                Path = "TcpForward/Register",
+                Path = "UdpForward/Register",
                 Connection = Connection,
-                Content = data.ToBytes(),
+                Content = param.ToBytes(),
             }).ConfigureAwait(false);
         }
     }

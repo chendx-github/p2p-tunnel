@@ -18,30 +18,26 @@ namespace server.service.tcpforward
                 tcpForwardTargetCaching.ClearConnection(client.Name);
             });
         }
-        public TcpForwardTargetInfo Get(string host)
+        public void Get(string host,TcpForwardInfo info)
         {
-            return GetTarget(tcpForwardTargetCaching.Get(host));
+            GetTarget(tcpForwardTargetCaching.Get(host), info);
         }
-        public TcpForwardTargetInfo Get(int port)
+        public void Get(int port, TcpForwardInfo info)
         {
-            return GetTarget(tcpForwardTargetCaching.Get(port));
+            GetTarget(tcpForwardTargetCaching.Get(port), info);
         }
 
-        private TcpForwardTargetInfo GetTarget(TcpForwardTargetCacheInfo cacheInfo)
+        private void GetTarget(TcpForwardTargetCacheInfo cacheInfo, TcpForwardInfo info)
         {
-            if (cacheInfo == null)
+            if (cacheInfo != null)
             {
-                return new TcpForwardTargetInfo { };
+                if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
+                {
+                    cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.TcpConnection;
+                }
+                info.Connection = cacheInfo.Connection;
+                info.TargetEndpoint = cacheInfo.Endpoint;
             }
-            if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
-            {
-                cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.TcpConnection;
-            }
-            return new TcpForwardTargetInfo
-            {
-                Connection = cacheInfo.Connection,
-                Endpoint = cacheInfo.Endpoint,
-            };
         }
     }
 }

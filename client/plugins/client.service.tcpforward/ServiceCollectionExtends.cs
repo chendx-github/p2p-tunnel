@@ -29,7 +29,15 @@ namespace client.service.tcpforward
             Logger.Instance.Debug("tcp转发、http1.1代理已加载");
             Logger.Instance.Debug("tcp转发、http1.1代理已启动");
             var config = services.GetService<common.tcpforward.Config>();
-            
+
+            if (config.ConnectEnable)
+            {
+                Logger.Instance.Debug($"tcp转发已允许连接");
+            }
+            else
+            {
+                Logger.Instance.Info($"tcp转发未允许连接");
+            }
             if (config.LanConnectEnable)
             {
                 Logger.Instance.Debug($"http1.1代理已允许本地连接");

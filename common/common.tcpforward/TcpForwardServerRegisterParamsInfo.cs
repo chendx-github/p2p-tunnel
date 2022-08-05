@@ -31,7 +31,7 @@ namespace common.tcpforward
 
             byte[] tnameBytes = TargetName.ToBytes();
 
-            byte[] bytes = new byte[1 + 1 + sportBytes.Length + tportBytes.Length + sipBytes.Length + tipBytes.Length + tnameBytes.Length];
+            byte[] bytes = new byte[1 + 1 + 2 + 2 + 1 + sipBytes.Length + 1 + tipBytes.Length + 1 + tnameBytes.Length];
 
             int index = 0;
 
@@ -143,7 +143,7 @@ namespace common.tcpforward
         [Key(1)]
         public TcpForwardRegisterResultCodes Code { get; set; } = TcpForwardRegisterResultCodes.OK;
         [Key(2)]
-        public string Msg { get; set; } = String.Empty;
+        public string Msg { get; set; } = string.Empty;
         [Key(3)]
         public ulong ID { get; set; } = 0;
     }

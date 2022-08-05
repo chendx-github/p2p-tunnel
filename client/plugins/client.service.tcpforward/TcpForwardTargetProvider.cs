@@ -1,9 +1,7 @@
 ﻿using client.messengers.clients;
 using client.messengers.register;
-using common.libs;
 using common.server;
 using common.tcpforward;
-using System;
 
 namespace client.service.tcpforward
 {
@@ -28,30 +26,26 @@ namespace client.service.tcpforward
             });
         }
 
-        public TcpForwardTargetInfo Get(string domain)
+        public void Get(string domain, TcpForwardInfo info)
         {
-            return GetTarget(tcpForwardTargetCaching.Get(domain));
+            GetTarget(tcpForwardTargetCaching.Get(domain), info);
         }
-        public TcpForwardTargetInfo Get(int port)
+        public void Get(int port, TcpForwardInfo info)
         {
-            return GetTarget(tcpForwardTargetCaching.Get(port));
+            GetTarget(tcpForwardTargetCaching.Get(port), info);
         }
 
-        private TcpForwardTargetInfo GetTarget(TcpForwardTargetCacheInfo cacheInfo)
+        private void GetTarget(TcpForwardTargetCacheInfo cacheInfo, TcpForwardInfo info)
         {
-            if (cacheInfo == null)
+            if (cacheInfo != null)
             {
-                return new TcpForwardTargetInfo { };
+                if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
+                {
+                    cacheInfo.Connection = SelectConnection(cacheInfo);
+                }
+                info.Connection = cacheInfo.Connection;
+                info.TargetEndpoint = cacheInfo.Endpoint;
             }
-            if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
-            {
-                cacheInfo.Connection = SelectConnection(cacheInfo);
-            }
-            return new TcpForwardTargetInfo
-            {
-                Connection = cacheInfo.Connection,
-                Endpoint = cacheInfo.Endpoint,
-            };
         }
 
         private IConnection SelectConnection(TcpForwardTargetCacheInfo cacheInfo)

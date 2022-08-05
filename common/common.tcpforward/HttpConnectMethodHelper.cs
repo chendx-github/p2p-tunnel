@@ -45,7 +45,7 @@ namespace common.tcpforward
             var span = memory.Span;
             int start = connectMethodValue.Length + 1;
             int hostEndindex = -1, portEndIndex = -1;
-            for (int i = start, len = memory.Length; i < len; i++)
+            for (int i = start, len = span.Length; i < len; i++)
             {
                 if (span[i] == 58)
                 {

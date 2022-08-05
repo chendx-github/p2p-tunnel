@@ -12,13 +12,13 @@ namespace common.tcpforward
         /// </summary>
         /// <param name="domain"></param>
         /// <returns></returns>
-        TcpForwardTargetInfo Get(string domain);
+        void Get(string domain, TcpForwardInfo info);
         /// <summary>
         /// tunnel
         /// </summary>
         /// <param name="port"></param>
         /// <returns></returns>
-        TcpForwardTargetInfo Get(int port);
+        void Get(int port, TcpForwardInfo info);
     }
     /// <summary>
     /// 目标缓存器，缓存注册的监听和转发信息，以提供后续查询

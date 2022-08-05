@@ -4,6 +4,7 @@ using client.service.logger;
 using client.service.messengers;
 using client.service.socks5;
 using client.service.tcpforward;
+using client.service.udpforward;
 using client.service.ui.api.manager;
 using client.service.ui.api.service;
 using client.service.ui.api.service.clientServer;
@@ -48,6 +49,7 @@ namespace client.service
                 typeof(FtpMessengerBase).Assembly,
                 typeof(LoggerClientService).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
+                typeof(UdpForwardMessenger).Assembly,
                 typeof(ClientServer).Assembly,
                 typeof(CounterClientService).Assembly,
                 typeof(WebRTCMessenger).Assembly,
@@ -60,6 +62,7 @@ namespace client.service
                 .AddServerPlugin(assemblys)//基础的功能
                 .AddUI(assemblys)//客户端管理
                 .AddTcpForwardPlugin()  //客户端tcp转发
+                .AddUdpForwardPlugin()  //客户端udp转发
                 .AddSocks5() //socks5代理
                 .AddFtpPlugin() //文件服务
                 .AddLoggerPlugin() //日志
@@ -71,6 +74,7 @@ namespace client.service
                 .UseServerPlugin(assemblys)//基础的功能
                 .UseUI(assemblys)//客户端管理
                 .UseTcpForwardPlugin()//客户端tcp转发
+                .UseUdpForwardPlugin()//客户端tcp转发
                 .UseSocks5()//socks5代理
                 .UseFtpPlugin() //文件服务
                 .UseLoggerPlugin() //日志
@@ -91,27 +95,27 @@ namespace client.service
         {
             Logger.Instance.OnLogger.Sub((model) =>
              {
-                  ConsoleColor currentForeColor = Console.ForegroundColor;
-                  switch (model.Type)
-                  {
-                      case LoggerTypes.DEBUG:
-                          Console.ForegroundColor = ConsoleColor.Blue;
-                          break;
-                      case LoggerTypes.INFO:
-                          Console.ForegroundColor = ConsoleColor.White;
-                          break;
-                      case LoggerTypes.WARNING:
-                          Console.ForegroundColor = ConsoleColor.Yellow;
-                          break;
-                      case LoggerTypes.ERROR:
-                          Console.ForegroundColor = ConsoleColor.Red;
-                          break;
-                      default:
-                          break;
-                  }
-                  Console.WriteLine($"[{model.Type.ToString().PadRight(7)}][{model.Time:yyyy-MM-dd HH:mm:ss}]:{model.Content}");
-                  Console.ForegroundColor = currentForeColor;
-              });
+                 ConsoleColor currentForeColor = Console.ForegroundColor;
+                 switch (model.Type)
+                 {
+                     case LoggerTypes.DEBUG:
+                         Console.ForegroundColor = ConsoleColor.Blue;
+                         break;
+                     case LoggerTypes.INFO:
+                         Console.ForegroundColor = ConsoleColor.White;
+                         break;
+                     case LoggerTypes.WARNING:
+                         Console.ForegroundColor = ConsoleColor.Yellow;
+                         break;
+                     case LoggerTypes.ERROR:
+                         Console.ForegroundColor = ConsoleColor.Red;
+                         break;
+                     default:
+                         break;
+                 }
+                 Console.WriteLine($"[{model.Type.ToString().PadRight(7)}][{model.Time:yyyy-MM-dd HH:mm:ss}]:{model.Content}");
+                 Console.ForegroundColor = currentForeColor;
+             });
         }
     }
 }

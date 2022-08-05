@@ -13,7 +13,7 @@ namespace common.tcpforward
         public void Stop(int sourcePort);
         public void Stop();
 
-        public SimpleSubPushHandler<TcpForwardRequestInfo> OnRequest { get; }
+        public SimpleSubPushHandler<TcpForwardInfo> OnRequest { get; }
         public SimpleSubPushHandler<ListeningChangeInfo> OnListeningChange { get; }
     }
    

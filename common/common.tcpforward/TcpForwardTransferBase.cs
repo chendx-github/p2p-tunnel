@@ -24,7 +24,7 @@ namespace common.tcpforward
             tcpForwardMessengerSender.OnResponseHandler.Sub(tcpForwardServer.Response);
         }
 
-        private void OnRequest(TcpForwardRequestInfo request)
+        private void OnRequest(TcpForwardInfo request)
         {
             if (request.Connection == null || !request.Connection.Connected)
             {
@@ -34,61 +34,41 @@ namespace common.tcpforward
 
             if (request.Connection == null)
             {
-                request.Msg.Buffer = HttpParseHelper.BuildMessage("未选择转发对象，或者未与转发对象建立连接");
-                tcpForwardServer.Response(request.Msg);
+                request.Buffer = HttpParseHelper.BuildMessage("未选择转发对象，或者未与转发对象建立连接");
+                tcpForwardServer.Response(request);
             }
             else
             {
-                request.Msg.Connection = request.Connection;
-                request.Connection.ReceiveBytes += (ulong)request.Msg.Buffer.Length;
-                tcpForwardMessengerSender.SendRequest(request.Msg).ConfigureAwait(false).GetAwaiter().GetResult();
+                request.Connection = request.Connection;
+                request.Connection.ReceiveBytes += (ulong)request.Buffer.Length;
+                tcpForwardMessengerSender.SendRequest(request).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 
-        private void GetTarget(TcpForwardRequestInfo request)
+        private void GetTarget(TcpForwardInfo request)
         {
-            TcpForwardTargetInfo target;
-            Memory<byte> ip = Helper.EmptyArray;
-
-            request.Msg.ForwardType = TcpForwardTypes.FORWARD;
+            request.ForwardType = TcpForwardTypes.FORWARD;
             //短链接
-            if (request.Msg.AliveType == TcpForwardAliveTypes.WEB)
+            if (request.AliveType == TcpForwardAliveTypes.WEB)
             {
                 //http1.1代理
-                if (HttpConnectMethodHelper.IsConnectMethod(request.Msg.Buffer.Span))
+                if (HttpConnectMethodHelper.IsConnectMethod(request.Buffer.Span))
                 {
-                    request.Msg.ForwardType = TcpForwardTypes.PROXY;
-                    target = tcpForwardTargetProvider?.Get(request.SourcePort);
-                    if (target != null)
-                    {
-                        ip = HttpConnectMethodHelper.GetHost(request.Msg.Buffer);
-                    }
+                    request.ForwardType = TcpForwardTypes.PROXY;
+                    tcpForwardTargetProvider?.Get(request.SourcePort, request);
+                    request.TargetEndpoint = HttpConnectMethodHelper.GetHost(request.Buffer);
                 }
                 //正常的http请求
                 else
                 {
-                    string domain = HttpParseHelper.GetHost(request.Msg.Buffer.Span).GetString();
-                    target = tcpForwardTargetProvider?.Get(domain);
-                    if (target != null)
-                    {
-                        ip = target.Endpoint;
-                    }
+                    string domain = HttpParseHelper.GetHost(request.Buffer.Span).GetString();
+                    tcpForwardTargetProvider?.Get(domain, request);
                 }
             }
             //长连接
             else
             {
-                target = tcpForwardTargetProvider?.Get(request.SourcePort);
-                if (target != null)
-                {
-                    ip = target.Endpoint;
-                }
-            }
-
-            if (target != null)
-            {
-                request.Connection = target.Connection;
-                request.Msg.TargetEndpoint = ip;
+                tcpForwardTargetProvider?.Get(request.SourcePort, request);
             }
         }
     }

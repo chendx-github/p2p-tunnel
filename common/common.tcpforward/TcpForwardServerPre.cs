@@ -20,8 +20,10 @@ namespace common.tcpforward
         SocketAsyncEventArgsPool readWritePool;
         Semaphore maxNumberAcceptedClients;
 
-        public SimpleSubPushHandler<TcpForwardRequestInfo> OnRequest { get; } = new SimpleSubPushHandler<TcpForwardRequestInfo>();
+        public SimpleSubPushHandler<TcpForwardInfo> OnRequest { get; } = new SimpleSubPushHandler<TcpForwardInfo>();
         public SimpleSubPushHandler<ListeningChangeInfo> OnListeningChange { get; } = new SimpleSubPushHandler<ListeningChangeInfo>();
+        private readonly ServersManager serversManager = new ServersManager();
+        private readonly ClientsManager clientsManager = new ClientsManager();
 
         private NumberSpace requestIdNs = new NumberSpace(0);
 
@@ -53,16 +55,12 @@ namespace common.tcpforward
         }
         public void Start(int port, TcpForwardAliveTypes aliveType)
         {
-            if (ServerInfo.Contains(port))
+            if (serversManager.Contains(port))
                 return;
 
             BindAccept(port, aliveType);
 
-            OnListeningChange.Push(new ListeningChangeInfo
-            {
-                Port = port,
-                Listening = true
-            });
+            OnListeningChange.Push(new ListeningChangeInfo { Port = port, State = true });
         }
 
         private void BindAccept(int port, TcpForwardAliveTypes aliveType)
@@ -73,7 +71,7 @@ namespace common.tcpforward
             socket.Bind(endpoint);
             socket.Listen(int.MaxValue);
 
-            ServerInfo.Add(new ServerInfo
+            serversManager.TryAdd(new ServerInfo
             {
                 SourcePort = port,
                 Socket = socket
@@ -85,7 +83,7 @@ namespace common.tcpforward
                 SourceSocket = socket,
                 SourcePort = port,
             };
-            token.Request.Msg.AliveType = aliveType;
+            token.Request.AliveType = aliveType;
             token.Request.SourcePort = port;
             acceptEventArg.UserToken = token;
             acceptEventArg.Completed += IO_Completed;
@@ -135,21 +133,13 @@ namespace common.tcpforward
             try
             {
                 token.SourceSocket = e.AcceptSocket;
-                token.Request.Msg.RequestId = requestIdNs.Increment();
-                token.Request.Msg.AliveType = acceptToken.Request.Msg.AliveType;
+                token.Request.RequestId = requestIdNs.Increment();
+                token.Request.AliveType = acceptToken.Request.AliveType;
                 token.Request.SourcePort = acceptToken.SourcePort;
                 token.SourcePort = acceptToken.SourcePort;
                 token.Request.Connection = null;
 
-                ClientCacheInfo.Add(token);
-
-                //长连接的话，得先发送个空数据过去，让它先连接，不能等得到第一次数据才过去连接并发送数据
-                /*
-                if (token.Request.Msg.AliveType == TcpForwardAliveTypes.TUNNEL)
-                {
-                    Receive(readEventArgs, Helper.EmptyArray, 0, 0);
-                }
-                */
+                clientsManager.TryAdd(token);
 
                 if (!e.AcceptSocket.ReceiveAsync(readEventArgs))
                 {
@@ -181,10 +171,8 @@ namespace common.tcpforward
                                 Receive(e, arr, 0, length);
                             }
                         }
-
                         ArrayPool<byte>.Shared.Return(arr);
                     }
-                    //token.SourceSocket.Send(GetData("response text"));
                     if (token.SourceSocket.Connected)
                     {
                         if (!token.SourceSocket.ReceiveAsync(e))
@@ -208,7 +196,6 @@ namespace common.tcpforward
             }
         }
 
-
         private void ProcessSend(SocketAsyncEventArgs e)
         {
             if (e.SocketError == SocketError.Success)
@@ -227,31 +214,30 @@ namespace common.tcpforward
         private void Receive(SocketAsyncEventArgs e, byte[] data, int offset, int length)
         {
             ForwardAsyncUserToken token = (ForwardAsyncUserToken)e.UserToken;
-            token.Request.Msg.Buffer = data.AsMemory(offset, length);
+            token.Request.Buffer = data.AsMemory(offset, length);
             OnRequest.Push(token.Request);
-            token.Request.Msg.Buffer = Helper.EmptyArray;
+            token.Request.Buffer = Helper.EmptyArray;
         }
 
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             ForwardAsyncUserToken token = e.UserToken as ForwardAsyncUserToken;
 
-            ClientCacheInfo.Remove(token.Request.Msg.RequestId);
-            token.SourceSocket.SafeClose();
+            clientsManager.TryRemove(token.Request.RequestId, out _);
 
             readWritePool.Push(e);
             maxNumberAcceptedClients.Release();
 
             if (token.Request.Connection != null)
             {
-                token.Request.Msg.Buffer = Helper.EmptyArray;
+                token.Request.Buffer = Helper.EmptyArray;
                 OnRequest.Push(token.Request);
             }
         }
 
         public void Response(TcpForwardInfo model)
         {
-            if (ClientCacheInfo.Get(model.RequestId, out ForwardAsyncUserToken token))
+            if (clientsManager.TryGetValue(model.RequestId, out ForwardAsyncUserToken token))
             {
                 var span = model.Buffer.Span;
                 if (span.Length > 0)
@@ -262,38 +248,34 @@ namespace common.tcpforward
                     }
                     catch (Exception)
                     {
-                        ClientCacheInfo.Remove(model.RequestId);
+                        clientsManager.TryRemove(model.RequestId, out _);
                     }
                 }
                 else
                 {
-                    ClientCacheInfo.Remove(model.RequestId);
+                    clientsManager.TryRemove(model.RequestId, out _);
                 }
             }
         }
 
-        public void Stop(ServerInfo model)
-        {
-            OnListeningChange.Push(new ListeningChangeInfo
-            {
-                Port = model.SourcePort,
-                Listening = false
-            });
-
-            ClientCacheInfo.Clear(model.SourcePort);
-            model.Remove();
-        }
         public void Stop(int sourcePort)
         {
-            if (ServerInfo.Get(sourcePort, out ServerInfo model))
+            if (serversManager.TryRemove(sourcePort, out ServerInfo model))
             {
-                Stop(model);
+                OnListeningChange.Push(new ListeningChangeInfo
+                {
+                    Port = model.SourcePort,
+                    State = false
+                });
+
+                clientsManager.Clear(model.SourcePort);
             }
         }
         public void Stop()
         {
-            ServerInfo.Clear();
-            ClientCacheInfo.Clear();
+            serversManager.Clear();
+            clientsManager.Clear();
+            OnListeningChange.Push(new ListeningChangeInfo { Port = 0, State = true });
         }
     }
 
@@ -301,91 +283,93 @@ namespace common.tcpforward
     {
         public Socket SourceSocket { get; set; }
         public int SourcePort { get; set; } = 0;
-        public TcpForwardRequestInfo Request { get; set; } = new TcpForwardRequestInfo { Msg = new TcpForwardInfo() };
+        public TcpForwardInfo Request { get; set; } = new TcpForwardInfo();
     }
-
-    public class ClientCacheInfo
+    public class ClientsManager
     {
-        private static ConcurrentDictionary<ulong, ForwardAsyncUserToken> clients = new();
+        private ConcurrentDictionary<ulong, ForwardAsyncUserToken> clients = new();
 
-        public static bool Add(ForwardAsyncUserToken model)
+        public bool TryAdd(ForwardAsyncUserToken model)
         {
-            return clients.TryAdd(model.Request.Msg.RequestId, model);
+            return clients.TryAdd(model.Request.RequestId, model);
         }
-        public static bool Get(ulong id, out ForwardAsyncUserToken c)
+        public bool TryGetValue(ulong id, out ForwardAsyncUserToken c)
         {
             return clients.TryGetValue(id, out c);
         }
-        public static void Remove(ulong id)
+        public bool TryRemove(ulong id, out ForwardAsyncUserToken c)
         {
-            if (clients.TryRemove(id, out ForwardAsyncUserToken c))
+            bool res = clients.TryRemove(id, out c);
+            if (res)
             {
                 try
                 {
                     c.SourceSocket.SafeClose();
+                    GC.Collect();
                 }
                 catch (Exception)
                 {
                 }
             }
+            return res;
         }
-        public static void Clear(int sourcePort)
+        public void Clear(int sourcePort)
         {
             IEnumerable<ulong> requestIds = clients.Where(c => c.Value.SourcePort == sourcePort).Select(c => c.Key);
             foreach (var requestId in requestIds)
             {
-                Remove(requestId);
+                TryRemove(requestId, out _);
             }
         }
-        public static void Clear()
+        public void Clear()
         {
             IEnumerable<ulong> requestIds = clients.Select(c => c.Key);
             foreach (var requestId in requestIds)
             {
-                Remove(requestId);
+                TryRemove(requestId, out _);
             }
         }
     }
-    public class ServerInfo
+
+    public class ServersManager
     {
-        public int SourcePort { get; set; } = 0;
-        public Socket Socket { get; set; }
-
-        public static ConcurrentDictionary<int, ServerInfo> services = new();
-
-        public static bool Add(ServerInfo model)
+        public ConcurrentDictionary<int, ServerInfo> services = new();
+        public bool TryAdd(ServerInfo model)
         {
             return services.TryAdd(model.SourcePort, model);
         }
-        public static bool Contains(int port)
+        public bool Contains(int port)
         {
             return services.ContainsKey(port);
         }
-        public static bool Get(int port, out ServerInfo c)
+        public bool TryGetValue(int port, out ServerInfo c)
         {
             return services.TryGetValue(port, out c);
         }
-
-        public static void Remove(int port)
+        public bool TryRemove(int port, out ServerInfo c)
         {
-            if (services.TryRemove(port, out ServerInfo c))
+            bool res = services.TryRemove(port, out c);
+            if (res)
             {
                 try
                 {
                     c.Socket.SafeClose();
+                    GC.Collect();
                 }
                 catch (Exception)
                 {
                 }
             }
+            return res;
         }
-        public static void Clear()
+        public void Clear()
         {
             foreach (var item in services.Values)
             {
                 try
                 {
                     item.Socket.SafeClose();
+                    GC.Collect();
                 }
                 catch (Exception)
                 {
@@ -394,9 +378,10 @@ namespace common.tcpforward
             services.Clear();
         }
 
-        public void Remove()
-        {
-            Remove(SourcePort);
-        }
+    }
+    public class ServerInfo
+    {
+        public int SourcePort { get; set; } = 0;
+        public Socket Socket { get; set; }
     }
 }
