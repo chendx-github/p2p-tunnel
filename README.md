@@ -26,9 +26,9 @@
 
 ## 通信模式
 1. **udp转发**1对1
-1. **tcp转发**1对1，不支持像ftp这样的多通道
-2. **http1.1代理**多对多，支持ftp
-3. **socks5代理**多对多，支持ftp
+1. **tcp转发**1对1
+2. **http1.1代理**多对多
+3. **socks5代理**多对多
 
 ## 通信流程
 1. A <--tcp转发-->B<---->内网服务
@@ -44,10 +44,10 @@
 - [x] .NET6 跨平台，小尺寸，小内存<br><a href="https://github.com/neuecc/MessagePack-CSharp" target="_blank">MessagePack 序列化</a>，<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
 - [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
 - [x] p2p 打洞、tcp、udp
-- [x] tcp转发(不支持ftp)
+- [x] tcp转发
 - [x] udp转发
-- [x] http代理(支持ftp(被动模式))
-- [x] socks5代理(支持tcp，udp，不实现bind，支持ftp(被动模式))
+- [x] http代理
+- [x] socks5代理(支持tcp，udp，不实现bind)
 - [x] 简单易用的客户端web管理页面
 - [x] 方便使用的命令行管理命令
 - [x] 支持通信数据加密
@@ -74,6 +74,7 @@
         3. client.service.logger  日志记录的web展示
         4. client.service.socks5  socks5代理客户端及服务端
         5. client.service.tcpforward tcp转发，及 http代理
+        5. client.service.udpforward udp转发
     2. client 客户端公共内容
     3. client.service **客户端**
     4. client.service.command 客户端命令行管理工具
@@ -83,12 +84,14 @@
     2. common.server 服务器
     3. common.socks5 socks5代理(支持tcp、udp，不实现bind)
     4. common.tcpforward tcp转发公共定义
+    4. common.udpforward udp转发公共定义
 3. server
     1. plugins
         1. server.service.manager 服务端管理接口
         2. server.service.manager.models 服务端管理接口定义
         3. server.service.socks5 socks5代理服务端
         4. server.service.tcpforward 服务端代理转发，实现内网穿透
+        4. server.service.udpforward 服务端代理转发，实现内网穿透
         5. server.service.webrtc webrtc
         6. server.service.webrtc.models
     2. server //打洞服务端定义
