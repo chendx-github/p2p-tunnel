@@ -30,8 +30,12 @@ namespace common.udpforward
             if (serversManager.Contains(sourcePort))
                 return;
 
+
+
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, sourcePort);
             var udpClient = new UdpClient(localEndPoint);
+
+            serversManager.TryAdd(new ForwardAsyncServerToken { SourcePort = sourcePort, UdpClient = udpClient });
             IAsyncResult result = udpClient.BeginReceive(ProcessReceiveUdp, new ForwardAsyncServerToken { SourcePort = sourcePort, UdpClient = udpClient });
 
             OnListenChange.Push(new UdpforwardListenChangeInfo { Port = sourcePort, State = true });

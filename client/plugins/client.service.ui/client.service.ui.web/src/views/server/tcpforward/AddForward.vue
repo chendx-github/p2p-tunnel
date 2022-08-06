@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-03-24 15:15:31
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 19:54:34
+ * @LastEditTime: 2022-08-06 13:37:29
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\server\tcpforward\AddForward.vue
@@ -24,6 +24,9 @@
                     <el-option v-for="(item,key) in shareData.tunnelTypes" :key="key" :label="item" :value="key">
                     </el-option>
                 </el-select>
+            </el-form-item>
+            <el-form-item label="简单说明" prop="Desc">
+                <el-input v-model="form.Desc"></el-input>
             </el-form-item>
         </el-form>
         <div class="remark t-c" v-html="remark"></div>
@@ -56,6 +59,7 @@ export default {
                 AliveType: addForwardData.value.AliveType,
                 ServerPort: addForwardData.value.ServerPort,
                 Domain: registerState.ServerConfig.Ip,
+                Desc: '',
                 LocalIp: '',
                 LocalPort: 0,
                 TunnelType: '2',
@@ -101,7 +105,6 @@ export default {
                 json.AliveType = Number(json.AliveType);
                 json.LocalPort = Number(json.LocalPort);
                 json.TunnelType = Number(json.TunnelType);
-                console.log(json);
                 AddServerForward(json).then((res) => {
                     state.loading = false;
                     if (res) {

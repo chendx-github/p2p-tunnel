@@ -69,6 +69,16 @@ namespace client.service.udpforward
             ServerForwardItemInfo forward = arg.Content.DeJson<ServerForwardItemInfo>();
             return await udpForwardTransfer.AddServerForward(forward);
         }
+        public async Task<string> StartServerForward(ClientServiceParamsInfo arg)
+        {
+            ForwardSettingParamsInfo forward = arg.Content.DeJson<ForwardSettingParamsInfo>();
+            return await udpForwardTransfer.StartServerForward(forward.Port);
+        }
+        public async Task<string> StopServerForward(ClientServiceParamsInfo arg)
+        {
+            ForwardSettingParamsInfo forward = arg.Content.DeJson<ForwardSettingParamsInfo>();
+            return await udpForwardTransfer.StopServerForward(forward.Port);
+        }
         public async Task<string> RemoveServerForward(ClientServiceParamsInfo arg)
         {
             ForwardSettingParamsInfo forward = arg.Content.DeJson<ForwardSettingParamsInfo>();

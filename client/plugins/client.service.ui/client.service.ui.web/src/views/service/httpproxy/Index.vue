@@ -2,13 +2,14 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-12 21:49:37
+ * @LastEditTime: 2022-08-06 13:51:08
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
 -->
 <template>
     <div class="proxy-wrap">
+        <h3 class="title t-c">{{$route.meta.name}}</h3>
         <el-alert class="alert" type="warning" show-icon :closable="false" title="http1.1代理，如果服务端开启，则也可以代理到服务端" />
         <div class="form">
             <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="80px">

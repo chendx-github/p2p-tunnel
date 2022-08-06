@@ -5,7 +5,8 @@
       "Domain": "127.0.0.1",
       "ServerPort": 8000,
       "LocalIp": "127.0.0.1",
-      "LocalPort": 80
+      "LocalPort": 80,
+      "Listening":false,
     }
   */
   ],
@@ -14,7 +15,8 @@
     {
       "ServerPort": 1935,
       "LocalIp": "127.0.0.1",
-      "LocalPort": 3389
+      "LocalPort": 3389,
+    "Listening":false,
     }
   */
   ]

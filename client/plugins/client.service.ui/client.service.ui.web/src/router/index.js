@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 19:51:05
+ * @LastEditTime: 2022-08-06 15:12:36
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\router\index.js
@@ -41,6 +41,12 @@ const routes = [
                 meta: { name: 'http代理', service: 'TcpForwardClientService' }
             },
             {
+                path: '/service-udp-forward.html',
+                name: 'ServiceUdpForward',
+                component: () => import('../views/service/udpforward/Index.vue'),
+                meta: { name: 'UDP转发', service: 'UdpForwardClientService' }
+            },
+            {
                 path: '/service-socks5.html',
                 name: 'ServiceSocks5',
                 component: () => import('../views/service/socks5/Index.vue'),
@@ -77,7 +83,13 @@ const routes = [
                 name: 'ServerTcpForward',
                 component: () => import('../views/server/tcpforward/Index.vue'),
                 meta: { name: '服务器代理TCP转发', service: 'TcpForwardClientService' }
-            }
+            },
+            {
+                path: '/server-udp-forward.html',
+                name: 'ServerUdpForward',
+                component: () => import('../views/server/udpforward/Index.vue'),
+                meta: { name: '服务器代理UDP转发', service: 'UdpForwardClientService' }
+            },
         ]
     }
 ]

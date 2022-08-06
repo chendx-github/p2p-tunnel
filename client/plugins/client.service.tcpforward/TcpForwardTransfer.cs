@@ -130,6 +130,7 @@ namespace client.service.tcpforward
                     old.IsCustomPac = param.IsCustomPac;
                     old.IsPac = param.IsPac;
                     old.Pac = param.Pac;
+                    old.Desc = param.Desc;
                 }
                 else
                 {
@@ -144,7 +145,8 @@ namespace client.service.tcpforward
                         Name = param.Name,
                         Pac = param.Pac,
                         IsCustomPac = param.IsCustomPac,
-                        IsPac = param.IsPac
+                        IsPac = param.IsPac,
+                        Desc = param.Desc
                     });
                 }
                 if (param.Listening)
@@ -377,6 +379,17 @@ namespace client.service.tcpforward
                     {
                     }
                 }
+                if (listen.Listening)
+                {
+                    try
+                    {
+                        StartP2P(listen);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error(ex.Message);
+                    }
+                }
             }
             foreach (var listen in config.Tunnels)
             {
@@ -394,6 +407,17 @@ namespace client.service.tcpforward
                     }
                     catch (Exception)
                     {
+                    }
+                }
+                if (listen.Listening)
+                {
+                    try
+                    {
+                        StartP2P(listen);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Instance.Error(ex.Message);
                     }
                 }
             }
@@ -447,6 +471,7 @@ namespace client.service.tcpforward
                 TargetPort = forward.LocalPort,
                 TargetName = clientConfig.Client.Name,
                 TunnelType = forward.TunnelType,
+
             }).ConfigureAwait(false);
             if (resp.Code != MessageResponeCodes.OK)
             {
@@ -460,6 +485,68 @@ namespace client.service.tcpforward
             }
 
             serverForwards.Add(forward);
+            SaveServerConfig();
+            return string.Empty;
+        }
+        public async Task<string> StartServerForward(ServerForwardItemInfo forward)
+        {
+            ServerForwardItemInfo forwardInfo;
+            if (forward.AliveType == TcpForwardAliveTypes.WEB)
+            {
+                forwardInfo = serverForwards.FirstOrDefault(c => c.Domain == forward.Domain && c.ServerPort == forward.ServerPort);
+            }
+            else
+            {
+                forwardInfo = serverForwards.FirstOrDefault(c => c.ServerPort == forward.ServerPort);
+            }
+            if (forwardInfo == null)
+            {
+                return "未找到操作对象";
+            }
+            var resp = await tcpForwardMessengerSender.Register(registerStateInfo.TcpConnection, new TcpForwardRegisterParamsInfo
+            {
+                AliveType = forward.AliveType,
+                SourceIp = forward.Domain,
+                SourcePort = forward.ServerPort,
+                TargetIp = forward.Domain,
+                TargetName = clientConfig.Client.Name,
+                TargetPort = forward.ServerPort,
+                TunnelType = forward.TunnelType
+            }).ConfigureAwait(false);
+            if (resp.Code != MessageResponeCodes.OK)
+            {
+                return resp.Code.GetDesc((byte)resp.Code);
+            }
+            forwardInfo.Listening = true;
+            SaveServerConfig();
+            return string.Empty;
+        }
+        public async Task<string> StopServerForward(ServerForwardItemInfo forward)
+        {
+            ServerForwardItemInfo forwardInfo;
+            if (forward.AliveType == TcpForwardAliveTypes.WEB)
+            {
+                forwardInfo = serverForwards.FirstOrDefault(c => c.Domain == forward.Domain && c.ServerPort == forward.ServerPort);
+            }
+            else
+            {
+                forwardInfo = serverForwards.FirstOrDefault(c => c.ServerPort == forward.ServerPort);
+            }
+            if (forwardInfo == null)
+            {
+                return "未找到操作对象";
+            }
+            var resp = await tcpForwardMessengerSender.UnRegister(registerStateInfo.TcpConnection, new TcpForwardUnRegisterParamsInfo
+            {
+                AliveType = forward.AliveType,
+                SourceIp = forward.Domain,
+                SourcePort = forward.ServerPort,
+            }).ConfigureAwait(false);
+            if (resp.Code != MessageResponeCodes.OK)
+            {
+                return resp.Code.GetDesc((byte)resp.Code);
+            }
+            forwardInfo.Listening = false;
             SaveServerConfig();
             return string.Empty;
         }
@@ -494,6 +581,7 @@ namespace client.service.tcpforward
             return string.Empty;
         }
 
+
         private ServerForwardConfigInfo ReadServerConfig()
         {
             var config = serverConfigDataProvider.Load().Result;
@@ -519,11 +607,11 @@ namespace client.service.tcpforward
         {
             Task.Run(async () =>
             {
-                foreach (var item in serverForwardConfigInfo.Webs)
+                foreach (var item in serverForwardConfigInfo.Webs.Where(c => c.Listening == true))
                 {
                     await SendRegister(item, TcpForwardAliveTypes.WEB).ConfigureAwait(false);
                 }
-                foreach (var item in serverForwardConfigInfo.Tunnels)
+                foreach (var item in serverForwardConfigInfo.Tunnels.Where(c => c.Listening == true))
                 {
                     await SendRegister(item, TcpForwardAliveTypes.TUNNEL).ConfigureAwait(false);
                 }
@@ -639,6 +727,7 @@ namespace client.service.tcpforward
 
         public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
 
+        public string Desc { get; set; } = String.Empty;
         public bool IsPac { get; set; } = false;
         public bool IsCustomPac { get; set; } = false;
         public string Pac { get; set; } = string.Empty;
@@ -684,9 +773,12 @@ namespace client.service.tcpforward
         /// </summary>
         public string Name { get; set; } = String.Empty;
         /// <summary>
-        /// 代理时填写，是否直接开始监听
+        /// 是否直接开始监听
         /// </summary>
         public bool Listening { get; set; } = false;
+
+        public string Desc { get; set; } = string.Empty;
+
         /// <summary>
         /// 代理时填写，是否设置pac代理
         /// </summary>
@@ -703,11 +795,11 @@ namespace client.service.tcpforward
     public class P2PForwardInfo
     {
         public int ID { get; set; } = 0;
-        public string Name { get; set; } = String.Empty;
-        public string SourceIp { get; set; } = String.Empty;
-        public string TargetIp { get; set; } = String.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string SourceIp { get; set; } = string.Empty;
+        public string TargetIp { get; set; } = string.Empty;
         public int TargetPort { get; set; } = 0;
-        public string Desc { get; set; } = String.Empty;
+        public string Desc { get; set; } = string.Empty;
         public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
     }
 
@@ -726,5 +818,7 @@ namespace client.service.tcpforward
         public string LocalIp { get; set; }
         public int LocalPort { get; set; }
         public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
+        public string Desc { get; set; } = string.Empty;
+        public bool Listening { get; set; } = false;
     }
 }

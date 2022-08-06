@@ -102,11 +102,22 @@ namespace client.service.tcpforward
             ServerForwardItemInfo forward = arg.Content.DeJson<ServerForwardItemInfo>();
             return await tcpForwardTransfer.AddServerForward(forward);
         }
+        public async Task<string> StartServerForward(ClientServiceParamsInfo arg)
+        {
+            ServerForwardItemInfo forward = arg.Content.DeJson<ServerForwardItemInfo>();
+            return await tcpForwardTransfer.StartServerForward(forward);
+        }
+        public async Task<string> StopServerForward(ClientServiceParamsInfo arg)
+        {
+            ServerForwardItemInfo forward = arg.Content.DeJson<ServerForwardItemInfo>();
+            return await tcpForwardTransfer.StopServerForward(forward);
+        }
         public async Task<string> RemoveServerForward(ClientServiceParamsInfo arg)
         {
             ServerForwardItemInfo forward = arg.Content.DeJson<ServerForwardItemInfo>();
             return await tcpForwardTransfer.RemoveServerForward(forward);
         }
+
     }
 
     public class ForwardSettingParamsInfo

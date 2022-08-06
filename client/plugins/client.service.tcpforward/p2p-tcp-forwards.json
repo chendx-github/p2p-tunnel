@@ -6,6 +6,7 @@
       "Port": 8000,
       "ForwardType": 1, // 1转发  2代理
       "AliveType": 2, //1长连接 2短链接
+      "Listening":false,
       "Forwards": [
         {
           "ID": 11,
@@ -29,6 +30,7 @@
       "Port": 8001,
       "ForwardType": 1, // 1转发  2代理
       "AliveType": 1, //1长连接 2短链接
+     "Listening":false,
       "Forwards": [
         {
           "ID": 22,

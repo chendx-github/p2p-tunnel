@@ -86,22 +86,39 @@ namespace client.service.udpforward
             {
 
                 P2PListenInfo oldPort = GetP2PByPort(param.Port);
-                if (oldPort.ID > 0)
+                if (oldPort.ID > 0 && oldPort.ID != param.ID)
                 {
                     return "已存在";
                 }
 
-                param.ID = listenNS.Increment();
-                p2PConfigInfo.Tunnels.Add(new P2PListenInfo
+                udpForwardTargetCaching.Remove(oldPort.Port);
+                if (oldPort.ID > 0)
                 {
-                    Port = param.Port,
-                    ID = param.ID,
-                    TunnelType = param.TunnelType,
-                    Name = param.Name,
-                    Listening = param.Listening,
-                    TargetIp = param.TargetIp,
-                    TargetPort = param.TargetPort,
-                });
+                    StopP2PListen(oldPort);
+                    oldPort.Port = param.Port;
+                    oldPort.TargetIp = param.TargetIp;
+                    oldPort.TargetPort = param.TargetPort;
+                    oldPort.TunnelType = param.TunnelType;
+                    oldPort.Name = param.Name;
+                    oldPort.Desc = param.Desc;
+                    oldPort.Listening = param.Listening;
+                }
+                else
+                {
+                    param.ID = listenNS.Increment();
+                    p2PConfigInfo.Tunnels.Add(new P2PListenInfo
+                    {
+                        Port = param.Port,
+                        ID = param.ID,
+                        TunnelType = param.TunnelType,
+                        Name = param.Name,
+                        Listening = param.Listening,
+                        TargetIp = param.TargetIp,
+                        TargetPort = param.TargetPort,
+                        Desc = param.Desc,
+                    });
+                }
+
                 udpForwardTargetCaching.Add(param.Port, new UdpForwardTargetCacheInfo
                 {
                     Name = param.Name,
@@ -121,6 +138,7 @@ namespace client.service.udpforward
             }
             return string.Empty;
         }
+
         public void RemoveP2PListen(int port)
         {
             RemoveP2PListen(GetP2PByPort(port));
@@ -209,11 +227,17 @@ namespace client.service.udpforward
                         Name = listen.Name,
                         TunnelType = listen.TunnelType
                     });
+                    if (listen.Listening)
+                    {
+                        udpForwardServer.Start(listen.Port);
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.Instance.Error(ex.Message);
                 }
             }
+            listenNS.Reset(config.Tunnels.Count > 0 ? config.Tunnels.Max(c => c.ID) : 1);
             return config;
         }
         private string SaveP2PConfig()
@@ -260,10 +284,49 @@ namespace client.service.udpforward
             UdpForwardRegisterResult result = resp.Data.DeBytes<UdpForwardRegisterResult>();
             if (result.Code != UdpForwardRegisterResultCodes.OK)
             {
-                return result.Code.GetDesc((byte)result.Code);
+                return result.Msg;
             }
 
             serverConfigInfo.Tunnels.Add(forward);
+            SaveServerConfig();
+            return string.Empty;
+        }
+        public async Task<string> StartServerForward(int port)
+        {
+            ServerForwardItemInfo forwardInfo = serverConfigInfo.Tunnels.FirstOrDefault(c => c.ServerPort == port);
+            if (forwardInfo == null)
+            {
+                return "未找到操作对象";
+            }
+            var resp = await udpForwardMessengerSender.Register(registerStateInfo.TcpConnection, new UdpForwardRegisterParamsInfo
+            {
+                SourcePort = forwardInfo.ServerPort,
+                TargetIp = forwardInfo.LocalIp,
+                TargetPort = forwardInfo.LocalPort,
+                TargetName = clientConfig.Client.Name,
+                TunnelType = forwardInfo.TunnelType
+            }).ConfigureAwait(false);
+            if (resp.Code != MessageResponeCodes.OK)
+            {
+                return resp.Code.GetDesc((byte)resp.Code);
+            }
+            forwardInfo.Listening = true;
+            SaveServerConfig();
+            return string.Empty;
+        }
+        public async Task<string> StopServerForward(int port)
+        {
+            ServerForwardItemInfo forwardInfo = serverConfigInfo.Tunnels.FirstOrDefault(c => c.ServerPort == port);
+            if (forwardInfo == null)
+            {
+                return "未找到操作对象";
+            }
+            var resp = await udpForwardMessengerSender.UnRegister(registerStateInfo.TcpConnection, (ushort)port).ConfigureAwait(false);
+            if (resp.Code != MessageResponeCodes.OK)
+            {
+                return resp.Code.GetDesc((byte)resp.Code);
+            }
+            forwardInfo.Listening = false;
             SaveServerConfig();
             return string.Empty;
         }
@@ -299,7 +362,7 @@ namespace client.service.udpforward
         {
             Task.Run(async () =>
             {
-                foreach (var item in serverConfigInfo.Tunnels)
+                foreach (var item in serverConfigInfo.Tunnels.Where(c => c.Listening))
                 {
                     await SendRegister(item).ConfigureAwait(false);
                 }
@@ -362,6 +425,7 @@ namespace client.service.udpforward
         public UdpForwardTunnelTypes TunnelType { get; set; } = UdpForwardTunnelTypes.TCP_FIRST;
         public string TargetIp { get; set; } = String.Empty;
         public int TargetPort { get; set; } = 0;
+        public string Desc { get; set; } = string.Empty;
     }
     [Table("server-udp-forwards")]
     public class ServerConfigInfo
@@ -375,5 +439,7 @@ namespace client.service.udpforward
         public string LocalIp { get; set; }
         public int LocalPort { get; set; }
         public UdpForwardTunnelTypes TunnelType { get; set; } = UdpForwardTunnelTypes.TCP_FIRST;
+        public string Desc { get; set; } = string.Empty;
+        public bool Listening { get; set; } = false;
     }
 }

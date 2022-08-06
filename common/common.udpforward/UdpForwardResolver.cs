@@ -47,11 +47,10 @@ namespace common.udpforward
                     {
                         return;
                     }
-
-                    token.TargetEP = endpoint;
-
                     Socket socket = new Socket(endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                     token = new UdpToken { Connection = arg.Connection, Data = arg, TargetSocket = socket, };
+
+                    token.TargetEP = endpoint;
                     token.PoolBuffer = ArrayPool<byte>.Shared.Rent(65535);
                     connections.AddOrUpdate(key, token, (a, b) => token);
 

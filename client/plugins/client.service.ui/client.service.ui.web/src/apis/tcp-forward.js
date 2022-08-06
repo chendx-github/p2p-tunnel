@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-21 13:58:43
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 18:27:30
+ * @LastEditTime: 2022-08-06 15:42:26
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\apis\tcp-forward.js
@@ -74,6 +74,12 @@ export const getServerForwards = () => {
 
 export const AddServerForward = (model) => {
     return sendWebsocketMsg(`tcpforward/AddServerForward`, model);
+}
+export const startServerForward = (model) => {
+    return sendWebsocketMsg(`tcpforward/StartServerForward`, model);
+}
+export const stopServerForward = (model) => {
+    return sendWebsocketMsg(`tcpforward/StopServerForward`, model);
 }
 export const removeServerForward = (model) => {
     return sendWebsocketMsg(`tcpforward/RemoveServerForward`, model);

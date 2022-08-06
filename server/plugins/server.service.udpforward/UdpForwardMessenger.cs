@@ -100,6 +100,7 @@ namespace server.service.udpforward
                     {
                         return new UdpForwardRegisterResult { Code = UdpForwardRegisterResultCodes.EXISTS };
                     }
+                    tcpForwardTargetCaching.Remove(model.SourcePort);
                     tcpForwardTargetCaching.Add(model.SourcePort, new UdpForwardTargetCacheInfo
                     {
                         Name = source.Name,

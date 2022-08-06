@@ -2,22 +2,25 @@
  * @Author: snltty
  * @Date: 2022-03-24 15:15:31
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 17:34:42
+ * @LastEditTime: 2022-08-06 13:32:41
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\tcpforward\AddListen.vue
 -->
 <template>
-    <el-dialog title="监听" destroy-on-close v-model="show" center :close-on-click-modal="false" width="300px">
+    <el-dialog :title="form.ID > 0?'编辑监听':'新增监听'" destroy-on-close v-model="show" center :close-on-click-modal="false" width="300px">
         <el-form ref="formDom" :model="form" :rules="rules" label-width="80px">
             <el-form-item label="监听端口" prop="Port">
-                <el-input v-model="form.Port"></el-input>
+                <el-input v-model="form.Port" :readonly="form.ID > 0"></el-input>
             </el-form-item>
             <el-form-item label="连接类型" prop="AliveType">
                 <el-select v-model="form.AliveType" placeholder="选择类型">
                     <el-option v-for="(item,index) in shareData.aliveTypes" :key="index" :label="item" :value="index">
                     </el-option>
                 </el-select>
+            </el-form-item>
+            <el-form-item label="简单说明" prop="Desc">
+                <el-input v-model="form.Desc"></el-input>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -45,6 +48,7 @@ export default {
                 ID: addListenData.value.ID || 0,
                 Port: addListenData.value.Port || 0,
                 AliveType: addListenData.value.AliveType || '1',
+                Desc: addListenData.value.Desc || '',
                 ForwardType: 1,
                 TunnelType: 2
             },
@@ -80,7 +84,6 @@ export default {
                 json.AliveType = Number(json.AliveType);
                 json.ForwardType = Number(json.ForwardType);
                 json.TunnelType = Number(json.TunnelType);
-                console.log(json);
                 addListen(json).then(() => {
                     state.loading = false;
                     state.show = false;
