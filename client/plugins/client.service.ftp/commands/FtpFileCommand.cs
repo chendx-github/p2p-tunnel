@@ -1,5 +1,4 @@
 ﻿using common.libs.extends;
-using MessagePack;
 using System;
 using System.Text;
 
@@ -12,10 +11,7 @@ namespace client.service.ftp.commands
         public ulong Md5 { get; set; }
         public string FullName { get; set; }
 
-        [IgnoreMember]
         public byte[] MetaData { get; set; }
-
-        [IgnoreMember]
         public ReadOnlyMemory<byte> ReadData { get; set; }
 
         public byte[] ToBytes()

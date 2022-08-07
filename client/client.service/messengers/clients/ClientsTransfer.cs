@@ -112,7 +112,8 @@ namespace client.service.messengers.clients
         {
             if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
             {
-                PunchHoleReverseInfo model = arg.Data.Data.DeBytes<PunchHoleReverseInfo>();
+                PunchHoleReverseInfo model = new PunchHoleReverseInfo();
+                model.DeBytes(arg.Data.Data);
                 ConnectClient(client, model.TryReverse);
             }
         }

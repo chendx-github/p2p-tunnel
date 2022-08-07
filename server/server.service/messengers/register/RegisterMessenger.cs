@@ -19,28 +19,29 @@ namespace server.service.messengers.register
             this.registerKeyValidator = registerKeyValidator;
         }
 
-        public RegisterResultInfo Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
-            RegisterParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<RegisterParamsInfo>();
+            RegisterParamsInfo model = new RegisterParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
             //验证key
             if (!registerKeyValidator.Validate(connection, model))
             {
-                return new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.KEY_VERIFY };
+                return new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.KEY_VERIFY }.ToBytes();
             }
 
             return connection.ServerType switch
             {
                 ServerType.UDP => Udp(connection, model),
                 ServerType.TCP => Tcp(connection, model),
-                _ => new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.UNKNOW }
+                _ => new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.UNKNOW }.ToBytes()
             };
         }
-        private RegisterResultInfo Udp(IConnection connection, RegisterParamsInfo model)
+        private byte[] Udp(IConnection connection, RegisterParamsInfo model)
         {
             (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
             if (verify != null)
             {
-                return verify;
+                return verify.ToBytes();
             }
 
             client.UpdateUdpInfo(connection);
@@ -57,18 +58,18 @@ namespace server.service.messengers.register
             {
                 Id = client.Id,
                 Ip = connection.Address.Address,
-                Port = connection.Address.Port,
+                UdpPort = connection.Address.Port,
                 TcpPort = 0,
                 GroupId = client.GroupId,
                 Relay = config.Relay
-            };
+            }.ToBytes();
         }
-        private RegisterResultInfo Tcp(IConnection connection, RegisterParamsInfo model)
+        private byte[] Tcp(IConnection connection, RegisterParamsInfo model)
         {
             (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
             if (verify != null)
             {
-                return verify;
+                return verify.ToBytes();
             }
 
             client.UpdateTcpInfo(connection);
@@ -85,11 +86,11 @@ namespace server.service.messengers.register
             {
                 Id = model.Id,
                 Ip = client.UdpConnection.Address.Address,
-                Port = client.UdpConnection.Address.Port,
+                UdpPort = client.UdpConnection.Address.Port,
                 TcpPort = connection.Address.Port,
                 GroupId = client.GroupId,
                 Relay = config.Relay
-            };
+            }.ToBytes();
         }
         private (RegisterResultInfo, RegisterCacheInfo) VerifyAndAdd(RegisterParamsInfo model)
         {
@@ -141,43 +142,5 @@ namespace server.service.messengers.register
             await clientRegisterCache.Notify(connection).ConfigureAwait(false);
         }
 
-        public TunnelRegisterInfo TunnelInfo(IConnection connection)
-        {
-            if (!clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo client))
-            {
-                return new TunnelRegisterInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.VERIFY };
-            }
-            return new TunnelRegisterInfo
-            {
-                Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.OK,
-                Port = connection.ServerType == ServerType.UDP ? connection.Address.Port : connection.Address.Port
-            };
-        }
-        public TunnelRegisterResultInfo Tunnel(IConnection connection)
-        {
-            if (!clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo client))
-            {
-                return new TunnelRegisterResultInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.VERIFY };
-            }
-
-            TunnelRegisterParamsInfo model = new TunnelRegisterParamsInfo();
-            model.DeBytes(connection.ReceiveRequestWrap.Memory);
-
-            TunnelRegisterCacheInfo cache = new TunnelRegisterCacheInfo
-            {
-                TunnelName = model.TunnelName,
-                Port = model.Port,
-                LocalPort = model.LocalPort,
-                Servertype = connection.ServerType
-            };
-            if (client.TunnelExists(cache.TunnelName))
-            {
-                return new TunnelRegisterResultInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.SAME_NAMES };
-            }
-
-            client.AddTunnel(cache);
-
-            return new TunnelRegisterResultInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.OK };
-        }
     }
 }

@@ -21,7 +21,7 @@ namespace client.service.ui.api.manager
             this.registerState = registerState;
         }
 
-        public async Task<CommonResponseInfo<CounterResultInfo>> Info(ClientServiceParamsInfo arg)
+        public async Task<CounterResultInfo> Info(ClientServiceParamsInfo arg)
         {
             if (registerState.TcpConnection != null)
             {
@@ -34,7 +34,9 @@ namespace client.service.ui.api.manager
                 }).ConfigureAwait(false);
                 if (resp.Code == MessageResponeCodes.OK)
                 {
-                    return resp.Data.DeBytes<CommonResponseInfo<CounterResultInfo>>();
+                    CounterResultInfo res = new CounterResultInfo();
+                    res.DeBytes(resp.Data);
+                    return res;
                 }
                 else
                 {

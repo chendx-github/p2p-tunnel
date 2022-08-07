@@ -23,12 +23,12 @@ namespace client.service.messengers.crypto
             this.config = config;
         }
 
-        public string Key(IConnection connection)
+        public byte[] Key(IConnection connection)
         {
-            return asymmetricCrypto.Key.PublicKey;
+            return asymmetricCrypto.Key.PublicKey.ToBytes();
         }
 
-        public bool Set(IConnection connection)
+        public byte[] Set(IConnection connection)
         {
             string password;
             if (connection.ReceiveRequestWrap.Memory.Length > 0)
@@ -42,12 +42,12 @@ namespace client.service.messengers.crypto
             }
             if (string.IsNullOrWhiteSpace(password))
             {
-                return false;
+                return false.ToBytes();
             }
 
             ISymmetricCrypto encoder = cryptoFactory.CreateSymmetric(password);
             connection.EncodeEnable(encoder);
-            return true;
+            return true.ToBytes();
         }
         public bool Clear(IConnection connection)
         {

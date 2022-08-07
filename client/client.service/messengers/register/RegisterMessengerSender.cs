@@ -53,7 +53,8 @@ namespace client.service.messengers.register
                 return new RegisterResult { NetState = result };
             }
 
-            RegisterResultInfo res = result.Data.DeBytes<RegisterResultInfo>();
+            RegisterResultInfo res = new RegisterResultInfo();
+            res.DeBytes(result.Data);
             if (res.Code != RegisterResultInfoCodes.OK)
             {
                 return new RegisterResult { NetState = result, Data = res };
@@ -80,8 +81,9 @@ namespace client.service.messengers.register
                 return new RegisterResult { NetState = tcpResult };
             }
 
-            RegisterResultInfo tcpRes = tcpResult.Data.DeBytes<RegisterResultInfo>();
-            return new RegisterResult { NetState = tcpResult, Data = tcpRes };
+            RegisterResultInfo tcpres = new RegisterResultInfo();
+            tcpres.DeBytes(tcpResult.Data);
+            return new RegisterResult { NetState = tcpResult, Data = tcpres };
         }
         public async Task<bool> Notify()
         {
@@ -129,41 +131,6 @@ namespace client.service.messengers.register
             }
         }
 
-        public async Task<TunnelRegisterInfo> TunnelInfo(IConnection connection)
-        {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
-            {
-                Connection = connection,
-                Content = Helper.EmptyArray,
-                Path = "register/TunnelInfo"
-            }).ConfigureAwait(false);
-            if (result.Code != MessageResponeCodes.OK)
-            {
-                return new TunnelRegisterInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.UNKNOW };
-            }
-
-            return result.Data.DeBytes<TunnelRegisterInfo>();
-        }
-        public async Task<TunnelRegisterResultInfo> TunnelRegister(TunnelRegisterParams param)
-        {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
-            {
-                Connection = param.Connection,
-                Content = new TunnelRegisterParamsInfo
-                {
-                    LocalPort = param.LocalPort,
-                    Port = param.Port,
-                    TunnelName = param.TunnelName
-                }.ToBytes(),
-                Path = "register/tunnel"
-            }).ConfigureAwait(false);
-            if (result.Code != MessageResponeCodes.OK)
-            {
-                return new TunnelRegisterResultInfo { Code = TunnelRegisterResultInfo.TunnelRegisterResultInfoCodes.UNKNOW };
-            }
-
-            return result.Data.DeBytes<TunnelRegisterResultInfo>();
-        }
     }
 
     public class TunnelRegisterParams

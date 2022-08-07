@@ -1,9 +1,6 @@
 ﻿using common.libs.database;
-using MessagePack;
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace client.service.ui.api
@@ -71,7 +68,6 @@ namespace client.service.ui.api
         public IPAddress BindIp { get; set; } = IPAddress.Loopback;
 
     }
-    [MessagePackObject]
     public class WebsocketConfig
     {
         public int Port { get; set; } = 8098;

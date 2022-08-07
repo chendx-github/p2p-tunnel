@@ -1,5 +1,4 @@
 ﻿using common.libs.extends;
-using MessagePack;
 using System;
 using System.ComponentModel;
 using System.Net;
@@ -137,15 +136,44 @@ namespace common.tcpforward
         }
     }
 
-    [MessagePackObject]
     public class TcpForwardRegisterResult
     {
-        [Key(1)]
         public TcpForwardRegisterResultCodes Code { get; set; } = TcpForwardRegisterResultCodes.OK;
-        [Key(2)]
-        public string Msg { get; set; } = string.Empty;
-        [Key(3)]
         public ulong ID { get; set; } = 0;
+        public string Msg { get; set; } = string.Empty;
+        public byte[] ToBytes()
+        {
+            var idBytes = ID.ToBytes();
+            var msgBytes = Msg.ToBytes();
+            var bytes = new byte[1 + 8 + 1 + msgBytes.Length];
+
+            int index = 0;
+
+            bytes[index] = (byte)Code;
+            index += 1;
+
+            Array.Copy(idBytes, 0, bytes, index, msgBytes.Length);
+            index += 8;
+
+            bytes[index] = (byte)msgBytes.Length;
+            index += 1;
+            Array.Copy(msgBytes, 0, bytes, index, msgBytes.Length);
+
+            return bytes;
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            Code = (TcpForwardRegisterResultCodes)span[index];
+            index += 1;
+
+            ID = span.Slice(index, 8).ToUInt64();
+            index += 8;
+
+            Msg = span.Slice(index + 1, span[index]).GetString();
+        }
     }
 
     [Flags]

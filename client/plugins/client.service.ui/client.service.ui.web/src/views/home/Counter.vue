@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-24 13:42:57
+ * @LastEditTime: 2022-08-07 14:05:20
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\home\Counter.vue
@@ -187,7 +187,7 @@ export default {
         const updateData = () => {
             getCounter().then((res) => {
                 if (res) {
-                    const json = res.Data;
+                    const json = res;
                     state.OnlineCount = json.OnlineCount;
                     state.Cpu = json.Cpu;
                     state.Memory = json.Memory;

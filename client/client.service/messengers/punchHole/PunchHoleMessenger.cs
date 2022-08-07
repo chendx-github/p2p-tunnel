@@ -16,7 +16,8 @@ namespace client.service.messengers.punchHole
 
         public void Execute(IConnection connection)
         {
-            PunchHoleParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<PunchHoleParamsInfo>();
+            PunchHoleParamsInfo model = new PunchHoleParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             punchHoleMessengerSender.OnPunchHole(new OnPunchHoleArg
             {

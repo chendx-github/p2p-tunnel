@@ -1,4 +1,5 @@
 ﻿using client.service.ui.api.clientServer;
+using common.libs;
 using common.libs.extends;
 using common.server;
 using server.service.webrtc.models;
@@ -14,7 +15,7 @@ namespace client.service.ui.api.webrtc
             this.clientServer = clientServer;
         }
 
-        public bool Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
             WebRTCConnectionInfo model = new WebRTCConnectionInfo();
             model.DeBytes(connection.ReceiveRequestWrap.Memory);
@@ -27,7 +28,7 @@ namespace client.service.ui.api.webrtc
                 RequestId = 0
             });
 
-            return true;
+            return Helper.TrueArray;
         }
     }
 

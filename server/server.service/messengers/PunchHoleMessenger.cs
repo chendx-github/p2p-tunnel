@@ -1,7 +1,9 @@
-﻿using common.libs.extends;
+﻿using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using server.messengers.register;
+using System;
 using System.Threading.Tasks;
 
 namespace server.service.messengers
@@ -17,9 +19,10 @@ namespace server.service.messengers
             this.messengerSender = messengerSender;
         }
 
-        public async Task<bool> Execute(IConnection connection)
+        public async Task<byte[]> Execute(IConnection connection)
         {
-            PunchHoleParamsInfo model = connection.ReceiveRequestWrap.Memory.DeBytes<PunchHoleParamsInfo>();
+            PunchHoleParamsInfo model = new PunchHoleParamsInfo();
+            model.DeBytes(connection.ReceiveRequestWrap.Memory);
 
             //A已注册
             if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo source))
@@ -34,7 +37,7 @@ namespace server.service.messengers
                         {
                             if (!source.GetTunnel(model.TunnelName, out TunnelRegisterCacheInfo tunnel))
                             {
-                                return false;
+                                return Helper.FalseArray;
                             }
 
                             model.Data = new PunchHoleNotifyInfo
@@ -49,17 +52,18 @@ namespace server.service.messengers
                         }
 
                         model.FromId = connection.ConnectId;
-                        return await messengerSender.SendOnly(new MessageRequestWrap
+                        var res = await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
                             Content = model.ToBytes(),
                             MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);
+                        return res ? Helper.TrueArray : Helper.FalseArray;
                     }
                 }
             }
-            return false;
+            return Helper.FalseArray;
         }
     }
 }

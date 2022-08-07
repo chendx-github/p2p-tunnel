@@ -37,7 +37,7 @@ namespace client.service.ftp.client
         {
             config.ClientRootPath = config.ClientCurrentPath = path;
         }
-        public IEnumerable<FileInfo> LocalList(string path)
+        public FileInfoWrap LocalList(string path)
         {
             if (string.IsNullOrWhiteSpace(config.ClientCurrentPath))
             {
@@ -83,7 +83,7 @@ namespace client.service.ftp.client
             }));
 
             config.ClientCurrentPath = dirInfo.FullName;
-            return files;
+            return new FileInfoWrap { Data = files.ToArray() };
         }
         public SpecialFolderInfo GetSpecialFolders()
         {
@@ -151,7 +151,7 @@ namespace client.service.ftp.client
             await Upload(CurrentPath, path, client, targetCurrentPath).ConfigureAwait(false);
         }
 
-        public async Task<FileInfo[]> RemoteList(string path, ClientInfo client)
+        public async Task<FileInfoWrap> RemoteList(string path, ClientInfo client)
         {
             var response = await SendReplyTcp(new FtpListCommand { Path = path }, client).ConfigureAwait(false);
             if (response.Code == MessageResponeCodes.OK)
@@ -159,7 +159,9 @@ namespace client.service.ftp.client
                 FtpResultInfo result = FtpResultInfo.FromBytes(response.Data);
                 if (result.Code == FtpResultInfo.FtpResultCodes.OK)
                 {
-                    return result.ReadData.DeBytes<FileInfo[]>();
+                    FileInfoWrap wrap = new FileInfoWrap();
+                    wrap.DeBytes(result.ReadData);
+                    return wrap;
                 }
                 else
                 {
@@ -168,7 +170,7 @@ namespace client.service.ftp.client
             }
             else
             {
-                throw new Exception(response.Data.DeBytes<string>());
+                throw new Exception(response.Data.GetString());
             }
         }
         public async Task<bool> Download(string path, ClientInfo client, string targetCurrentPath = "")

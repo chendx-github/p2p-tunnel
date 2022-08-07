@@ -88,7 +88,7 @@ namespace client.service.ftp.client
             return false;
 
         }
-        public async Task<FileInfo[]> RemoteList(ClientServiceParamsInfo arg)
+        public async Task<FileInfoWrap> RemoteList(ClientServiceParamsInfo arg)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace client.service.ftp.client
             {
                 arg.SetCode(-1, ex.Message);
             }
-            return Array.Empty<FileInfo>();
+            return new FileInfoWrap();
         }
         public async Task<bool> Download(ClientServiceParamsInfo arg)
         {

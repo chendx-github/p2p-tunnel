@@ -2,7 +2,6 @@
 using client.messengers.register;
 using common.libs;
 using common.libs.extends;
-using MessagePack;
 using Microsoft.Extensions.DependencyInjection;
 using common.server;
 using common.server.model;
@@ -10,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Net;
-using System.Net.Sockets;
 using client.service.messengers.register;
 
 namespace client.service.messengers.punchHole
@@ -65,7 +62,7 @@ namespace client.service.messengers.punchHole
                 Path = "punchhole/Execute",
                 Content = new PunchHoleParamsInfo
                 {
-                    Data = arg.Data.ToBytes(),
+                    Data = msg.ToBytes(),
                     PunchForwardType = msg.ForwardType,
                     FromId = 0,
                     PunchStep = msg.Step,

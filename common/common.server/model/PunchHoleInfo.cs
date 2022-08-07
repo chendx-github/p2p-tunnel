@@ -1,59 +1,89 @@
 ﻿using common.libs;
-using MessagePack;
+using common.libs.extends;
 using System;
 using System.ComponentModel;
 using System.Net;
 
 namespace common.server.model
 {
-    /// <summary>
-    /// 打洞
-    /// </summary>
-    [MessagePackObject]
     public class PunchHoleParamsInfo
     {
         public PunchHoleParamsInfo() { }
-
-
-        [Key(1)]
-        public ulong FromId { get; set; } = 0;
-
-        [Key(2)]
-        public ulong ToId { get; set; } = 0;
-
-        /// <summary>
-        /// 数据
-        /// </summary>
-        [Key(3)]
-        public byte[] Data { get; set; } = Helper.EmptyArray;
-
-        /// <summary>
-        /// 打洞类型，客户端根据不同的打洞类型做不同处理
-        /// </summary>
-        [Key(4)]
-        public byte PunchType { get; set; } = 0;
-
-        /// <summary>
-        /// 经过服务器的转发类型 决定原数据转发，还是重写为客户端数据
-        /// </summary>
-        [Key(5)]
         public PunchForwardTypes PunchForwardType { get; set; } = PunchForwardTypes.NOTIFY;
-
-        [Key(6)]
-        public string TunnelName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 客户端自定义步骤
-        /// </summary>
-        [Key(7)]
         public byte PunchStep { get; set; } = 0;
-
-        /// <summary>
-        /// 猜想的端口
-        /// </summary>
-        [Key(8)]
+        public byte PunchType { get; set; } = 0;
         public int GuessPort { get; set; } = 0;
+        public ulong FromId { get; set; } = 0;
+        public ulong ToId { get; set; } = 0;
+        public string TunnelName { get; set; } = string.Empty;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public ReadOnlyMemory<byte> Data { get; set; } = Helper.EmptyArray;
+        public byte[] ToBytes()
+        {
+            var guessPortBytes = GuessPort.ToBytes();
+            var fromidBytes = FromId.ToBytes();
+            var toidBytes = ToId.ToBytes();
+            var nameBytes = TunnelName.ToBytes();
 
+            var bytes = new byte[
+                1 + 1 + 1 + 8 + 8
+                + 2
+                + 1 + nameBytes.Length + Data.Length
+                ];
+            int index = 0;
+
+            bytes[index] = (byte)PunchForwardType;
+            index += 1;
+            bytes[index] = PunchStep;
+            index += 1;
+            bytes[index] = PunchType;
+            index += 1;
+
+            bytes[index] = guessPortBytes[0];
+            bytes[index + 1] = guessPortBytes[1];
+            index += 2;
+
+            Array.Copy(fromidBytes, 0, bytes, index, fromidBytes.Length);
+            index += 8;
+            Array.Copy(toidBytes, 0, bytes, index, toidBytes.Length);
+            index += 8;
+
+            bytes[index] = (byte)nameBytes.Length;
+            Array.Copy(nameBytes, 0, bytes, index + 1, nameBytes.Length);
+            index += 1 + nameBytes.Length;
+
+            Data.CopyTo(bytes.AsMemory(index));
+
+            return bytes;
+        }
+
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            PunchForwardType = (PunchForwardTypes)span[index];
+            index += 1;
+            PunchStep = span[index];
+            index += 1;
+            PunchType = span[index];
+            index += 1;
+
+            GuessPort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+
+            FromId = span.Slice(index, 8).ToUInt64();
+            index += 8;
+
+            ToId = span.Slice(index, 8).ToUInt64();
+            index += 8;
+
+            TunnelName = span.Slice(index + 1, span[index]).GetString();
+            index += 1 + span[index];
+
+            Data = data.Slice(index);
+
+        }
     }
 
     [Flags]
@@ -65,27 +95,101 @@ namespace common.server.model
         FORWARD
     }
 
-    [MessagePackObject]
     public class PunchHoleNotifyInfo
     {
         public PunchHoleNotifyInfo() { }
 
-        [Key(1)]
-        public IPAddress Ip { get; set; } = IPAddress.Any;
-
-        [Key(2)]
-        public int Port { get; set; } = 0;
-
-        [Key(3)]
         public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
-        [Key(4)]
-        public int LocalPort { get; set; } = 0;
-
-        [Key(5)]
         public bool IsDefault { get; set; } = false;
-
-        [Key(6)]
+        public IPAddress Ip { get; set; } = IPAddress.Any;
+        public int Port { get; set; } = 0;
+        public int LocalPort { get; set; } = 0;
         public int GuessPort { get; set; } = 0;
+
+        public byte[] ToBytes()
+        {
+            int length = 0;
+
+            byte[][] ipsBytes = new byte[LocalIps.Length][];
+            for (int i = 0; i < LocalIps.Length; i++)
+            {
+                ipsBytes[i] = LocalIps[i].GetAddressBytes();
+                length += 1 + ipsBytes[i].Length;
+            }
+            length += 1;
+
+            length += 1; //IsDefault
+
+            var ipBytes = Ip.GetAddressBytes();
+            length += 1 + ipBytes.Length;
+            var port = Port.ToBytes();
+            length += 2;
+            var localport = LocalPort.ToBytes();
+            length += 2;
+            var guessPortBytes = GuessPort.ToBytes();
+            length += 2;
+
+
+            var bytes = new byte[length];
+            int index = 0;
+            bytes[index] = (byte)ipsBytes.Length;
+            index += 1;
+            for (int i = 0; i < ipsBytes.Length; i++)
+            {
+                bytes[index] = (byte)ipsBytes[i].Length;
+                Array.Copy(ipsBytes[i], 0, bytes, index + 1, ipsBytes[i].Length);
+                index += 1 + ipsBytes[i].Length;
+            }
+
+            bytes[index] = (byte)(IsDefault ? 1 : 0);
+            index += 1;
+
+            bytes[index] = (byte)ipBytes.Length;
+            index += 1;
+            Array.Copy(ipBytes, 0, bytes, index, ipBytes.Length);
+            index += ipBytes.Length;
+
+
+            bytes[index] = port[0];
+            bytes[index + 1] = port[1];
+            index += 2;
+            bytes[index] = localport[0];
+            bytes[index + 1] = localport[1];
+            index += 2;
+            bytes[index] = guessPortBytes[0];
+            bytes[index + 1] = guessPortBytes[1];
+            index += 2;
+
+            return bytes;
+
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            byte ipLength = span[index];
+            index += 1;
+            LocalIps = new IPAddress[ipLength];
+            for (byte i = 0; i < ipLength; i++)
+            {
+                LocalIps[i] = new IPAddress(span.Slice(index + 1, span[index]));
+                index += 1 + span[index];
+            }
+
+            IsDefault = span[index] == 1 ? true : false;
+            index += 1;
+
+            Ip = new IPAddress(span.Slice(index + 1, span[index]));
+            index += 1 + span[index];
+
+            Port = span.Slice(index, 2).ToUInt16();
+            index += 2;
+            LocalPort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+            GuessPort = span.Slice(index, 2).ToUInt16();
+            index += 2;
+        }
     }
 
 

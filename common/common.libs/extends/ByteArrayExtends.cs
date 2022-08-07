@@ -1,6 +1,4 @@
-﻿using common.libs.messageFormatters;
-using MessagePack;
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 
@@ -8,58 +6,30 @@ namespace common.libs.extends
 {
     public static class ByteArrayExtends
     {
-        static MessagePackSerializerOptions lz4Options = MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray);
-        static MessagePackSerializerOptions options = MessagePackSerializerOptions.Standard.WithResolver(MessageFormatterResolver.Instance);
-        public static byte[] ToBytes<T>(this T obj)
+        public static byte[] ToBytes(this int[] obj)
         {
-            if (obj is byte[] bytes)
+            var bytes = new byte[obj.Length * 4];
+            int index = 0;
+            for (int i = 0; i < obj.Length; i++)
             {
-                return bytes;
+                Array.Copy(obj[i].ToBytes(), 0, bytes, index, 4);
+                index += 4;
             }
-            return MessagePackSerializer.Serialize(obj, options);
+            return bytes;
         }
-        public static Memory<byte> ToMemory<T>(this T obj)
+        public static int[] DeBytes2IntArray(this ReadOnlyMemory<byte> data)
         {
-            if (obj is byte[] bytes)
+            var span = data.Span;
+            int[] res = new int[data.Length / 4];
+            int index = 0;
+            for (int i = 0; i < res.Length; i++)
             {
-                return bytes;
+                res[i] = span.Slice(index, 4).ToInt32();
+                index += 4;
             }
-            if (obj is Memory<byte> memorys)
-            {
-                return memorys;
-            }
-            return MessagePackSerializer.Serialize(obj, options);
+            return res;
         }
 
-        public static byte[] ToBytesWithCompression<T>(this T obj)
-        {
-            return MessagePackSerializer.Serialize(obj, lz4Options);
-        }
-        public static T DeBytes<T>(this byte[] data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, options);
-        }
-        public static T DeBytes<T>(this Memory<byte> data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, options);
-        }
-        public static T DeBytes<T>(this ReadOnlyMemory<byte> data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, options);
-        }
-
-        public static T DeBytesWithCompression<T>(this byte[] data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, lz4Options);
-        }
-        public static T DeBytesWithCompression<T>(this Memory<byte> data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, lz4Options);
-        }
-        public static T DeBytesWithCompression<T>(this ReadOnlyMemory<byte> data)
-        {
-            return MessagePackSerializer.Deserialize<T>(data, lz4Options);
-        }
 
         public static byte[] GZip(this byte[] bytes)
         {

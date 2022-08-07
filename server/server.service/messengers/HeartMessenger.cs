@@ -1,4 +1,5 @@
-﻿using common.server;
+﻿using common.libs;
+using common.server;
 
 namespace server.service.messengers
 {
@@ -8,9 +9,9 @@ namespace server.service.messengers
         {
         }
 
-        public bool Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
-            return true;
+            return Helper.TrueArray;
         }
     }
 }

@@ -36,9 +36,9 @@ namespace common.libs
     public interface ICrypto : IDisposable
     {
         public byte[] Encode(byte[] buffer);
-        public byte[] Encode(in Memory<byte> buffer);
+        public byte[] Encode(in ReadOnlyMemory<byte> buffer);
         public Memory<byte> Decode(byte[] buffer);
-        public Memory<byte> Decode(in Memory<byte> buffer);
+        public Memory<byte> Decode(in ReadOnlyMemory<byte> buffer);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ namespace common.libs
             return enStream.ToArray();
         }
 
-        public Memory<byte> Decode(in Memory<byte> buffer)
+        public Memory<byte> Decode(in ReadOnlyMemory<byte> buffer)
         {
             return Decode(buffer.ToArray());
         }
@@ -152,7 +152,7 @@ namespace common.libs
             return enStream.ToArray();
         }
 
-        public byte[] Encode(in Memory<byte> buffer)
+        public byte[] Encode(in ReadOnlyMemory<byte> buffer)
         {
             return Encode(buffer.ToArray());
         }
@@ -206,7 +206,7 @@ namespace common.libs
         {
             return encryptoTransform.TransformFinalBlock(buffer, 0, buffer.Length);
         }
-        public byte[] Encode(in Memory<byte> buffer)
+        public byte[] Encode(in ReadOnlyMemory<byte> buffer)
         {
             return Encode(buffer.ToArray());
         }
@@ -215,7 +215,7 @@ namespace common.libs
         {
             return decryptoTransform.TransformFinalBlock(buffer, 0, buffer.Length);
         }
-        public Memory<byte> Decode(in Memory<byte> buffer)
+        public Memory<byte> Decode(in ReadOnlyMemory<byte> buffer)
         {
             return Decode(buffer.ToArray());
         }

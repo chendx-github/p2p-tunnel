@@ -21,7 +21,8 @@ namespace client.service.messengers.clients
 
         public void Execute(IConnection connection)
         {
-            ClientsInfo res = connection.ReceiveRequestWrap.Memory.DeBytes<ClientsInfo>();
+            ClientsInfo res = new ClientsInfo();
+            res.DeBytes(connection.ReceiveRequestWrap.Memory);
             clientsMessengerSender.OnServerClientsData.Push(res);
         }
 

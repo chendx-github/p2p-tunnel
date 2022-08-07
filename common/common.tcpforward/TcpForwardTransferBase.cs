@@ -40,7 +40,7 @@ namespace common.tcpforward
             else
             {
                 request.Connection = request.Connection;
-                request.Connection.ReceiveBytes += (ulong)request.Buffer.Length;
+                request.Connection.ReceiveBytes += request.Buffer.Length;
                 tcpForwardMessengerSender.SendRequest(request).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }

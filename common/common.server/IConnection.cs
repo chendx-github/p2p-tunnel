@@ -35,8 +35,8 @@ namespace common.server
         public bool IsTimeout(long time);
         public bool IsNeedHeart(long time);
 
-        public ulong SendBytes { get; set; }
-        public ulong ReceiveBytes { get; set; }
+        public long SendBytes { get; set; }
+        public long ReceiveBytes { get; set; }
         public ValueTask<bool> Send(ReadOnlyMemory<byte> data);
         public ValueTask<bool> Send(byte[] data, int length);
 
@@ -81,7 +81,7 @@ namespace common.server
             set
             {
                 receiveData = value;
-                ReceiveBytes += (ulong)receiveData.Length;
+                ReceiveBytes += receiveData.Length;
             }
         }
 
@@ -93,8 +93,8 @@ namespace common.server
             return (LastTime == 0 || time - LastTime > 5000);
         }
 
-        public ulong SendBytes { get; set; } = 0;
-        public ulong ReceiveBytes { get; set; } = 0;
+        public long SendBytes { get; set; } = 0;
+        public long ReceiveBytes { get; set; } = 0;
 
         public abstract ValueTask<bool> Send(ReadOnlyMemory<byte> data);
         public abstract ValueTask<bool> Send(byte[] data, int length);
@@ -135,7 +135,7 @@ namespace common.server
 #else
                     await UdpcRecv.SendAsync(data, Address).ConfigureAwait(false);
 #endif
-                    SendBytes += (ulong)data.Length;
+                    SendBytes += data.Length;
                     return true;
                 }
                 catch (Exception ex)
@@ -189,7 +189,7 @@ namespace common.server
                 try
                 {
                     NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
-                    SendBytes += (ulong)data.Length;
+                    SendBytes +=data.Length;
                     return new ValueTask<bool>(true);
                 }
                 catch (Exception ex)
@@ -238,7 +238,7 @@ namespace common.server
                 try
                 {
                     await TcpSocket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
-                    SendBytes += (ulong)data.Length;
+                    SendBytes += data.Length;
                     return true;
                 }
                 catch (Exception ex)

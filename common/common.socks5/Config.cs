@@ -18,7 +18,6 @@ namespace common.socks5
             Config config = ReadConfig().Result;
             ListenEnable = config.ListenEnable;
             ListenPort = config.ListenPort;
-            ListenUdpPort = config.ListenUdpPort;
             BufferSize = config.BufferSize;
             ConnectEnable = config.ConnectEnable;
             IsCustomPac = config.IsCustomPac;
@@ -31,7 +30,6 @@ namespace common.socks5
 
         public bool ListenEnable { get; set; } = false;
         public int ListenPort { get; set; } = 5412;
-        public int ListenUdpPort { get; set; } = 5413;
         public int BufferSize { get; set; } = 8 * 1024;
         public bool ConnectEnable { get; set; } = false;
         public bool IsCustomPac { get; set; } = false;
@@ -52,7 +50,6 @@ namespace common.socks5
             Config config = await ReadConfig().ConfigureAwait(false);
             config.ListenEnable = ListenEnable;
             config.ListenPort = ListenPort;
-            config.ListenUdpPort = ListenUdpPort;
             config.BufferSize = BufferSize;
             config.ConnectEnable = ConnectEnable;
             config.IsCustomPac = IsCustomPac;

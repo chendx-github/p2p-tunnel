@@ -115,7 +115,7 @@ namespace server.service
                 {
                     byte[] bytes = new ClientsInfo
                     {
-                        Clients = clients
+                        Clients = clients.ToArray()
                     }.ToBytes();
                     foreach (ClientsClientInfo client in clients)
                     {

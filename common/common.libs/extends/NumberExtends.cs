@@ -4,6 +4,24 @@ namespace common.libs.extends
 {
     public static class NumberExtends
     {
+        public static byte[] ToBytes(this double num)
+        {
+            return BitConverter.GetBytes(num);
+        }
+        public static double ToDouble(this byte[] bytes, int startindex = 0)
+        {
+            return BitConverter.ToDouble(bytes, startindex);
+        }
+        public static double ToDouble(this Span<byte> span)
+        {
+            return BitConverter.ToDouble(span);
+        }
+        public static double ToDouble(this ReadOnlySpan<byte> span)
+        {
+            return BitConverter.ToDouble(span);
+        }
+
+
         public static byte[] ToBytes(this long num)
         {
             return BitConverter.GetBytes(num);

@@ -1,6 +1,4 @@
 ﻿using common.libs;
-using MessagePack;
-using common.server;
 using common.server.model;
 using System;
 using System.Threading.Tasks;
@@ -39,29 +37,53 @@ namespace client.messengers.punchHole.tcp
     public class OnStep2RetryParams : OnStepBaseParams { }
     public class OnStep2StopParams : OnStepBaseParams { }
 
-    [MessagePackObject]
     public class PunchHoleStep2TryInfo : IPunchHoleStepInfo
     {
-        [Key(1)]
         public PunchHoleTypes PunchType { get; set; } = PunchHoleTypes.TCP_NUTSSB;
 
-        [Key(2)]
-        public PunchForwardTypes ForwardType { get; } = PunchForwardTypes.NOTIFY;
+        public PunchForwardTypes ForwardType { get; set; } = PunchForwardTypes.NOTIFY;
 
-        [Key(3)]
         public byte Step { get; set; } = (byte)PunchHoleTcpNutssBSteps.STEP_2_TRY;
+
+        public byte[] ToBytes()
+        {
+            return new byte[] {
+                (byte)PunchType,
+                (byte)ForwardType,
+                Step,
+            };
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            PunchType = (PunchHoleTypes)span[0];
+            ForwardType = (PunchForwardTypes)span[1];
+            Step = span[2];
+        }
     }
-    [MessagePackObject]
     public class PunchHoleStep2StopInfo : IPunchHoleStepInfo
     {
-        [Key(1)]
         public PunchHoleTypes PunchType { get; set; } = PunchHoleTypes.TCP_NUTSSB;
 
-        [Key(2)]
-        public PunchForwardTypes ForwardType { get; } = PunchForwardTypes.FORWARD;
+        public PunchForwardTypes ForwardType { get; set; } = PunchForwardTypes.FORWARD;
 
-        [Key(3)]
         public byte Step { get; set; } = (byte)PunchHoleTcpNutssBSteps.STEP_2_STOP;
+
+        public byte[] ToBytes()
+        {
+            return new byte[] {
+                (byte)PunchType,
+                (byte)ForwardType,
+                Step,
+            };
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            PunchType = (PunchHoleTypes)span[0];
+            ForwardType = (PunchForwardTypes)span[1];
+            Step = span[2];
+        }
     }
 
     public enum PunchHoleTcpNutssBSteps : byte

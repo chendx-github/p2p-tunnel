@@ -20,25 +20,22 @@ namespace server.service.manager
             this.clientRegisterCaching = clientRegisterCaching;
         }
 
-        public CommonResponseInfo<CounterResultInfo> Info(IConnection connection)
+        public byte[] Info(IConnection connection)
         {
             proc.Refresh();
 
             var clients = clientRegisterCaching.GetAll();
-            return new CommonResponseInfo<CounterResultInfo>
+            return new CounterResultInfo
             {
-                Data = new CounterResultInfo
-                {
-                    OnlineCount = clientRegisterCaching.Count(),
-                    Cpu = ProcessHelper.GetCpu(proc),
-                    Memory = ProcessHelper.GetMemory(proc),
-                    RunTime = (int)(DateTime.Now - startTime).TotalSeconds,
-                    TcpSendBytes = clients.Sum(c => (decimal)(c.TcpConnection?.SendBytes ?? 0)),
-                    TcpReceiveBytes = clients.Sum(c => (decimal)(c.TcpConnection?.ReceiveBytes ?? 0)),
-                    UdpSendBytes = clients.Sum(c => (decimal)(c.UdpConnection?.SendBytes ?? 0)),
-                    UdpReceiveBytes = clients.Sum(c => (decimal)(c.UdpConnection?.ReceiveBytes ?? 0)),
-                }
-            };
+                OnlineCount = clientRegisterCaching.Count(),
+                Cpu = ProcessHelper.GetCpu(proc),
+                Memory = ProcessHelper.GetMemory(proc),
+                RunTime = (int)(DateTime.Now - startTime).TotalSeconds,
+                TcpSendBytes = clients.Sum(c => (c.TcpConnection?.SendBytes ?? 0)),
+                TcpReceiveBytes = clients.Sum(c => (c.TcpConnection?.ReceiveBytes ?? 0)),
+                UdpSendBytes = clients.Sum(c => (c.UdpConnection?.SendBytes ?? 0)),
+                UdpReceiveBytes = clients.Sum(c => (c.UdpConnection?.ReceiveBytes ?? 0)),
+            }.ToBytes();
         }
     }
 

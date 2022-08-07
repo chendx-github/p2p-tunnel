@@ -40,7 +40,7 @@ namespace client.service.ftp.server
             }
         }
 
-        public FileInfo[] GetFiles(FtpListCommand cmd, FtpPluginParamWrap wrap)
+        public FileInfoWrap GetFiles(FtpListCommand cmd, FtpPluginParamWrap wrap)
         {
             DirectoryInfo dirInfo = JoinPath(cmd, wrap.Client.Id);
             var files = dirInfo.GetDirectories()
@@ -67,7 +67,7 @@ namespace client.service.ftp.server
 
             SetCurrentPath(dirInfo.FullName, wrap.Client.Id);
 
-            return files;
+            return new FileInfoWrap { Data = files };
         }
         public List<string> Create(FtpCreateCommand cmd, FtpPluginParamWrap wrap)
         {

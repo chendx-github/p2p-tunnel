@@ -2,7 +2,6 @@
   "NumConnections": 1000, //支持连接数
   "ListenEnable": false, //是否开启监听
   "ListenPort": 5412, //监听端口
-  "ListenUdpPort": 5413, //监听Udp端口,为0则表示不支持udp代理转发
   "BufferSize": 8192,
   "IsCustomPac": false, //是否自定义pac
   "IsPac": false, //是否设置pac

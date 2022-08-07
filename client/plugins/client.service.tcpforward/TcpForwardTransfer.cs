@@ -455,7 +455,7 @@ namespace client.service.tcpforward
             var resp = await tcpForwardMessengerSender.GetPorts(registerStateInfo.TcpConnection);
             if (resp.Code == MessageResponeCodes.OK)
             {
-                return resp.Data.DeBytes<int[]>();
+                return resp.Data.DeBytes2IntArray();
             }
 
             return Array.Empty<int>();
@@ -478,7 +478,8 @@ namespace client.service.tcpforward
                 return resp.Code.GetDesc((byte)resp.Code);
             }
 
-            TcpForwardRegisterResult result = resp.Data.DeBytes<TcpForwardRegisterResult>();
+            TcpForwardRegisterResult result = new TcpForwardRegisterResult();
+            result.DeBytes(resp.Data);
             if (result.Code != TcpForwardRegisterResultCodes.OK)
             {
                 return $"{result.Code.GetDesc((byte)result.Code)},{result.Msg}";
@@ -643,7 +644,8 @@ namespace client.service.tcpforward
             }
             else
             {
-                TcpForwardRegisterResult result = resp.Data.DeBytes<TcpForwardRegisterResult>();
+                TcpForwardRegisterResult result = new TcpForwardRegisterResult();
+                result.DeBytes(resp.Data);
                 sb.Append($" 【{result.Code.GetDesc((byte)result.Code)},{result.Msg}】{result.Msg}");
                 success = result.Code == TcpForwardRegisterResultCodes.OK;
             }

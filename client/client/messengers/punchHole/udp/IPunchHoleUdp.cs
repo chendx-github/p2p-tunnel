@@ -1,5 +1,4 @@
 ﻿using common.libs;
-using MessagePack;
 using common.server.model;
 using System;
 using System.Threading.Tasks;
@@ -40,18 +39,29 @@ namespace client.messengers.punchHole.udp
         STEP_4 = 6,
     }
 
-
-    [MessagePackObject]
     public class PunchHoleStep21Info : IPunchHoleStepInfo
     {
-        [Key(1)]
         public PunchHoleTypes PunchType { get; set; } = PunchHoleTypes.UDP;
 
-        [Key(2)]
-        public PunchForwardTypes ForwardType { get; } = PunchForwardTypes.NOTIFY;
+        public PunchForwardTypes ForwardType { get; set; } = PunchForwardTypes.NOTIFY;
 
-        [Key(3)]
         public byte Step { get; set; } = (byte)PunchHoleUdpSteps.STEP_2_1;
+
+        public byte[] ToBytes()
+        {
+            return new byte[] {
+                (byte)PunchType,
+                (byte)ForwardType,
+                Step,
+            };
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            PunchType = (PunchHoleTypes)span[0];
+            ForwardType = (PunchForwardTypes)span[1];
+            Step = span[2];
+        }
     }
 
 }

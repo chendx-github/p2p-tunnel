@@ -40,7 +40,7 @@ namespace common.udpforward
             else
             {
                 request.Connection = request.Connection;
-                request.Connection.ReceiveBytes += (ulong)request.Buffer.Length;
+                request.Connection.ReceiveBytes += request.Buffer.Length;
                 _ = udpForwardMessengerSender.SendRequest(request);
             }
         }

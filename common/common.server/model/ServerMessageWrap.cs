@@ -113,7 +113,7 @@ namespace common.server.model
         public IConnection Connection { get; set; }
         public MessageResponeCodes Code { get; set; } = MessageResponeCodes.OK;
         public ulong RequestId { get; set; } = 0;
-        public Memory<byte> Content { get; set; } = Helper.EmptyArray;
+        public ReadOnlyMemory<byte> Content { get; set; } = Helper.EmptyArray;
 
         /// <summary>
         /// 转包

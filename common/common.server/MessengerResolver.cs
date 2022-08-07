@@ -120,35 +120,35 @@ namespace common.server
                     }
                 }
 
-                dynamic resultAsync = plugin.Method.Invoke(plugin.Target, new object[] { connection });
+                object resultAsync = plugin.Method.Invoke(plugin.Target, new object[] { connection });
                 //void的，task的 没有返回值，不回复，需要回复的可以返回任意类型
                 if (plugin.IsVoid)
                 {
                     return;
                 }
 
-                object resultObject = null;
+                byte[] resultObject = Helper.EmptyArray ;
                 if (plugin.IsTask)
                 {
                     if (plugin.IsTaskResult)
                     {
-                        await resultAsync.ConfigureAwait(false);
-                        resultObject = resultAsync.Result;
+                        var task = resultAsync as Task<byte[]>;
+                        await task.ConfigureAwait(false);
+                        resultObject = task.Result;
                     }
                     else
                     {
                         return;
                     }
                 }
-                else
+                else if(resultAsync != null)
                 {
-                    resultObject = resultAsync;
+                    resultObject = resultAsync as byte[];
                 }
-
                 await messengerSender.ReplyOnly(new MessageResponseWrap
                 {
                     Connection = connection,
-                    Content = resultObject != null ? resultObject.ToBytes() : Helper.EmptyArray,
+                    Content = resultObject,
                     RequestId = requestWrap.RequestId
                 }).ConfigureAwait(false);
             }

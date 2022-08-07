@@ -41,7 +41,7 @@
 6. A <--socks5代理-->server<---->内网或外网服务
   
 ## 要点
-- [x] .NET6 跨平台，小尺寸，小内存<br><a href="https://github.com/neuecc/MessagePack-CSharp" target="_blank">MessagePack 序列化</a>，<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
+- [x] .NET6 跨平台，小尺寸，小内存<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
 - [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
 - [x] p2p 打洞、tcp、udp
 - [x] tcp转发
@@ -53,7 +53,7 @@
 - [x] 支持通信数据加密
 - [x] 可扩展的插件式
 - [x] 免费的打洞服务器
-- [x] 高效的打包解包，序列化->打包->粘包解析->解包->反序列化 整个流程时间
+- [x] 高效的打包解包，序列化->打包->粘包解析->解包->反序列化 整个流程时间，作死的全手写序列化
 <p><img src="./public/screenshot/speed.png" width="400"></p>
 <p><img src="./public/screenshot/file-speed.png" width="400"></p>
 

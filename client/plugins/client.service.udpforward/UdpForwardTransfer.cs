@@ -261,7 +261,7 @@ namespace client.service.udpforward
             var resp = await udpForwardMessengerSender.GetPorts(registerStateInfo.TcpConnection);
             if (resp.Code == MessageResponeCodes.OK)
             {
-                return resp.Data.DeBytes<int[]>();
+                return resp.Data.DeBytes2IntArray();
             }
 
             return Array.Empty<int>();
@@ -281,7 +281,8 @@ namespace client.service.udpforward
                 return resp.Code.GetDesc((byte)resp.Code);
             }
 
-            UdpForwardRegisterResult result = resp.Data.DeBytes<UdpForwardRegisterResult>();
+            UdpForwardRegisterResult result = new UdpForwardRegisterResult();
+            result.DeBytes(resp.Data);
             if (result.Code != UdpForwardRegisterResultCodes.OK)
             {
                 return result.Msg;
@@ -392,7 +393,8 @@ namespace client.service.udpforward
             }
             else
             {
-                UdpForwardRegisterResult result = resp.Data.DeBytes<UdpForwardRegisterResult>();
+                UdpForwardRegisterResult result = new UdpForwardRegisterResult();
+                result.DeBytes(resp.Data);
                 sb.Append($" 【{result.Code.GetDesc((byte)result.Code)}】{result.Msg}");
                 success = result.Code == UdpForwardRegisterResultCodes.OK;
             }

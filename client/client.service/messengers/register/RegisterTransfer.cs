@@ -114,7 +114,7 @@ namespace client.service.messengers.register
                             //上线
                             config.Client.GroupId = result.Data.GroupId;
                             registerState.RemoteInfo.Relay = result.Data.Relay;
-                            registerState.Online(result.Data.Id, result.Data.Ip, result.Data.Port, result.Data.TcpPort);
+                            registerState.Online(result.Data.Id, result.Data.Ip, result.Data.UdpPort, result.Data.TcpPort);
                             //上线通知
                             await registerMessageHelper.Notify().ConfigureAwait(false);
 

@@ -115,7 +115,7 @@ namespace common.udpforward
     }
     public class ClientsManager
     {
-        private ConcurrentDictionary<IPEndPoint, ForwardAsyncUserToken> clients = new(new ClientComparer());
+        private ConcurrentDictionary<IPEndPoint, ForwardAsyncUserToken> clients = new(new IPEndPointDictionaryComparer());
 
         public bool Contains(IPEndPoint ep)
         {
@@ -160,19 +160,6 @@ namespace common.udpforward
             }
         }
     }
-    public class ClientComparer : IEqualityComparer<IPEndPoint>
-    {
-        public bool Equals(IPEndPoint x, IPEndPoint y)
-        {
-            return x.Equals(y);
-        }
-
-        public int GetHashCode(IPEndPoint obj)
-        {
-            return obj.GetHashCode();
-        }
-    }
-
     public class ForwardAsyncServerToken
     {
         public int SourcePort { get; set; }

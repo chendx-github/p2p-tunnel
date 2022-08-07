@@ -39,7 +39,7 @@ namespace client.service.messengers.crypto
                         return null;
                     }
 
-                    string publicKey = publicKeyResponse.Data.DeBytes<string>();
+                    string publicKey = publicKeyResponse.Data.GetString();
                     IAsymmetricCrypto encoder = cryptoFactory.CreateAsymmetric(new RsaKey { PublicKey = publicKey, PrivateKey = string.Empty });
                     password = StringHelper.RandomPasswordStringMd5();
                     encodedData = encoder.Encode(password.ToBytes());

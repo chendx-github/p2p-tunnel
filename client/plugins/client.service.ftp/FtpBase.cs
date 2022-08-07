@@ -2,7 +2,6 @@
 using client.service.ftp.commands;
 using common.libs;
 using common.libs.extends;
-using MessagePack;
 using Microsoft.Extensions.DependencyInjection;
 using common.server;
 using common.server.model;
@@ -446,21 +445,126 @@ namespace client.service.ftp
         File = 1
     }
 
-    [MessagePackObject]
+
+    public class FileInfoWrap
+    {
+        public FileInfo[] Data { get; set; } = Array.Empty<FileInfo>();
+
+        public byte[] ToBytes()
+        {
+            int length = 0, dataLength = Data.Length;
+            byte[][] dataBytes = new byte[dataLength][];
+            for (int i = 0; i < dataBytes.Length; i++)
+            {
+                dataBytes[i] = Data[i].ToBytes();
+                length += dataBytes[i].Length;
+
+            }
+
+            int index = 0;
+            var lengthBytes = dataLength.ToBytes();
+            length += lengthBytes.Length;
+
+            var bytes = new byte[length];
+
+            Array.Copy(lengthBytes, 0, bytes, index, lengthBytes.Length);
+            index += lengthBytes.Length;
+
+            for (int i = 0; i < dataBytes.Length; i++)
+            {
+                Array.Copy(dataBytes[i], 0, bytes, index, dataBytes[i].Length);
+                index += dataBytes[i].Length;
+            }
+            return bytes;
+
+        }
+
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            int length = span.Slice(index, 4).ToInt32();
+            index += 4;
+
+            Data = new FileInfo[length];
+            for (int i = 0; i < length; i++)
+            {
+                Data[i] = new FileInfo();
+                int tempIndex = Data[i].DeBytes(data.Slice(index));
+                index += tempIndex;
+            }
+        }
+    }
+
     public class FileInfo
     {
-        [Key(1)]
-        public DateTime LastAccessTime { get; set; } = DateTime.Now;
-        [Key(2)]
-        public DateTime CreationTime { get; set; } = DateTime.Now;
-        [Key(3)]
-        public DateTime LastWriteTime { get; set; } = DateTime.Now;
-        [Key(4)]
-        public string Name { get; set; } = string.Empty;
-        [Key(5)]
-        public long Length { get; set; } = 0;
-        [Key(6)]
-        public FileType Type { get; set; } = FileType.File;
+        public DateTime LastAccessTime { get; set; }
+        public DateTime CreationTime { get; set; }
+        public DateTime LastWriteTime { get; set; }
+        public string Name { get; set; }
+        public long Length { get; set; }
+        public FileType Type { get; set; }
+
+        public byte[] ToBytes()
+        {
+            var nameBytes = Name.ToBytes();
+            var lengthBytes = Length.ToBytes();
+            var lastWriteBytes = LastWriteTime.Ticks.ToBytes();
+            var createBytes = CreationTime.Ticks.ToBytes();
+            var lastAccessBytes = LastAccessTime.Ticks.ToBytes();
+            var bytes = new byte[1 + 8 + 1 + nameBytes.Length + 8 + 8 + 8];
+
+            int index = 0;
+
+            bytes[index] = (byte)Type;
+            index += 1;
+
+            Array.Copy(lengthBytes, 0, bytes, index, lengthBytes.Length);
+            index += lengthBytes.Length;
+
+            bytes[index] = (byte)nameBytes.Length;
+            Array.Copy(nameBytes, 0, bytes, index + 1, nameBytes.Length);
+            index += 1 + nameBytes.Length;
+
+            Array.Copy(lastWriteBytes, 0, bytes, index, lastWriteBytes.Length);
+            index += 8;
+
+            Array.Copy(createBytes, 0, bytes, index, createBytes.Length);
+            index += 8;
+
+            Array.Copy(lastAccessBytes, 0, bytes, index, lastAccessBytes.Length);
+            index += 8;
+
+            return bytes;
+        }
+        public int DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            int index = 0;
+
+            Type = (FileType)span[index];
+            index += 1;
+
+            Length = span.Slice(index, 8).ToInt64();
+            index += 8;
+
+            Name = span.Slice(index + 1, span[index]).GetString();
+            index += 1 + span[index];
+
+            LastWriteTime = new DateTime(span.Slice(index, 8).ToInt64());
+            index += 8;
+
+            CreationTime = new DateTime(span.Slice(index, 8).ToInt64());
+            index += 8;
+
+            LastAccessTime = new DateTime(span.Slice(index, 8).ToInt64());
+            index += 8;
+
+            return index;
+
+        }
+
     }
 
     public struct FileUploadInfo
@@ -633,10 +737,6 @@ namespace client.service.ftp
 
         public byte[] Data { get; set; } = Helper.EmptyArray;
 
-        /// <summary>
-        /// 读数据
-        /// </summary>
-        [IgnoreMember]
         public ReadOnlyMemory<byte> ReadData { get; set; }
 
         [Flags]

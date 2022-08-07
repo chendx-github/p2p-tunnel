@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-09-26 19:51:49
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-30 16:06:33
+ * @LastEditTime: 2022-08-07 18:44:30
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\ftp\Remote.vue
@@ -67,7 +67,7 @@ export default {
             state.loading = true;
             geRemoteList(listShareData.clientId || 0, path).then((res) => {
                 state.loading = false;
-                listShareData.remotes = state.data = [{ Name: '..', Label: '.. 上一级', Length: 0, Type: 0 }].concat(res.map(c => {
+                listShareData.remotes = state.data = [{ Name: '..', Label: '.. 上一级', Length: 0, Type: 0 }].concat(res.Data.map(c => {
                     c.Label = c.Name;
                     return c;
                 }));

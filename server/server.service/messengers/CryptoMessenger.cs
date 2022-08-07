@@ -22,12 +22,12 @@ namespace server.service.messengers
             this.config = config;
         }
 
-        public string Key(IConnection connection)
+        public byte[] Key(IConnection connection)
         {
-            return asymmetricCrypto.Key.PublicKey;
+            return asymmetricCrypto.Key.PublicKey.ToBytes();
         }
 
-        public bool Set(IConnection connection)
+        public byte[] Set(IConnection connection)
         {
             string password;
             if (connection.ReceiveRequestWrap.Memory.Length > 0)
@@ -41,27 +41,27 @@ namespace server.service.messengers
             }
             if (string.IsNullOrWhiteSpace(password))
             {
-                return false;
+                return Helper.FalseArray;
             }
 
             ISymmetricCrypto encoder = cryptoFactory.CreateSymmetric(password);
             connection.EncodeEnable(encoder);
-            return true;
+            return Helper.TrueArray;
         }
-        public bool Test(IConnection connection)
+        public byte[] Test(IConnection connection)
         {
             Console.WriteLine($"encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(connection.ReceiveRequestWrap.Memory).Span)}");
 
-            return true;
+            return Helper.TrueArray ;
         }
-        public bool Clear(IConnection connection)
+        public byte[] Clear(IConnection connection)
         {
             if (clientRegisterCache.Get(connection.ConnectId, out RegisterCacheInfo client))
             {
                 client.UdpConnection.EncodeDisable();
                 client.TcpConnection.EncodeDisable();
             }
-            return true;
+            return Helper.FalseArray;
         }
     }
 }

@@ -45,29 +45,35 @@ namespace client.service.messengers.punchHole.udp
 
         private void Step1(OnPunchHoleArg arg)
         {
+            PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
+            model.DeBytes(arg.Data.Data);
             punchHoleUdp.OnStep1(new OnStep1Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,
-                Data = arg.Data.Data.DeBytes<PunchHoleNotifyInfo>()
+                Data = model
             });
         }
         private void Step2(OnPunchHoleArg arg)
         {
+            PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
+            model.DeBytes(arg.Data.Data);
             punchHoleUdp.OnStep2(new OnStep2Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,
-                Data = arg.Data.Data.DeBytes<PunchHoleNotifyInfo>()
+                Data = model
             });
         }
         private void Step21(OnPunchHoleArg arg)
         {
+            PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
+            model.DeBytes(arg.Data.Data);
             punchHoleUdp.OnStep21(new OnStep21Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,
-                Data = arg.Data.Data.DeBytes<PunchHoleNotifyInfo>()
+                Data = model
             });
         }
         private void Step2Fail(OnPunchHoleArg arg)
@@ -82,20 +88,24 @@ namespace client.service.messengers.punchHole.udp
 
         private void Step3(OnPunchHoleArg arg)
         {
+            PunchHoleStep3Info model = new PunchHoleStep3Info();
+            model.DeBytes(arg.Data.Data);
             punchHoleUdp.OnStep3(new OnStep3Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,
-                Data = arg.Data.Data.DeBytes<PunchHoleStep3Info>()
+                Data = model
             });
         }
         private void Step4(OnPunchHoleArg arg)
         {
+            PunchHoleStep4Info model = new PunchHoleStep4Info();
+            model.DeBytes(arg.Data.Data);
             punchHoleUdp.OnStep4(new OnStep4Params
             {
                 Connection = arg.Connection,
                 RawData = arg.Data,
-                Data = arg.Data.Data.DeBytes<PunchHoleStep4Info>()
+                Data = model
             });
         }
     }

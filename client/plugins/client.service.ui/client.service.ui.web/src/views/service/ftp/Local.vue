@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-09-26 19:51:49
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-30 16:06:20
+ * @LastEditTime: 2022-08-07 18:43:54
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\ftp\Local.vue
@@ -67,7 +67,7 @@ export default {
             getLocalList(path).then((res) => {
                 state.loading = false;
                 state.specialFolderModel = res.Current;
-                listShareData.locals = state.data = [{ Name: '..', Label: '.. 上一级', Length: 0, Type: 0 }].concat(res.Data.map(c => {
+                listShareData.locals = state.data = [{ Name: '..', Label: '.. 上一级', Length: 0, Type: 0 }].concat(res.Data.Data.map(c => {
                     c.Label = c.Name;
                     return c;
                 }));

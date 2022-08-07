@@ -1,4 +1,5 @@
-﻿using common.libs.extends;
+﻿using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using server.messengers.register;
@@ -19,7 +20,7 @@ namespace server.service.manager
             this.messengerSender = messengerSender;
         }
 
-        public async Task<bool> Execute(IConnection connection)
+        public async Task<byte[]> Execute(IConnection connection)
         {
             WebRTCConnectionInfo model = new WebRTCConnectionInfo();
             model.DeBytes(connection.ReceiveRequestWrap.Memory);
@@ -34,18 +35,19 @@ namespace server.service.manager
                     if (source.GroupId == target.GroupId)
                     {
                         model.FromId = connection.ConnectId;
-                        return await messengerSender.SendOnly(new MessageRequestWrap
+                        var res = await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
                             Content = model.ToBytes(),
                             MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false);
+                        return res ? Helper.TrueArray : Helper.FalseArray;
                     }
                 }
             }
 
-            return false;
+            return Helper.FalseArray;
         }
     }
 

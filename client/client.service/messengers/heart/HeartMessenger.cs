@@ -1,4 +1,5 @@
-﻿using common.server;
+﻿using common.libs;
+using common.server;
 
 namespace client.service.messengers.heart
 {
@@ -11,9 +12,9 @@ namespace client.service.messengers.heart
         {
         }
 
-        public bool Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
-            return true;
+            return Helper.TrueArray;
         }
     }
 }
