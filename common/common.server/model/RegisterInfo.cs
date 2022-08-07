@@ -210,7 +210,7 @@ namespace common.server.model
 
 
             Ip = new IPAddress(span.Slice(index + 1, span[index]));
-            index += span[index];
+            index += 1 + span[index];
 
             GroupId = span.Slice(index).GetString();
         }
