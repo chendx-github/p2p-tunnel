@@ -127,8 +127,7 @@ namespace common.server.servers.iocp
                 {
                     int offset = e.Offset;
                     int length = e.BytesTransferred;
-                    token.DataBuffer.AddRange(e.Buffer, offset, length);
-                    ReadPacket(token);
+                    ReadPacket(token, e.Buffer, offset, length);
 
                     if (token.Socket.Available > 0)
                     {
@@ -138,8 +137,7 @@ namespace common.server.servers.iocp
                             length = token.Socket.Receive(arr);
                             if (length > 0)
                             {
-                                token.DataBuffer.AddRange(arr, 0, length);
-                                ReadPacket(token);
+                                ReadPacket(token, arr, 0, length);
                             }
                             else
                             {
@@ -175,8 +173,21 @@ namespace common.server.servers.iocp
                 Logger.Instance.DebugError(ex);
             }
         }
-        private void ReadPacket(AsyncUserToken token)
+        private void ReadPacket(AsyncUserToken token, byte[] data, int offset, int length)
         {
+            if (token.DataBuffer.Size == 0 && length > 4)
+            {
+                Span<byte> span = data.AsSpan(offset, length);
+                int packageLen = span.ToInt32();
+                if (packageLen == length - 4)
+                {
+                    token.Connection.ReceiveData = data.AsMemory(offset + 4, packageLen);
+                    OnPacket.Push(token.Connection);
+                    return;
+                }
+            }
+
+            token.DataBuffer.AddRange(data, offset, length);
             do
             {
                 int packageLen = token.DataBuffer.Data.Span.ToInt32();
@@ -185,7 +196,6 @@ namespace common.server.servers.iocp
                     break;
                 }
                 token.Connection.ReceiveData = token.DataBuffer.Data.Slice(4, packageLen);
-
                 OnPacket.Push(token.Connection);
 
                 token.DataBuffer.RemoveRange(0, packageLen + 4);
