@@ -98,7 +98,7 @@ namespace server.service
                 clientRegisterCache.Remove(connection.ConnectId);
             });
 
-            clientRegisterCache.OnChanged.SubAsync(async (changeClient) =>
+            clientRegisterCache.OnChanged.Sub((changeClient) =>
             {
                 List<ClientsClientInfo> clients = clientRegisterCache.GetAll().Where(c => c.GroupId == changeClient.GroupId && c.TcpConnection != null).Select(c => new ClientsClientInfo
                 {
@@ -119,7 +119,7 @@ namespace server.service
                     }.ToBytes();
                     foreach (ClientsClientInfo client in clients)
                     {
-                        await messengerSender.SendOnly(new MessageRequestWrap
+                        _ = messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = client.TcpConnection,
                             Content = bytes,

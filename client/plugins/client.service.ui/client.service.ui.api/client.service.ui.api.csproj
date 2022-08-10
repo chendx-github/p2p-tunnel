@@ -25,10 +25,6 @@
 		<DebugSymbols>false</DebugSymbols>
 		<Optimize>True</Optimize>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="Fleck" Version="1.2.0" />
-	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\client\client.csproj" />
 	</ItemGroup>

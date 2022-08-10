@@ -237,14 +237,17 @@ namespace common.socks5
         private void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
-            e.Dispose();
-            if (token.Disposabled == false && connections.TryRemove(token.DataWrap.Id, out _))
+            if (token.Disposabled == false)
             {
-                if (OnClose != null && token.Disposabled == false)
+                e.Dispose();
+                if (connections.TryRemove(token.DataWrap.Id, out _))
                 {
-                    OnClose(token.DataWrap.Id);
+                    if (OnClose != null && token.Disposabled == false)
+                    {
+                        OnClose(token.DataWrap.Id);
+                    }
+                    token.Clear();
                 }
-                token.Clear();
             }
         }
         private void CloseClientSocket(ulong id)

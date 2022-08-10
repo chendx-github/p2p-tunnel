@@ -11,31 +11,37 @@ namespace server.service.manager
 {
     public class CounterMessenger : IMessenger
     {
-        private readonly IClientRegisterCaching clientRegisterCaching;
         private readonly Process proc = ProcessHelper.GetCurrentProcess();
         private readonly DateTime startTime = DateTime.Now;
+        private CounterResultInfo counterResultInfo;
 
-        public CounterMessenger(IClientRegisterCaching clientRegisterCaching)
+        public CounterMessenger(IClientRegisterCaching clientRegisterCaching, WheelTimer<object> wheelTimer)
         {
-            this.clientRegisterCaching = clientRegisterCaching;
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object>
+            {
+                Callback = (state) =>
+                {
+                    proc.Refresh();
+                    var clients = clientRegisterCaching.GetAll();
+
+                    counterResultInfo = new CounterResultInfo
+                    {
+                        OnlineCount = clientRegisterCaching.Count(),
+                        Cpu = ProcessHelper.GetCpu(proc),
+                        Memory = ProcessHelper.GetMemory(proc),
+                        RunTime = (int)(DateTime.Now - startTime).TotalSeconds,
+                        TcpSendBytes = clients.Sum(c => (c.TcpConnection?.SendBytes ?? 0)),
+                        TcpReceiveBytes = clients.Sum(c => (c.TcpConnection?.ReceiveBytes ?? 0)),
+                        UdpSendBytes = clients.Sum(c => (c.UdpConnection?.SendBytes ?? 0)),
+                        UdpReceiveBytes = clients.Sum(c => (c.UdpConnection?.ReceiveBytes ?? 0)),
+                    };
+                }
+            }, 1000, true);
         }
 
         public byte[] Info(IConnection connection)
         {
-            proc.Refresh();
-
-            var clients = clientRegisterCaching.GetAll();
-            return new CounterResultInfo
-            {
-                OnlineCount = clientRegisterCaching.Count(),
-                Cpu = ProcessHelper.GetCpu(proc),
-                Memory = ProcessHelper.GetMemory(proc),
-                RunTime = (int)(DateTime.Now - startTime).TotalSeconds,
-                TcpSendBytes = clients.Sum(c => (c.TcpConnection?.SendBytes ?? 0)),
-                TcpReceiveBytes = clients.Sum(c => (c.TcpConnection?.ReceiveBytes ?? 0)),
-                UdpSendBytes = clients.Sum(c => (c.UdpConnection?.SendBytes ?? 0)),
-                UdpReceiveBytes = clients.Sum(c => (c.UdpConnection?.ReceiveBytes ?? 0)),
-            }.ToBytes();
+            return counterResultInfo.ToBytes();
         }
     }
 

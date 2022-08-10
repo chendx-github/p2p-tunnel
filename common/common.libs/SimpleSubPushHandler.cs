@@ -7,7 +7,6 @@ namespace common.libs
     public class SimpleSubPushHandler<T>
     {
         List<Action<T>> actions = new List<Action<T>>();
-        List<Func<T, Task>> funcs = new List<Func<T, Task>>();
 
         public void Sub(Action<T> action)
         {
@@ -20,31 +19,12 @@ namespace common.libs
         {
             for (int i = 0, len = actions.Count; i < len; i++)
             {
-                actions[i].Invoke(data);
+                actions[i](data);
             }
         }
         public void Remove(Action<T> action)
         {
             actions.Remove(action);
-        }
-
-        public void SubAsync(Func<T, Task> action)
-        {
-            if (!funcs.Contains(action))
-            {
-                funcs.Add(action);
-            }
-        }
-        public async Task PushAsync(T data)
-        {
-            for (int i = 0, len = funcs.Count; i < len; i++)
-            {
-                await funcs[i].Invoke(data).ConfigureAwait(false);
-            }
-        }
-        public void RemoveAsync(Func<T, Task> action)
-        {
-            funcs.Remove(action);
         }
 
     }

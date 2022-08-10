@@ -6,7 +6,6 @@ using common.libs.extends;
 using common.server;
 using common.server.model;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -41,9 +40,10 @@ namespace client.service.messengers.register
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit();
             Console.CancelKeyPress += (s, e) => Exit();
-            tcpServer.OnDisconnect.Sub((IConnection connection) =>
+
+            tcpServer.OnDisconnect.Sub((connection) =>
             {
-                if (registerState.TcpConnection != null && registerState.TcpConnection.ConnectId == connection.ConnectId)
+                if (registerState.TcpConnection != null && registerState.TcpConnection.Address.Equals(connection.Address))
                 {
                     _ = Register(true);
                 }

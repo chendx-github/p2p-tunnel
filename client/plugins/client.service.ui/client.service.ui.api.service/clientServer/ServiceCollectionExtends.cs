@@ -37,7 +37,7 @@ namespace client.service.ui.api.service.clientServer
             if (config.EnableWeb)
             {
                 clientServer.Websocket();
-                Logger.Instance.Debug($"管理UI，websocket已启用");
+                Logger.Instance.Debug($"管理UI，websocket已启用:{config.Websocket.BindIp}:{config.Websocket.Port}");
             }
             else
             {

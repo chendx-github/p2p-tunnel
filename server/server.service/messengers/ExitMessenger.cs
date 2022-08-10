@@ -14,9 +14,9 @@ namespace server.service.messengers
             this.clientRegisterCache = clientRegisterCache;
         }
 
-        public async Task<byte[]> Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
-            var res = await clientRegisterCache.Remove(connection.ConnectId).ConfigureAwait(false);
+            var res = clientRegisterCache.Remove(connection.ConnectId);
             return res ? Helper.TrueArray : Helper.FalseArray;
         }
     }

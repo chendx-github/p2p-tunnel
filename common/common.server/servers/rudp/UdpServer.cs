@@ -42,7 +42,7 @@ namespace common.server.servers.rudp
             {
                 if (peer.Tag is IConnection connecrtion)
                 {
-                    OnDisconnect?.Push(connecrtion);
+                    OnDisconnect.Push(connecrtion);
                     connecrtion.Disponse();
                 }
             };

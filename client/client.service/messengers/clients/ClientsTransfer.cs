@@ -56,7 +56,7 @@ namespace client.service.messengers.clients
             tcpServer.OnDisconnect.Sub((connection) =>
             {
                 //客户端掉线
-                if (registerState.TcpConnection != null && registerState.TcpConnection.ConnectId != connection.ConnectId)
+                if (registerState.TcpConnection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
                 {
                     clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
                     ConnectClient(connection.ConnectId);
@@ -189,16 +189,6 @@ namespace client.service.messengers.clients
         private void OnRegisterStateChange(bool state)
         {
             firstClients.Reset();
-            if (!state)
-            {
-                foreach (ClientInfo client in clientInfoCaching.All())
-                {
-                    if (client.UdpConnecting || client.TcpConnecting)
-                    {
-                        punchHoleTcp.SendStep2Stop(client.Id);
-                    }
-                }
-            }
             clientInfoCaching.Clear();
         }
         private void OnServerSendClients(ClientsInfo clients)

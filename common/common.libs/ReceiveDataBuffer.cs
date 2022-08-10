@@ -35,6 +35,13 @@ namespace common.libs
             }
         }
 
+        public void AddRange(Memory<byte> data)
+        {
+            BeResize(data.Length);
+
+            data.CopyTo(items.Slice(size, data.Length));
+            size += data.Length;
+        }
         public void AddRange(Memory<byte> data, int length)
         {
             BeResize(length);

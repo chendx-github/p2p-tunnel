@@ -1,7 +1,6 @@
 ﻿using common.libs;
 using common.server;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace server.messengers.register
 {
@@ -17,7 +16,7 @@ namespace server.messengers.register
         public List<RegisterCacheInfo> GetAll();
         public RegisterCacheInfo GetByName(string name);
         public ulong Add(RegisterCacheInfo model);
-        public Task<bool> Remove(ulong id);
-        public Task<bool> Notify(IConnection connection);
+        public bool Remove(ulong id);
+        public bool Notify(IConnection connection);
     }
 }

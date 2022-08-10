@@ -41,7 +41,7 @@
 6. A <--socks5代理-->server<---->内网或外网服务
   
 ## 要点
-- [x] .NET6 跨平台，小尺寸，小内存<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>，<a href="https://github.com/statianzo/Fleck" target="_blank">fleck websocket</a>
+- [x] .NET6 跨平台，小尺寸，小内存<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>
 - [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
 - [x] p2p 打洞、tcp、udp
 - [x] tcp转发

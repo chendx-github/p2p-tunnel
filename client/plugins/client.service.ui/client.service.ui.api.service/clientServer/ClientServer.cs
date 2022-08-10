@@ -2,13 +2,10 @@
 using common.libs;
 using common.libs.extends;
 using common.server.servers.pipeLine;
-using Fleck;
+using common.server.servers.websocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,13 +14,12 @@ namespace client.service.ui.api.service.clientServer
 {
     public class ClientServer : IClientServer
     {
-        private readonly ConcurrentDictionary<Guid, IWebSocketConnection> websockets = new();
-
         private readonly Dictionary<string, PluginPathCacheInfo> plugins = new();
         private readonly Dictionary<string, IClientConfigure> settingPlugins = new();
 
         private readonly Config config;
         private readonly ServiceProvider serviceProvider;
+        private WebSocket server;
 
         public ClientServer(Config config, ServiceProvider serviceProvider)
         {
@@ -65,47 +61,15 @@ namespace client.service.ui.api.service.clientServer
         }
         public void Websocket()
         {
-            WebSocketServer server = new($"ws://{config.Websocket.BindIp}:{config.Websocket.Port}");
-            server.RestartAfterListenError = true;
-            FleckLog.LogAction = (level, message, ex) =>
+            server = new();
+            server.Start(config.Websocket.BindIp, config.Websocket.Port);
+            server.OnMessage = (connection, frame, message) =>
             {
-                switch (level)
-                {
-                    case LogLevel.Debug:
-                        //Logger.Instance.Info(message);
-                        break;
-                    case LogLevel.Info:
-                        //Logger.Instance.Info(message);
-                        break;
-                    case LogLevel.Warn:
-                        Logger.Instance.Debug(message);
-                        break;
-                    case LogLevel.Error:
-                        Logger.Instance.Error(message);
-                        break;
-                    default:
-                        break;
-                }
-            };
+                var req = message.DeJson<ClientServiceRequestInfo>();
+                var resp = OnMessage(req).Result.ToJson().ToBytes();
 
-            server.Start(socket =>
-            {
-                socket.OnClose = () =>
-                {
-                    websockets.TryRemove(socket.ConnectionInfo.Id, out _);
-                };
-                socket.OnOpen = () =>
-                {
-                    websockets.TryAdd(socket.ConnectionInfo.Id, socket);
-                };
-                socket.OnMessage = message =>
-                {
-                    Task.Run(async () =>
-                    {
-                        await socket.Send((await OnMessage(message.DeJson<ClientServiceRequestInfo>())).ToJson());
-                    });
-                };
-            });
+                connection.SendFrame(resp);
+            };
         }
 
         public IClientConfigure GetConfigure(string className)
@@ -131,10 +95,10 @@ namespace client.service.ui.api.service.clientServer
 
         public void Notify(ClientServiceResponseInfo resp)
         {
-            string msg = resp.ToJson();
-            foreach (var item in websockets.Values)
+            byte[] msg = resp.ToJson().ToBytes();
+            foreach (var item in server.Connections)
             {
-                item.Send(msg);
+                item.SendFrame(msg);
             }
         }
         public async Task<ClientServiceResponseInfo> OnMessage(ClientServiceRequestInfo model)

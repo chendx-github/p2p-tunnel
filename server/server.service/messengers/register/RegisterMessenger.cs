@@ -137,9 +137,9 @@ namespace server.service.messengers.register
             return connection.Address.Port.ToBytes();
         }
 
-        public async Task Notify(IConnection connection)
+        public void Notify(IConnection connection)
         {
-            await clientRegisterCache.Notify(connection).ConfigureAwait(false);
+            clientRegisterCache.Notify(connection);
         }
 
     }

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace server.service.messengers.register
 {
@@ -14,26 +13,26 @@ namespace server.service.messengers.register
     {
         private readonly ConcurrentDictionary<ulong, RegisterCacheInfo> cache = new();
         private NumberSpace idNs = new NumberSpace(0);
+        private readonly Config config;
 
         public SimpleSubPushHandler<RegisterCacheInfo> OnChanged { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
         public SimpleSubPushHandler<RegisterCacheInfo> OnOffline { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
 
 
-        public ClientRegisterCaching(WheelTimer<object> wheelTimer)
+        public ClientRegisterCaching(WheelTimer<object> wheelTimer, Config config)
         {
             wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
+            this.config = config;
         }
-        private async void TimeoutCallback(WheelTimerTimeout<object> timeout)
+        private void TimeoutCallback(WheelTimerTimeout<object> timeout)
         {
             if (cache.Count > 0)
             {
                 long time = DateTimeHelper.GetTimeStamp();
-                foreach (RegisterCacheInfo item in cache.Values)
+                var offlines = cache.Values.Where(c => c.UdpConnection != null && (time - c.UdpConnection.LastTime) > config.TimeoutDelay);
+                foreach (RegisterCacheInfo item in offlines)
                 {
-                    if ((time - item.UdpConnection.LastTime) > 20 * 1000)
-                    {
-                        await Remove(item.Id).ConfigureAwait(false);
-                    }
+                    Remove(item.Id);
                 }
             }
         }
@@ -76,24 +75,32 @@ namespace server.service.messengers.register
             return model.Id;
         }
 
-        public async Task<bool> Remove(ulong id)
+        public bool Remove(ulong id)
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
+                return Offline(client);
+            }
+            return false;
+        }
+        public bool Offline(RegisterCacheInfo client)
+        {
+            if (client != null)
+            {
                 client.UdpConnection?.Disponse();
                 client.TcpConnection?.Disponse();
-                await OnChanged.PushAsync(client).ConfigureAwait(false);
-                await OnOffline.PushAsync(client).ConfigureAwait(false);
+                OnChanged.Push(client);
+                OnOffline.Push(client);
                 return true;
             }
             return false;
         }
-        
-        public async Task<bool> Notify(IConnection connection)
+
+        public bool Notify(IConnection connection)
         {
             if (Get(connection.ConnectId, out RegisterCacheInfo client))
             {
-                await OnChanged.PushAsync(client).ConfigureAwait(false);
+                OnChanged.Push(client);
             }
             return false;
         }
