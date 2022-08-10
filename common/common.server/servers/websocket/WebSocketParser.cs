@@ -141,11 +141,12 @@ namespace common.server.servers.websocket
             //1位 是否是结束帧
             EnumFin fin = (EnumFin)(byte)((span[0] & 0x80) >> 7);
             //2 3 4 保留
+            byte rsv = (byte)(span[0] & 0x7);
             //5 6 7 8 操作码
             EnumOpcode opcode = (EnumOpcode)(byte)(span[0] & 0x0f);
             //第2字节
             //1位 是否mask
-            //byte mask = (byte)((span[1] & 0x80) >> 7);
+            byte mask = (byte)((span[1] & 0x80) >> 7);
             int payloadLength = (span[1] & 0x7f);
             index += 2;
 
@@ -184,6 +185,7 @@ namespace common.server.servers.websocket
             frameInfo = new WebSocketFrameInfo
             {
                 Fin = fin,
+                Rsv = rsv,
                 Opcode = opcode,
                 PayloadData = payloadData,
                 TotalLength = index + payloadLength
