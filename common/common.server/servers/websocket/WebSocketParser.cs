@@ -1,26 +1,32 @@
 ﻿using common.libs;
 using common.libs.extends;
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace common.server.servers.websocket
 {
     public static class WebSocketParser
     {
         private readonly static SHA1 sha1 = SHA1.Create();
-        private readonly static Regex r = new Regex(@"(?!^)(?=[A-Z])");
+        private readonly static Memory<byte> MagicCode = Encoding.ASCII.GetBytes("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
         public static byte[] BuildConnectData(WebsocketHeaderInfo header)
         {
-            string str = Convert.ToBase64String(sha1.ComputeHash(Encoding.ASCII.GetBytes($"{header.SecWebSocketKey.GetString()}258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
+            int keyLength = header.SecWebSocketKey.Length + MagicCode.Length;
+            byte[] keyBytes = ArrayPool<byte>.Shared.Rent(keyLength);
 
-            StringBuilder sb = new StringBuilder();
+            header.SecWebSocketKey.CopyTo(keyBytes);
+            MagicCode.CopyTo(keyBytes.AsMemory(header.SecWebSocketKey.Length));
 
-            sb.Append($"HTTP/1.1 {(int)header.StatusCode} {r.Replace(header.StatusCode.ToString(), " ")}\r\n");
-            sb.Append($"Sec-WebSocket-Accept: {str}\r\n");
+            string acceptStr = Convert.ToBase64String(sha1.ComputeHash(keyBytes, 0, keyLength));
+            ArrayPool<byte>.Shared.Return(keyBytes);
+
+            StringBuilder sb = new StringBuilder(10);
+            sb.Append($"HTTP/1.1 {(int)header.StatusCode} {AddSpace(header.StatusCode)}\r\n");
+            sb.Append($"Sec-WebSocket-Accept: {acceptStr}\r\n");
             if (header.Connection.Length > 0)
             {
                 sb.Append($"Connection: {header.Connection.GetString()}\r\n");
@@ -98,6 +104,33 @@ namespace common.server.servers.websocket
             }
 
             return bytes;
+        }
+
+        private static string AddSpace(HttpStatusCode statusCode)
+        {
+            ReadOnlySpan<char> span = statusCode.ToString().AsSpan();
+
+            int totalLength = span.Length * 2;
+
+            char[] result = ArrayPool<char>.Shared.Rent(totalLength);
+            Span<char> resultSpan = result.AsSpan(0, totalLength);
+            span.CopyTo(resultSpan);
+
+            int length = 0;
+            for (int i = 0; i < span.Length; i++)
+            {
+                if (i > 0 && span[i] >= 65 && span[i] <= 90)
+                {
+                    resultSpan.Slice(i + length, totalLength - (length + i) - 1).CopyTo(resultSpan.Slice(i + length + 1));
+                    resultSpan[i + length] = (char)32;
+                    length++;
+                }
+            }
+
+            string resultStr = resultSpan.Slice(0, span.Length + length).ToString();
+            ArrayPool<char>.Shared.Return(result);
+
+            return resultStr;
         }
     }
 
