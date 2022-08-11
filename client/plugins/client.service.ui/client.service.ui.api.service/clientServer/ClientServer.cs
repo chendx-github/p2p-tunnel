@@ -19,7 +19,7 @@ namespace client.service.ui.api.service.clientServer
 
         private readonly Config config;
         private readonly ServiceProvider serviceProvider;
-        private WebSocket server;
+        private WebSocketServer server;
 
         public ClientServer(Config config, ServiceProvider serviceProvider)
         {
@@ -67,8 +67,7 @@ namespace client.service.ui.api.service.clientServer
             {
                 var req = message.DeJson<ClientServiceRequestInfo>();
                 var resp = OnMessage(req).Result.ToJson().ToBytes();
-
-                connection.SendFrame(resp);
+                connection.SendFrameText(resp);
             };
         }
 
@@ -98,7 +97,7 @@ namespace client.service.ui.api.service.clientServer
             byte[] msg = resp.ToJson().ToBytes();
             foreach (var item in server.Connections)
             {
-                item.SendFrame(msg);
+                item.SendFrameText(msg);
             }
         }
         public async Task<ClientServiceResponseInfo> OnMessage(ClientServiceRequestInfo model)

@@ -33,8 +33,4 @@
 	  <ProjectReference Include="..\common.libs\common.libs.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="servers\websocket\" />
-	</ItemGroup>
-
 </Project>

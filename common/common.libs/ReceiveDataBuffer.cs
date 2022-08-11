@@ -37,24 +37,33 @@ namespace common.libs
 
         public void AddRange(Memory<byte> data)
         {
-            BeResize(data.Length);
+            if(data.Length > 0)
+            {
+                BeResize(data.Length);
 
-            data.CopyTo(items.Slice(size, data.Length));
-            size += data.Length;
+                data.CopyTo(items.Slice(size, data.Length));
+                size += data.Length;
+            }
         }
         public void AddRange(Memory<byte> data, int length)
         {
-            BeResize(length);
+            if (length > 0)
+            {
+                BeResize(length);
 
-            data.Slice(0, length).CopyTo(items.Slice(size, length));
-            size += length;
+                data.Slice(0, length).CopyTo(items.Slice(size, length));
+                size += length;
+            }
         }
 
         public void AddRange(byte[] data, int offset, int length)
         {
-            BeResize(length);
-            data.AsMemory(offset, length).CopyTo(items.Slice(size, length));
-            size += length;
+            if(length > 0)
+            {
+                BeResize(length);
+                data.AsMemory(offset, length).CopyTo(items.Slice(size, length));
+                size += length;
+            }
         }
 
         public void RemoveRange(int index, int count)

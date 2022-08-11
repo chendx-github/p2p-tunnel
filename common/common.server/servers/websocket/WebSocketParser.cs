@@ -12,17 +12,42 @@ namespace common.server.servers.websocket
     public static class WebSocketParser
     {
         private readonly static SHA1 sha1 = SHA1.Create();
-        private readonly static Memory<byte> MagicCode = Encoding.ASCII.GetBytes("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+        private readonly static Memory<byte> magicCode = Encoding.ASCII.GetBytes("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+        /// <summary>
+        /// 构建连接数据
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public static byte[] BuildConnectData(WebsocketHeaderInfo header)
         {
-            int keyLength = header.SecWebSocketKey.Length + MagicCode.Length;
-            byte[] keyBytes = ArrayPool<byte>.Shared.Rent(keyLength);
+            string path = header.Path.Length == 0 ? "/" : header.Path.GetString();
 
-            header.SecWebSocketKey.CopyTo(keyBytes);
-            MagicCode.CopyTo(keyBytes.AsMemory(header.SecWebSocketKey.Length));
+            StringBuilder sb = new StringBuilder(10);
+            sb.Append($"GET {path} HTTP/1.1\r\n");
+            sb.Append($"Upgrade: websocket\r\n");
+            sb.Append($"Connection: Upgrade\r\n");
+            sb.Append($"Sec-WebSocket-Version: 13\r\n");
+            sb.Append($"Sec-WebSocket-Key: {header.SecWebSocketKey.GetString()}\r\n");
+            if (header.SecWebSocketProtocol.Length > 0)
+            {
+                sb.Append($"Sec-WebSocket-Protocol: {header.SecWebSocketProtocol.GetString()}\r\n");
+            }
+            if (header.SecWebSocketExtensions.Length > 0)
+            {
+                sb.Append($"Sec-WebSocket-Extensions: {header.SecWebSocketExtensions.GetString()}\r\n");
+            }
+            sb.Append("\r\n");
 
-            string acceptStr = Convert.ToBase64String(sha1.ComputeHash(keyBytes, 0, keyLength));
-            ArrayPool<byte>.Shared.Return(keyBytes);
+            return sb.ToString().ToBytes();
+        }
+        /// <summary>
+        /// 构建连接回应数据
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static byte[] BuildConnectResponseData(WebsocketHeaderInfo header)
+        {
+            string acceptStr = BuildSecWebSocketAccept(header.SecWebSocketKey);
 
             StringBuilder sb = new StringBuilder(10);
             sb.Append($"HTTP/1.1 {(int)header.StatusCode} {AddSpace(header.StatusCode)}\r\n");
@@ -51,23 +76,113 @@ namespace common.server.servers.websocket
 
             return sb.ToString().ToBytes();
         }
+        /// <summary>
+        /// 生成随机key
+        /// </summary>
+        /// <returns></returns>
+        public static byte[] BuildSecWebSocketKey()
+        {
+            byte[] bytes = new byte[16];
+            Random random = new Random(DateTime.Now.Ticks.GetHashCode());
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)random.Next(0, 255);
+            }
+            byte[] res = Convert.ToBase64String(bytes).ToBytes();
+            return res;
+        }
+        /// <summary>
+        /// 构建mask数据
+        /// </summary>
+        /// <returns></returns>
+        public static byte[] BuildMaskKey()
+        {
+            byte[] bytes = new byte[4];
 
+            Random random = new Random(DateTime.Now.Ticks.GetHashCode());
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)random.Next(0, 255);
+            }
+
+            return bytes;
+        }
+        /// <summary>
+        /// 生成accept回应
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static string BuildSecWebSocketAccept(Memory<byte> key)
+        {
+            int keyLength = key.Length + magicCode.Length;
+            byte[] acceptBytes = ArrayPool<byte>.Shared.Rent(keyLength);
+
+            key.CopyTo(acceptBytes);
+            magicCode.CopyTo(acceptBytes.AsMemory(key.Length));
+
+            string acceptStr = Convert.ToBase64String(sha1.ComputeHash(acceptBytes, 0, keyLength));
+            ArrayPool<byte>.Shared.Return(acceptBytes);
+
+            return acceptStr;
+        }
+        /// <summary>
+        /// 验证回应的accept
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="accept"></param>
+        /// <returns></returns>
+        public static bool VerifySecWebSocketAccept(Memory<byte> key, Memory<byte> accept)
+        {
+            string acceptStr = BuildSecWebSocketAccept(key);
+            return acceptStr == accept.GetString();
+        }
+
+        /// <summary>
+        /// 构建ping帧
+        /// </summary>
+        /// <returns></returns>
+        public static byte[] BuildPingData()
+        {
+            return new byte[]
+            {
+                (byte)WebSocketFrameInfo.EnumFin.Fin | (byte)WebSocketFrameInfo.EnumOpcode.Ping, //fin + ping
+                (byte)WebSocketFrameInfo.EnumMask.None | 0, //没有 mask 和 payload length
+            };
+        }
+        /// <summary>
+        /// 构建pong帧
+        /// </summary>
+        /// <returns></returns>
         public static byte[] BuildPongData()
         {
             return new byte[]
             {
-                0x80 & 0xa, //fin + pong
-                0, //没有 mask 和 payload length
+                (byte)WebSocketFrameInfo.EnumFin.Fin | (byte)WebSocketFrameInfo.EnumOpcode.Pong, //fin + pong
+                (byte)WebSocketFrameInfo.EnumMask.None | 0, //没有 mask 和 payload length
             };
         }
-        public static byte[] BuildFrameData(Memory<byte> data, WebSocketFrameInfo.EnumOpcode opcode)
+        /// <summary>
+        /// 构建数据帧
+        /// </summary>
+        /// <param name="remark"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static byte[] BuildFrameData(WebSocketFrameRemarkInfo remark)
         {
-            int length = 1 + 1 + data.Length, index = 0;
+            if (remark.Mask > 0 && remark.MaskData.Length != 4)
+            {
+                throw new Exception("mask data just 4byte");
+            }
+
+            int length = 1 + 1 + remark.Data.Length, index = 2;
+            if (remark.Mask == WebSocketFrameInfo.EnumMask.Mask)
+            {
+                length += 4;
+            }
+
             byte payloadLength;
             byte[] payloadLengthBytes = Helper.EmptyArray;
-
-            int dataLength = data.Length;
-
+            int dataLength = remark.Data.Length;
             if (dataLength > ushort.MaxValue)
             {
                 length += 8;
@@ -85,12 +200,10 @@ namespace common.server.servers.websocket
                 payloadLength = (byte)dataLength;
             }
 
+
             byte[] bytes = new byte[length];
-
-            bytes[0] = (byte)(0x80 | (byte)opcode);
-            bytes[1] = payloadLength;
-            index += 2;
-
+            bytes[0] = (byte)((byte)remark.Fin | (byte)remark.Rsv1 | (byte)remark.Rsv2 | (byte)remark.Rsv3 | (byte)remark.Opcode);
+            bytes[1] = (byte)((byte)remark.Mask | payloadLength);
 
             if (payloadLengthBytes.Length > 0)
             {
@@ -98,14 +211,25 @@ namespace common.server.servers.websocket
                 index += payloadLengthBytes.Length;
             }
 
-            if (data.Length > 0)
+            if (remark.Mask == WebSocketFrameInfo.EnumMask.Mask)
             {
-                data.CopyTo(bytes.AsMemory(index));
+                remark.MaskData.CopyTo(bytes.AsMemory(index, remark.MaskData.Length));
+                index += remark.MaskData.Length;
+            }
+
+            if (remark.Data.Length > 0)
+            {
+                remark.Data.CopyTo(bytes.AsMemory(index));
             }
 
             return bytes;
         }
 
+        /// <summary>
+        /// 给每个大写字母前加一个空格，例如ProxyAuthenticationRequired 变成Proxy Authentication Required
+        /// </summary>
+        /// <param name="statusCode"></param>
+        /// <returns></returns>
         private static string AddSpace(HttpStatusCode statusCode)
         {
             ReadOnlySpan<char> span = statusCode.ToString().AsSpan();
@@ -134,6 +258,47 @@ namespace common.server.servers.websocket
         }
     }
 
+    public class WebSocketFrameRemarkInfo
+    {
+        /// <summary>
+        /// 是否是结束帧，如果只有一帧，那必定是结束帧
+        /// </summary>
+        public WebSocketFrameInfo.EnumFin Fin { get; set; } = WebSocketFrameInfo.EnumFin.Fin;
+        /// <summary>
+        /// 保留位1
+        /// </summary>
+        public WebSocketFrameInfo.EnumRsv1 Rsv1 { get; set; } = WebSocketFrameInfo.EnumRsv1.None;
+        /// <summary>
+        /// 保留位2
+        /// </summary>
+        public WebSocketFrameInfo.EnumRsv2 Rsv2 { get; set; } = WebSocketFrameInfo.EnumRsv2.None;
+        /// <summary>
+        /// 保留位3
+        /// </summary>
+        public WebSocketFrameInfo.EnumRsv3 Rsv3 { get; set; } = WebSocketFrameInfo.EnumRsv3.None;
+        /// <summary>
+        /// 数据描述，默认TEXT数据
+        /// </summary>
+        public WebSocketFrameInfo.EnumOpcode Opcode { get; set; } = WebSocketFrameInfo.EnumOpcode.Text;
+
+        /// <summary>
+        /// 是否有掩码
+        /// </summary>
+        public WebSocketFrameInfo.EnumMask Mask { get; set; } = WebSocketFrameInfo.EnumMask.None;
+        /// <summary>
+        /// 掩码key 4字节
+        /// </summary>
+        public Memory<byte> MaskData { get; set; } = Helper.EmptyArray;
+
+        /// <summary>
+        /// payload data
+        /// </summary>
+        public Memory<byte> Data { get; set; } = Helper.EmptyArray;
+    }
+
+    /// <summary>
+    /// 数据帧解析
+    /// </summary>
     public class WebSocketFrameInfo
     {
         /// <summary>
@@ -141,13 +306,20 @@ namespace common.server.servers.websocket
         /// </summary>
         public EnumFin Fin { get; set; }
         /// <summary>
-        /// 保留字段
+        /// 保留位
         /// </summary>
-        public byte Rsv { get; set; }
+        public EnumRsv1 Rsv1 { get; set; }
+        public EnumRsv2 Rsv2 { get; set; }
+        public EnumRsv3 Rsv3 { get; set; }
+
         /// <summary>
         /// 操作码 0附加数据，1文本，2二进制，3-7为非控制保留，8关闭，9ping，a pong，b-f 为控制保留
         /// </summary>
         public EnumOpcode Opcode { get; set; }
+        /// <summary>
+        /// 掩码
+        /// </summary>
+        public EnumMask Mask { get; set; }
         /// <summary>
         /// 总长度
         /// </summary>
@@ -157,6 +329,12 @@ namespace common.server.servers.websocket
         /// </summary>
         public Memory<byte> PayloadData { get; set; }
 
+        /// <summary>
+        /// 解析帧，如果false解析失败，则应该把data缓存起来，等待下次来数据后，拼接起来再次解析
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="frameInfo"></param>
+        /// <returns></returns>
         public static bool TryParse(Memory<byte> data, out WebSocketFrameInfo frameInfo)
         {
             frameInfo = null;
@@ -168,21 +346,12 @@ namespace common.server.servers.websocket
             }
 
             Span<byte> span = data.Span;
-            int index = 0;
+            int index = 2;
 
-            //第一字节
-            //1位 是否是结束帧
-            EnumFin fin = (EnumFin)(byte)((span[0] & 0x80) >> 7);
-            //2 3 4 保留
-            byte rsv = (byte)(span[0] & 0x7);
-            //5 6 7 8 操作码
-            EnumOpcode opcode = (EnumOpcode)(byte)(span[0] & 0x0f);
             //第2字节
             //1位 是否mask
-            byte mask = (byte)((span[1] & 0x80) >> 7);
-            int payloadLength = (span[1] & 0x7f);
-            index += 2;
-
+            EnumMask mask = (EnumMask)(span[1] & (byte)EnumMask.Mask);
+            int payloadLength = (span[1] & 0b01111111);
             if (payloadLength == 126)
             {
                 ushort pl = span.Slice(2, 2).ToUInt16();
@@ -195,31 +364,51 @@ namespace common.server.servers.websocket
                 payloadLength = (int)(BitConverter.IsLittleEndian ? BinaryPrimitives.ReverseEndianness(pl) : pl);
                 index += 8;
             }
-
             //数据长+头长 大于 整个数据长，则不是一个完整的包
-            if (data.Length < payloadLength + index + 4)
+            if (data.Length < payloadLength + index + (mask == EnumMask.Mask ? 4 : 0))
             {
                 return false;
             }
 
-            //mask码 用来解码数据
-            Span<byte> maskKey = span.Slice(index, 4);
-            index += 4;
+            //第1字节
+            //1位 是否是结束帧
+            EnumFin fin = (EnumFin)(byte)(span[0] & (byte)EnumFin.Fin);
+            //2 3 4 保留
+            EnumRsv1 rsv1 = (EnumRsv1)(byte)(span[0] & (byte)EnumRsv1.Rsv);
+            EnumRsv2 rsv2 = (EnumRsv2)(byte)(span[0] & (byte)EnumRsv2.Rsv);
+            EnumRsv3 rsv3 = (EnumRsv3)(byte)(span[0] & (byte)EnumRsv3.Rsv);
+            //5 6 7 8 操作码
+            EnumOpcode opcode = (EnumOpcode)(byte)(span[0] & (byte)EnumOpcode.Last);
+
+
+            Span<byte> maskKey = Helper.EmptyArray;
+            if (mask == EnumMask.Mask)
+            {
+                //mask掩码key 用来解码数据
+                maskKey = span.Slice(index, 4);
+                index += 4;
+            }
 
             //数据
             Memory<byte> payloadData = data.Slice(index, payloadLength);
-            Span<byte> payloadDataSpan = span.Slice(index, payloadLength);
-            //解码
-            for (int i = 0; i < payloadDataSpan.Length; i++)
+            if (mask == EnumMask.Mask)
             {
-                payloadDataSpan[i] = (byte)(payloadDataSpan[i] ^ maskKey[3 & i]);
+                //解码
+                Span<byte> payloadDataSpan = payloadData.Span;
+                for (int i = 0; i < payloadDataSpan.Length; i++)
+                {
+                    payloadDataSpan[i] = (byte)(payloadDataSpan[i] ^ maskKey[3 & i]);
+                }
             }
 
             frameInfo = new WebSocketFrameInfo
             {
                 Fin = fin,
-                Rsv = rsv,
+                Rsv1 = rsv1,
+                Rsv2 = rsv2,
+                Rsv3 = rsv3,
                 Opcode = opcode,
+                Mask = mask,
                 PayloadData = payloadData,
                 TotalLength = index + payloadLength
             };
@@ -228,8 +417,29 @@ namespace common.server.servers.websocket
 
         public enum EnumFin : byte
         {
-            UnFin = 0x0,
-            Fin = 0x1,
+            None = 0x0,
+            Fin = 0b10000000,
+        }
+        public enum EnumMask : byte
+        {
+            None = 0x0,
+            Mask = 0b10000000,
+        }
+
+        public enum EnumRsv1 : byte
+        {
+            None = 0x0,
+            Rsv = 0b01000000,
+        }
+        public enum EnumRsv2 : byte
+        {
+            None = 0x0,
+            Rsv = 0b00100000,
+        }
+        public enum EnumRsv3 : byte
+        {
+            None = 0x0,
+            Rsv = 0b00010000,
         }
 
         public enum EnumOpcode : byte
@@ -250,9 +460,72 @@ namespace common.server.servers.websocket
             Controll13 = 0xd,
             Controll14 = 0xe,
             Controll15 = 0xf,
+            Last = 0xf,
+        }
+
+        /// <summary>
+        /// 关闭的状态码
+        /// </summary>
+        public enum EnumCloseStatus : ushort
+        {
+            /// <summary>
+            /// 正常关闭
+            /// </summary>
+            Normal = 1000,
+            /// <summary>
+            /// 正在离开
+            /// </summary>
+            Leaving = 1001,
+            /// <summary>
+            /// 协议错误
+            /// </summary>
+            ProtocolError = 1002,
+            /// <summary>
+            /// 只能接收TEXT数据
+            /// </summary>
+            TextOnly = 1003,
+            /// <summary>
+            /// 保留
+            /// </summary>
+            None1004 = 1004,
+            /// <summary>
+            /// 保留
+            /// </summary>
+            None1005 = 1005,
+            /// <summary>
+            /// 保留
+            /// </summary>
+            None1006 = 1006,
+            /// <summary>
+            /// 消息类型不一致
+            /// </summary>
+            DataTypeError = 1007,
+            /// <summary>
+            /// 通用状态码，没有别的合适的状态码时，用这个
+            /// </summary>
+            PublicError = 1008,
+            /// <summary>
+            /// 数据太大，无法处理
+            /// </summary>
+            DataTooBig = 1009,
+            /// <summary>
+            /// 扩展错误
+            /// </summary>
+            ExtendsError = 1010,//正常关闭
+            /// <summary>
+            /// 意外情况
+            /// </summary>
+            Unexpected = 1011,
+            /// <summary>
+            /// TLS握手失败
+            /// </summary>
+            TLSError = 1015
         }
     }
 
+    /// <summary>
+    /// 请求头解析
+    /// </summary>
     public class WebsocketHeaderInfo
     {
         static byte[][] bytes = new byte[][] {
@@ -262,21 +535,44 @@ namespace common.server.servers.websocket
             Encoding.ASCII.GetBytes("Sec-WebSocket-Version: "),
             Encoding.ASCII.GetBytes("Sec-WebSocket-Key: "),
             Encoding.ASCII.GetBytes("Sec-WebSocket-Extensions: "),
-            Encoding.ASCII.GetBytes("Sec-WebSocket-Protocol: ")
+            Encoding.ASCII.GetBytes("Sec-WebSocket-Protocol: "),
+            Encoding.ASCII.GetBytes("Sec-WebSocket-Accept: "),
         };
+        static byte[] httpBytes = "HTTP/".ToBytes();
 
         public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.SwitchingProtocols;
+
+        public Memory<byte> Method { get; private set; }
+
+        private string _pathSet { get; set; }
+        /// <summary>
+        /// 用这个设置path值
+        /// </summary>
+        public string PathSet
+        {
+            get
+            {
+                return _pathSet;
+            }
+            set
+            {
+                _pathSet = value;
+                Path = _pathSet.ToBytes();
+            }
+        }
         /// <summary>
         /// 如果 仅1个字符，那就是 /
         /// </summary>
         public Memory<byte> Path { get; private set; }
+
         public Memory<byte> Connection { get; private set; }
         public Memory<byte> Upgrade { get; private set; }
         public Memory<byte> Origin { get; private set; }
-        public Memory<byte> SecWebSocketVersion { get; set; }
-        public Memory<byte> SecWebSocketKey { get; private set; }
+        public Memory<byte> SecWebSocketVersion { get; private set; }
+        public Memory<byte> SecWebSocketKey { get; set; }
         public Memory<byte> SecWebSocketExtensions { get; set; }
         public Memory<byte> SecWebSocketProtocol { get; set; }
+        public Memory<byte> SecWebSocketAccept { get; set; }
 
         public static WebsocketHeaderInfo Parse(Memory<byte> header)
         {
@@ -314,12 +610,8 @@ namespace common.server.servers.websocket
                 }
             }
 
-            int pathIndex = span.IndexOf((byte)32) + 1;
-            int pathIndex1 = span.Slice(pathIndex + 1).IndexOf((byte)32);
-
-            return new WebsocketHeaderInfo
+            WebsocketHeaderInfo headerInfo = new WebsocketHeaderInfo
             {
-                Path = header.Slice(pathIndex, pathIndex1),
                 Connection = header.Slice((int)(res[0] >> 32), (int)(res[0] & 0xffffffff)),
                 Upgrade = header.Slice((int)(res[1] >> 32), (int)(res[1] & 0xffffffff)),
                 Origin = header.Slice((int)(res[2] >> 32), (int)(res[2] & 0xffffffff)),
@@ -327,7 +619,23 @@ namespace common.server.servers.websocket
                 SecWebSocketKey = header.Slice((int)(res[4] >> 32), (int)(res[4] & 0xffffffff)),
                 SecWebSocketExtensions = header.Slice((int)(res[5] >> 32), (int)(res[5] & 0xffffffff)),
                 SecWebSocketProtocol = header.Slice((int)(res[6] >> 32), (int)(res[6] & 0xffffffff)),
+                SecWebSocketAccept = header.Slice((int)(res[7] >> 32), (int)(res[7] & 0xffffffff)),
             };
+
+            int pathIndex = span.IndexOf((byte)32);
+            int pathIndex1 = span.Slice(pathIndex + 1).IndexOf((byte)32);
+            if (header.Slice(0, httpBytes.Length).Span.SequenceEqual(httpBytes))
+            {
+                int code = int.Parse(header.Slice(pathIndex + 1, pathIndex1).GetString());
+                headerInfo.StatusCode = (HttpStatusCode)code;
+            }
+            else
+            {
+                headerInfo.Path = header.Slice(pathIndex + 1, pathIndex1);
+                headerInfo.Method = header.Slice(0, pathIndex);
+            }
+
+            return headerInfo;
         }
     }
 }
