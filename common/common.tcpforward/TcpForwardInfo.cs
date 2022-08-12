@@ -15,40 +15,45 @@ namespace common.tcpforward
     public class TcpForwardInfo
     {
         public TcpForwardInfo() { }
-        public int SourcePort { get; set; } = 0;
+        public int SourcePort { get; set; }
 
-        public TcpForwardAliveTypes AliveType { get; set; } = TcpForwardAliveTypes.WEB;
-        public TcpForwardTypes ForwardType { get; set; } = TcpForwardTypes.FORWARD;
-        public ulong RequestId { get; set; } = 0;
+        public bool IsForward { get; set; }
+        public TcpForwardAliveTypes AliveType { get; set; }
+        public TcpForwardTypes ForwardType { get; set; }
+        public ulong RequestId { get; set; }
         public Memory<byte> TargetEndpoint { get; set; }
-        public Memory<byte> Buffer { get; set; } = Helper.EmptyArray;
+        public Memory<byte> Buffer { get; set; }
 
         public IConnection Connection { get; set; }
 
         public byte[] ToBytes()
         {
             byte[] requestIdBytes = RequestId.ToBytes();
-            var bytes = new byte[
-                1 + //AliveType
-                1 + //ForwardType
-                1 + TargetEndpoint.Length + // endpoint
-                8 + //RequestId
-                Buffer.Length
-            ];
+            int length = 1 + requestIdBytes.Length + Buffer.Length;
+            byte isForward = 1;
+            if (IsForward == false)
+            {
+                length += TargetEndpoint.Length;
+                isForward = 0;
+            }
 
-            int index = 0;
+            byte[] bytes = new byte[length];
+            int index = 1;
+            /*
+                0b111 1111  
+                AliveType               1bit
+                ForwardType             1bit
+                isForward               1bit
+                TargetEndpoint.Length   4bit
+             */
+            bytes[0] = (byte)(((byte)AliveType - 1) << 7 | ((byte)ForwardType - 1) << 6 | isForward << 5 | (byte)TargetEndpoint.Length);
 
-            bytes[index] = (byte)AliveType;
-            index++;
-
-            bytes[index] = (byte)ForwardType;
-            index++;
-
-            bytes[index] = (byte)TargetEndpoint.Length;
-            index++;
-
-            TargetEndpoint.CopyTo(bytes.AsMemory(index, TargetEndpoint.Length));
-            index += TargetEndpoint.Length;
+            //转发阶段不需要这些
+            if (IsForward == false)
+            {
+                TargetEndpoint.CopyTo(bytes.AsMemory(index, TargetEndpoint.Length));
+                index += TargetEndpoint.Length;
+            }
 
             Array.Copy(requestIdBytes, 0, bytes, index, requestIdBytes.Length);
             index += requestIdBytes.Length;
@@ -61,19 +66,21 @@ namespace common.tcpforward
         public void DeBytes(in Memory<byte> memory)
         {
             var span = memory.Span;
-            int index = 0;
+            int index = 1;
 
-            AliveType = (TcpForwardAliveTypes)span[index];
-            index++;
+            byte isForward = (byte)((span[0] >> 5) & 0b1);
+            byte epLength = (byte)(span[0] & 0b11111);
 
-            ForwardType = (TcpForwardTypes)span[index];
-            index++;
+            //转发阶段不需要这些
+            if (isForward == 0)
+            {
+                AliveType = (TcpForwardAliveTypes)(byte)(((span[0] >> 7) & 0b1) + 1);
+                ForwardType = (TcpForwardTypes)(byte)(((span[0] >> 6) & 0b1) + 1);
 
-            byte endpointLength = span[index];
-            index++;
+                TargetEndpoint = memory.Slice(index, epLength);
+                index += epLength;
+            }
 
-            TargetEndpoint = memory.Slice(index, endpointLength);
-            index += endpointLength;
 
             RequestId = span.Slice(index).ToUInt64();
             index += 8;

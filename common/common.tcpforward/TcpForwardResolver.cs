@@ -45,7 +45,7 @@ namespace common.tcpforward
                     connections.TryRemove(token.Key, out _);
                 }
             }
-            else
+            else if (arg.TargetEndpoint.Length > 0)
             {
                 Connect(arg);
             }

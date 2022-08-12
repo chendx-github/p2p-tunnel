@@ -133,6 +133,7 @@ namespace common.tcpforward
             try
             {
                 token.SourceSocket = e.AcceptSocket;
+                token.Request.IsForward = false;
                 token.Request.RequestId = requestIdNs.Increment();
                 token.Request.AliveType = acceptToken.Request.AliveType;
                 token.Request.SourcePort = acceptToken.SourcePort;
@@ -216,6 +217,7 @@ namespace common.tcpforward
             ForwardAsyncUserToken token = (ForwardAsyncUserToken)e.UserToken;
             token.Request.Buffer = data.AsMemory(offset, length);
             OnRequest.Push(token.Request);
+            token.Request.IsForward = true;
             token.Request.Buffer = Helper.EmptyArray;
         }
 
@@ -283,7 +285,7 @@ namespace common.tcpforward
     {
         public Socket SourceSocket { get; set; }
         public int SourcePort { get; set; } = 0;
-        public TcpForwardInfo Request { get; set; } = new TcpForwardInfo();
+        public TcpForwardInfo Request { get; set; } = new TcpForwardInfo { IsForward = false };
     }
     public class ClientsManager
     {

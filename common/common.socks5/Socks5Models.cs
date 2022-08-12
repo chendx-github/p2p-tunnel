@@ -7,21 +7,18 @@ namespace common.socks5
 {
     public class Socks5Info
     {
-        public byte Version { get; set; } = 0;
+
         public Socks5EnumStep Socks5Step { get; set; } = Socks5EnumStep.Request;
-
+        public byte Version { get; set; } = 0;
         public ulong Id { get; set; } = 0;
-
+        public IPEndPoint SourceEP { get; set; }
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
 
         public byte[] Response { get; set; } = new byte[1];
-
-        public IPEndPoint SourceEP { get; set; }
-
         public byte[] ToBytes()
         {
             byte[] idBytes = Id.ToBytes();
-            int length = 1 + 1 + idBytes.Length + Data.Length + 1, index = 0;
+            int length = 1 + idBytes.Length + 1 + Data.Length, index = 1;
             byte[] ipBytes = Helper.EmptyArray;
             byte[] portBytes = Helper.EmptyArray;
             if (SourceEP != null)
@@ -32,11 +29,7 @@ namespace common.socks5
             }
 
             byte[] bytes = new byte[length];
-            bytes[index] = (byte)Socks5Step;
-            index += 1;
-
-            bytes[index] = Version;
-            index += 1;
+            bytes[0] = (byte)((byte)Socks5Step << 4 | Version);
 
             Array.Copy(idBytes, 0, bytes, index, idBytes.Length);
             index += idBytes.Length;
@@ -64,13 +57,10 @@ namespace common.socks5
         public void DeBytes(Memory<byte> bytes)
         {
             var span = bytes.Span;
-            int index = 0;
+            int index = 1;
 
-            Socks5Step = (Socks5EnumStep)span[index];
-            index += 1;
-
-            Version = span[index];
-            index += 1;
+            Socks5Step = (Socks5EnumStep)(span[0] >> 4);
+            Version = (byte)(span[0] & 0b1111);
 
             Id = span.Slice(index, 8).ToUInt64();
             index += 8;
