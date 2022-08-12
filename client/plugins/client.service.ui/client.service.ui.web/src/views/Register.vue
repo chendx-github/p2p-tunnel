@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-25 14:08:44
+ * @LastEditTime: 2022-08-12 11:38:43
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -90,18 +90,29 @@
                 </el-form-item>
                 <el-form-item label="自动注册">
                     <el-row>
-                        <el-col :span="8">
+                        <el-col :span="6">
                             <el-form-item label="状态" prop="AutoReg">
-                                <el-select v-model="model.AutoReg" size="large">
-                                    <el-option :key="false" label="不自动注册" :value="false" />
-                                    <el-option :key="true" label="自动注册" :value="true" />
-                                </el-select>
+                                <el-checkbox v-model="model.AutoReg">自动注册</el-checkbox>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
+                        <el-col :span="6">
                             <el-form-item label="重试次数" prop="AutoRegTimes">
                                 <el-tooltip class="box-item" effect="dark" content="如果自动注册失败，将要重试几次" placement="top-start">
                                     <el-input v-model="model.AutoRegTimes"></el-input>
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="重试间隔" prop="AutoRegInterval">
+                                <el-tooltip class="box-item" effect="dark" content="间隔多久重试一次(ms)" placement="top-start">
+                                    <el-input v-model="model.AutoRegInterval"></el-input>
+                                </el-tooltip>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="重试延迟" prop="AutoRegDelay">
+                                <el-tooltip class="box-item" effect="dark" content="断线后多久重试" placement="top-start">
+                                    <el-input v-model="model.AutoRegDelay"></el-input>
                                 </el-tooltip>
                             </el-form-item>
                         </el-col>
@@ -182,6 +193,8 @@ export default {
                 ServerTcpPort: 0,
                 AutoReg: false,
                 AutoRegTimes: 10,
+                AutoRegInterval: 5000,
+                AutoRegDelay: 5000,
                 UseMac: false,
                 GroupId: '',
                 ClientEncode: false,
@@ -192,6 +205,30 @@ export default {
             rules: {
                 ClientName: [{ required: true, message: '必填', trigger: 'blur' }],
                 ServerIp: [{ required: true, message: '必填', trigger: 'blur' }],
+                AutoRegTimes: [
+                    { required: true, message: '必填', trigger: 'blur' },
+                    {
+                        type: 'number', min: 1, max: 2147483647, message: '数字 1-2147483647', trigger: 'blur', transform (value) {
+                            return Number(value)
+                        }
+                    }
+                ],
+                AutoRegInterval: [
+                    { required: true, message: '必填', trigger: 'blur' },
+                    {
+                        type: 'number', min: 1, max: 2147483647, message: '数字 1-2147483647', trigger: 'blur', transform (value) {
+                            return Number(value)
+                        }
+                    }
+                ],
+                AutoRegDelay: [
+                    { required: true, message: '必填', trigger: 'blur' },
+                    {
+                        type: 'number', min: 1, max: 2147483647, message: '数字 1-2147483647', trigger: 'blur', transform (value) {
+                            return Number(value)
+                        }
+                    }
+                ],
                 ServerUdpPort: [
                     { required: true, message: '必填', trigger: 'blur' },
                     {
@@ -217,6 +254,8 @@ export default {
             state.model.GroupId = registerState.ClientConfig.GroupId = json.ClientConfig.GroupId;
             state.model.AutoReg = registerState.ClientConfig.AutoReg = json.ClientConfig.AutoReg;
             state.model.AutoRegTimes = registerState.ClientConfig.AutoRegTimes = json.ClientConfig.AutoRegTimes;
+            state.model.AutoRegInterval = registerState.ClientConfig.AutoRegInterval = json.ClientConfig.AutoRegInterval;
+            state.model.AutoRegDelay = registerState.ClientConfig.AutoRegDelay = json.ClientConfig.AutoRegDelay;
             state.model.UseMac = registerState.ClientConfig.UseMac = json.ClientConfig.UseMac;
             state.model.ClientEncode = registerState.ClientConfig.Encode = json.ClientConfig.Encode;
             state.model.ClientEncodePassword = registerState.ClientConfig.ClientEncodePassword = json.ClientConfig.EncodePassword;
@@ -244,6 +283,8 @@ export default {
                         GroupId: state.model.GroupId,
                         AutoReg: state.model.AutoReg,
                         AutoRegTimes: +state.model.AutoRegTimes,
+                        AutoRegInterval: +state.model.AutoRegInterval,
+                        AutoRegDelay: +state.model.AutoRegDelay,
                         UseMac: state.model.UseMac,
                         Encode: state.model.ClientEncode,
                         EncodePassword: state.model.ClientEncodePassword
@@ -256,6 +297,7 @@ export default {
                         EncodePassword: state.model.ServerEncodePassword
                     }
                 };
+                console.log(data);
                 registerState.LocalInfo.IsConnecting = true;
                 updateConfig(data).then(() => {
                     sendRegisterMsg().then((res) => {

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:39:45
  * @LastEditors: snltty
- * @LastEditTime: 2022-07-25 13:02:55
+ * @LastEditTime: 2022-08-12 11:29:11
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\states\register.js
@@ -21,6 +21,8 @@ export const provideRegister = () => {
             Name: '',
             AutoReg: false,
             AutoRegTimes: 10,
+            AutoRegInterval: 5000,
+            AutoRegDelay: 5000,
             UseMac: false,
             Encode: false,
             EncodePassword: ""

@@ -61,7 +61,8 @@ namespace server.service.messengers.register
                 UdpPort = connection.Address.Port,
                 TcpPort = 0,
                 GroupId = client.GroupId,
-                Relay = config.Relay
+                Relay = config.Relay,
+                TimeoutDelay = config.TimeoutDelay
             }.ToBytes();
         }
         private byte[] Tcp(IConnection connection, RegisterParamsInfo model)
@@ -89,7 +90,8 @@ namespace server.service.messengers.register
                 UdpPort = client.UdpConnection.Address.Port,
                 TcpPort = connection.Address.Port,
                 GroupId = client.GroupId,
-                Relay = config.Relay
+                Relay = config.Relay,
+                TimeoutDelay = config.TimeoutDelay
             }.ToBytes();
         }
         private (RegisterResultInfo, RegisterCacheInfo) VerifyAndAdd(RegisterParamsInfo model)

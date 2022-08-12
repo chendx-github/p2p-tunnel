@@ -141,6 +141,8 @@ namespace common.server.model
         public int UdpPort { get; set; } = 0;
         public int TcpPort { get; set; } = 0;
 
+        public int TimeoutDelay { get; set; } = 0;
+
         public ulong Id { get; set; } = 0;
         public IPAddress Ip { get; set; } = IPAddress.Any;
         public string GroupId { get; set; } = string.Empty;
@@ -149,6 +151,7 @@ namespace common.server.model
         {
             var udpPortBytes = UdpPort.ToBytes();
             var tcpPortBytes = TcpPort.ToBytes();
+            var timeoutBytes = TimeoutDelay.ToBytes();
             var idBytes = Id.ToBytes();
             var ipBytes = Ip.GetAddressBytes();
             var groupIdBytes = GroupId.ToBytes();
@@ -156,6 +159,7 @@ namespace common.server.model
             var bytes = new byte[1 + 1
                 + 2 + 2
                 + 8
+                + timeoutBytes.Length
                 + 1 + ipBytes.Length
                 + groupIdBytes.Length];
 
@@ -173,6 +177,9 @@ namespace common.server.model
             bytes[index] = tcpPortBytes[0];
             bytes[index + 1] = tcpPortBytes[1];
             index += 2;
+
+            Array.Copy(timeoutBytes, 0, bytes, index, timeoutBytes.Length);
+            index += 4;
 
             Array.Copy(idBytes, 0, bytes, index, idBytes.Length);
             index += 8;
@@ -204,6 +211,9 @@ namespace common.server.model
 
             TcpPort = span.Slice(index, 2).ToUInt16();
             index += 2;
+
+            TimeoutDelay = span.Slice(index, 4).ToInt32();
+            index += 4;
 
             Id = span.Slice(index, 8).ToUInt64();
             index += 8;

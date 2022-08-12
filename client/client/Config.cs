@@ -68,6 +68,10 @@ namespace client
         /// 自动注册重试次数
         /// </summary>
         public int AutoRegTimes { get; set; } = 10;
+        public int AutoRegInterval { get; set; } = 5000;
+        public int AutoRegDelay { get; set; } = 5000;
+
+
         /// <summary>
         /// 上报MAC地址
         /// </summary>

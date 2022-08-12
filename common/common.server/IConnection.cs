@@ -32,8 +32,8 @@ namespace common.server
 
         public long LastTime { get; }
         public void UpdateTime(long time);
-        public bool IsTimeout(long time);
-        public bool IsNeedHeart(long time);
+        public bool IsTimeout(long time, int timeout);
+        public bool IsNeedHeart(long time, int timeout);
 
         public long SendBytes { get; set; }
         public long ReceiveBytes { get; set; }
@@ -87,10 +87,10 @@ namespace common.server
 
         public long LastTime { get; private set; } = DateTimeHelper.GetTimeStamp();
         public void UpdateTime(long time) => LastTime = time;
-        public bool IsTimeout(long time) => (LastTime > 0 && time - LastTime > 20000);
-        public bool IsNeedHeart(long time)
+        public bool IsTimeout(long time, int timeout) => (LastTime > 0 && time - LastTime > timeout);
+        public bool IsNeedHeart(long time, int timeout)
         {
-            return (LastTime == 0 || time - LastTime > 5000);
+            return (LastTime == 0 || time - LastTime > (timeout / 2));
         }
 
         public long SendBytes { get; set; } = 0;
@@ -189,7 +189,7 @@ namespace common.server
                 try
                 {
                     NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
-                    SendBytes +=data.Length;
+                    SendBytes += data.Length;
                     return new ValueTask<bool>(true);
                 }
                 catch (Exception ex)

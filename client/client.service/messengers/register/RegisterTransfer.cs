@@ -36,7 +36,7 @@ namespace client.service.messengers.register
             this.registerState = registerState;
             this.heartMessengerSender = heartMessengerSender;
             this.cryptoSwap = cryptoSwap;
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 5000, true);
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 1000, true);
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit();
             Console.CancelKeyPress += (s, e) => Exit();
@@ -68,7 +68,8 @@ namespace client.service.messengers.register
             return await Task.Run(async () =>
             {
                 CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = string.Empty };
-                int interval = 0;
+                int interval = autoReg ? config.Client.AutoRegDelay : 0;
+
                 for (int i = 0; i < config.Client.AutoRegTimes; i++)
                 {
                     try
@@ -78,20 +79,19 @@ namespace client.service.messengers.register
                             success.ErrorMsg = "注册操作中...";
                             break;
                         }
-                        if (interval > 0)
-                        {
-                            await Task.Delay(interval);
-                            interval = 0;
-                        }
 
                         //先退出
                         Exit();
+                        registerState.LocalInfo.IsConnecting = true;
+
+                        if (interval > 0)
+                        {
+                            await Task.Delay(interval);
+                        }
 
                         IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
-                        registerState.LocalInfo.IsConnecting = true;
                         registerState.LocalInfo.TcpPort = registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
                         registerState.LocalInfo.Mac = string.Empty;
-
                         //绑定udp
                         UdpBind(serverAddress);
                         if (registerState.UdpConnection == null)
@@ -113,6 +113,7 @@ namespace client.service.messengers.register
                             RegisterResult result = await GetRegisterResult();
                             //上线
                             config.Client.GroupId = result.Data.GroupId;
+                            registerState.RemoteInfo.TimeoutDelay = result.Data.TimeoutDelay;
                             registerState.RemoteInfo.Relay = result.Data.Relay;
                             registerState.Online(result.Data.Id, result.Data.Ip, result.Data.UdpPort, result.Data.TcpPort);
                             //上线通知
@@ -129,11 +130,12 @@ namespace client.service.messengers.register
 
                     if (!success.Data)
                     {
-                        registerState.LocalInfo.IsConnecting = false;
                         Logger.Instance.Error(success.ErrorMsg);
+                        registerState.LocalInfo.IsConnecting = false;
+
                         if (config.Client.AutoReg || autoReg)
                         {
-                            interval = 5000;
+                            interval = config.Client.AutoRegInterval;
                         }
                         else
                         {
@@ -216,7 +218,7 @@ namespace client.service.messengers.register
 
         private void Heart(object state)
         {
-            if (registerState.UdpConnection != null && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp()))
+            if (registerState.UdpConnection != null && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp(), registerState.RemoteInfo.TimeoutDelay))
             {
                 _ = heartMessengerSender.Heart(registerState.UdpConnection);
             }

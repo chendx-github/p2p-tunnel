@@ -20,6 +20,27 @@ namespace common.server.servers.websocket
         private readonly NumberSpace numberSpace = new NumberSpace(0);
 
         /// <summary>
+        /// 收到连接，可以在这处理 subProtocol extensions 及其它信息，false表示阻止连接，应设置header 的 StatusCode
+        /// </summary>
+        public Func<WebsocketConnection, WebsocketHeaderInfo, bool> OnConnecting = (connection, header) =>
+        {
+            header.SecWebSocketExtensions = Helper.EmptyArray; return true;
+        };
+        /// <summary>
+        /// 已断开连接，没有收到关闭帧
+        /// </summary>
+        public Action<WebsocketConnection> OnDisConnectd = (connection) => { };
+
+        /// <summary>
+        /// 已连接
+        /// </summary>
+        public Action<WebsocketConnection> OnOpen = (connection) => { };
+        /// <summary>
+        /// 已关闭，收到关闭帧
+        /// </summary>
+        public Action<WebsocketConnection> OnClose = (connection) => { };
+
+        /// <summary>
         /// 文本数据
         /// </summary>
         public Action<WebsocketConnection, WebSocketFrameInfo, string> OnMessage = (connection, frame, message) => { };
@@ -27,24 +48,13 @@ namespace common.server.servers.websocket
         /// 二进制数据
         /// </summary>
         public Action<WebsocketConnection, WebSocketFrameInfo, Memory<byte>> OnBinary = (connection, frame, data) => { };
+
         /// <summary>
-        /// 收到连接
-        /// </summary>
-        public Action<WebsocketConnection, WebsocketHeaderInfo> OnConnect = (connection, header) => { header.SecWebSocketExtensions = Helper.EmptyArray; };
-        /// <summary>
-        /// 已连接
-        /// </summary>
-        public Action<WebsocketConnection> OnConnectd = (connection) => { };
-        /// <summary>
-        /// 已断开连接
-        /// </summary>
-        public Action<WebsocketConnection> OnDisConnectd = (connection) => { };
-        /// <summary>
-        /// 控制帧
+        /// 控制帧，保留的控制帧，可以自定义处理
         /// </summary>
         public Action<WebsocketConnection, WebSocketFrameInfo> OnControll = (connection, frame) => { };
         /// <summary>
-        /// 非控制帧
+        /// 非控制帧，保留的非控制帧，可以自定义处理
         /// </summary>
         public Action<WebsocketConnection, WebSocketFrameInfo> OnUnControll = (connection, frame) => { };
 
@@ -303,7 +313,8 @@ namespace common.server.servers.websocket
             }
             else
             {
-                HandleClose(token);
+                token.Connectrion.SendFrameClose(WebSocketFrameInfo.EnumCloseStatus.ExtendsError);
+                token.Connectrion.Close();
                 return;
             }
         }
@@ -332,6 +343,7 @@ namespace common.server.servers.websocket
         {
             token.Connectrion.SendFrameClose(WebSocketFrameInfo.EnumCloseStatus.Normal);
             token.Connectrion.Close();
+            OnClose(token.Connectrion);
         }
         private void HandlePing(AsyncUserToken token)
         {
@@ -343,14 +355,23 @@ namespace common.server.servers.websocket
             WebsocketHeaderInfo header = WebsocketHeaderInfo.Parse(data);
             if (header.SecWebSocketKey.Length == 0)
             {
+                header.StatusCode = HttpStatusCode.MethodNotAllowed;
+                token.Connectrion.ConnectResponse(header);
                 token.Connectrion.Close();
                 return;
             }
 
-            OnConnect(token.Connectrion, header);
-            token.Connectrion.Connected = true;
-            token.Connectrion.ConnectResponse(header);
-            OnConnectd(token.Connectrion);
+            if (OnConnecting(token.Connectrion, header))
+            {
+                token.Connectrion.Connected = true;
+                token.Connectrion.ConnectResponse(header);
+                OnOpen(token.Connectrion);
+            }
+            else
+            {
+                token.Connectrion.ConnectResponse(header);
+                token.Connectrion.Close();
+            }
         }
 
     }
@@ -358,7 +379,7 @@ namespace common.server.servers.websocket
     public class WebsocketConnection
     {
         public ulong Id { get; set; }
-        public Socket Socket { get; set; }
+        public Socket Socket { get; init; }
         public bool Connected { get; set; } = false;
         private bool Closed = false;
 

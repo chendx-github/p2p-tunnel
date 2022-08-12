@@ -325,7 +325,7 @@ namespace common.server.servers.websocket
         /// </summary>
         public int TotalLength { get; set; }
         /// <summary>
-        /// 数据
+        /// 数据 如果OPCODE是 EnumOpcode.Close 则数据的前2字节为关闭状态码，余下的为其它描述数据
         /// </summary>
         public Memory<byte> PayloadData { get; set; }
 

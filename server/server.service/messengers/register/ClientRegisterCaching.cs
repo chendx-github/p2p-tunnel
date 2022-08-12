@@ -29,7 +29,7 @@ namespace server.service.messengers.register
             if (cache.Count > 0)
             {
                 long time = DateTimeHelper.GetTimeStamp();
-                var offlines = cache.Values.Where(c => c.UdpConnection != null && (time - c.UdpConnection.LastTime) > config.TimeoutDelay);
+                var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
                 foreach (RegisterCacheInfo item in offlines)
                 {
                     Remove(item.Id);

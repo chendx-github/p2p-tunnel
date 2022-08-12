@@ -15,7 +15,29 @@ namespace common.server.servers.websocket
         private bool connected = false;
         private bool connecSuccess = false;
 
+        
+        // <summary>
+        /// 连接中，false表示失败，会关闭连接
+        /// </summary>
+        public Func<WebsocketHeaderInfo, bool> OnConnecting = (header) => { return true; };
+        /// <summary>
+        /// 连接失败
+        /// </summary>
         public Action<string> OnConnectFail { get; set; } = (msg) => { };
+        // <summary>
+        /// 已断开连接,未收到关闭帧
+        /// </summary>
+        public Action OnDisConnectd = () => { };
+
+        // <summary>
+        /// 已连接
+        /// </summary>
+        public Action<WebsocketHeaderInfo> OnOpen = (header) => { };
+        // <summary>
+        /// 已断开连接,收到关闭帧
+        /// </summary>
+        public Action OnClose = () => { };
+
         /// <summary>
         /// 文本数据
         /// </summary>
@@ -24,14 +46,7 @@ namespace common.server.servers.websocket
         /// 二进制数据
         /// </summary>
         public Action<WebSocketFrameInfo, Memory<byte>> OnBinary = (frame, data) => { };
-        // <summary>
-        /// 已连接
-        /// </summary>
-        public Action<WebsocketHeaderInfo> OnConnectd = (header) => { };
-        // <summary>
-        /// 已断开连接
-        /// </summary>
-        public Action OnDisConnectd = () => { };
+
         /// <summary>
         /// 控制帧
         /// </summary>
@@ -294,7 +309,8 @@ namespace common.server.servers.websocket
             }
             else
             {
-                HandleClose(token);
+                SendFrameClose(WebSocketFrameInfo.EnumCloseStatus.Unexpected);
+                CloseClientSocket();
                 return;
             }
         }
@@ -322,6 +338,7 @@ namespace common.server.servers.websocket
         {
             SendFrameClose(WebSocketFrameInfo.EnumCloseStatus.Normal);
             CloseClientSocket();
+            OnClose();
         }
         private void HandlePing(AsyncServerUserToken token)
         {
@@ -334,11 +351,23 @@ namespace common.server.servers.websocket
             if (!WebSocketParser.VerifySecWebSocketAccept(token.SecWebSocketKey, header.SecWebSocketAccept))
             {
                 OnConnectFail("Sec-WebSocket-Accept Invalid");
+                CloseClientSocket();
+                return;
+            }
+            if (header.StatusCode != HttpStatusCode.SwitchingProtocols)
+            {
+                OnConnectFail($"{(int)header.StatusCode},{header.StatusCode}");
+                CloseClientSocket();
+                return;
+            }
+            if (!OnConnecting(header))
+            {
+                CloseClientSocket();
                 return;
             }
 
             connecSuccess = true;
-            OnConnectd(header);
+            OnOpen(header);
         }
 
         public int SendRaw(byte[] buffer)
