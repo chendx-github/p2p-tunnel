@@ -2,52 +2,48 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-19 14:57:33
+ * @LastEditTime: 2022-08-16 14:12:25
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\home\Clients.vue
 -->
 <template>
-    <h3 class="title t-c">已注册的客户端列表</h3>
-    <el-table :data="clients" border size="small">
-        <el-table-column prop="Name" label="客户端">
-            <template #default="scope">
-                <div @click="handleClientClick(scope.row)" :title="scope.row.Ip">
-                    <span style="margin-right:.6rem">{{scope.row.Name}}</span>
-                </div>
-            </template>
-        </el-table-column>
-        <el-table-column prop="Mac" label="Mac" width="120"></el-table-column>
-        <el-table-column prop="UDP" label="UDP" width="120">
-            <template #default="scope">
-                <span :style="scope.row.udpConnectTypeStyle">
-                    <el-icon>
-                        <connection />
-                    </el-icon>
-                    {{scope.row.udpConnectTypeStr}}
-                </span>
-            </template>
-        </el-table-column>
-        <el-table-column prop="TCP" label="TCP" width="120">
-            <template #default="scope">
-                <span :style="scope.row.tcpConnectTypeStyle">
-                    <el-icon>
-                        <connection />
-                    </el-icon>
-                    {{scope.row.tcpConnectTypeStr}}
-                </span>
-            </template>
-        </el-table-column>
-        <el-table-column prop="todo" label="操作" width="240" fixed="right" class="t-c">
-            <template #default="scope">
-                <div class="t-c">
-                    <el-button :disabled="scope.row.UdpConnected && scope.row.TcpConnected" :loading="scope.row.UdpConnecting || scope.row.TcpConnecting" size="small" @click="handleConnect(scope.row)">连它</el-button>
-                    <el-button :disabled="scope.row.UdpConnected && scope.row.TcpConnected" :loading="scope.row.UdpConnecting || scope.row.TcpConnecting" size="small" @click="handleConnectReverse(scope.row)">连我</el-button>
-                    <el-button :loading="scope.row.UdpConnecting || scope.row.TcpConnecting" size="small" @click="handleConnectReset(scope.row)">重启</el-button>
-                </div>
-            </template>
-        </el-table-column>
-    </el-table>
+    <div class="wrap">
+        <h3 class="title t-c">已注册的客户端列表</h3>
+        <div class="content">
+            <el-row>
+                <template v-for="(item,index) in clients" :key="index">
+                    <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                        <div class="item">
+                            <dl v-loading="item.UdpConnecting || item.TcpConnecting">
+                                <dt @click="handleClientClick(item)">{{item.Name}}</dt>
+                                <dd class="flex"><span class="label">Mac</span><span>{{item.Mac}}</span></dd>
+                                <dd :style="item.udpConnectTypeStyle" class="flex">
+                                    <span class="label">Udp</span>
+                                    <el-icon>
+                                        <connection />
+                                    </el-icon>
+                                    <span>{{item.udpConnectTypeStr}}</span>
+                                </dd>
+                                <dd :style="item.tcpConnectTypeStyle" class="flex">
+                                    <span class="label">Tcp</span>
+                                    <el-icon>
+                                        <connection />
+                                    </el-icon>
+                                    <span>{{item.tcpConnectTypeStr}}</span>
+                                </dd>
+                                <dd class="t-r">
+                                    <el-button plain text bg :disabled="item.UdpConnected && item.TcpConnected" size="small" @click="handleConnect(item)">连它</el-button>
+                                    <el-button plain text bg :disabled="item.UdpConnected && item.TcpConnected" size="small" @click="handleConnectReverse(item)">连我</el-button>
+                                    <el-button plain text bg :loading="item.UdpConnecting || item.TcpConnecting" size="small" @click="handleConnectReset(item)">重启</el-button>
+                                </dd>
+                            </dl>
+                        </div>
+                    </el-col>
+                </template>
+            </el-row>
+        </div>
+    </div>
     <el-dialog title="试一下发送数据效率" v-model="showTest" center :close-on-click-modal="false" width="50rem">
         <el-form ref="formDom" :model="form" :rules="rules" label-width="10rem">
             <el-form-item label="包数量" prop="Count">
@@ -137,4 +133,50 @@ export default {
     }
 }
 </script>
-<style lang="stylus" scoped></style>
+<style lang="stylus" scoped>
+.wrap
+    border: 1px solid #eee;
+    border-radius: 0.4rem;
+    padding: 2rem;
+
+.content
+    padding-top: 1rem;
+
+    .item
+        padding: 1rem 0.6rem;
+
+    dl
+        border: 1px solid #eee;
+        border-radius: 0.4rem;
+
+        dt
+            border-bottom: 1px solid #eee;
+            padding: 1rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #555;
+
+        dd
+            padding: 0.4rem 1rem;
+
+            &:nth-child(2)
+                padding-top: 1rem;
+
+            &:last-child
+                padding-bottom: 1rem;
+
+            .label
+                width: 4rem;
+
+@media screen and (max-width: 500px)
+    .el-col-24
+        max-width: 100%;
+        flex: 0 0 100%;
+
+@media screen and (max-width: 450px)
+    .content
+        padding-top: 0;
+
+        .item
+            padding: 1rem 0.6rem;
+</style>

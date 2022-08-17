@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 17:32:59
+ * @LastEditTime: 2022-08-16 13:13:45
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\App.vue
@@ -58,6 +58,16 @@ export default {
     width: 80%;
     max-width: 90rem;
     margin: 0 auto;
+
+@media screen and (max-width: 880px)
+    .wrap
+        width: 96%;
+        max-width: 90rem;
+        margin: 0 auto;
+        padding-top: 1.5rem;
+
+    .content
+        margin-top: -1rem;
 
 .content
     background-color: #fff;

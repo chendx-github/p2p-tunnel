@@ -97,7 +97,8 @@ namespace client.service.tcpforward
             });
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => ClearPac();
-            Console.CancelKeyPress += (s, e) => ClearPac();
+            //安卓注释
+            //Console.CancelKeyPress += (s, e) => ClearPac();
         }
 
         #region p2p

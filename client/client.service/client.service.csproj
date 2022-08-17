@@ -33,19 +33,10 @@
 	  <DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>
 	<ItemGroup>
-		<Content Include="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Include="logo.ico" />
-		<Content Include="public\nssm.exe">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="public\nssm安装服务.bat">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\client\client.csproj" />
+		<ProjectReference Include="..\client.realize\client.realize.csproj" />
 		<ProjectReference Include="..\plugins\client.service.ftp\client.service.ftp.csproj" />
 		<ProjectReference Include="..\plugins\client.service.logger\client.service.logger.csproj" />
 		<ProjectReference Include="..\plugins\client.service.socks5\client.service.socks5.csproj" />
@@ -58,9 +49,6 @@
 			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-	<ItemGroup>
-	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
 	</ItemGroup>
 	<ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 

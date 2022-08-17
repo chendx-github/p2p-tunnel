@@ -11,6 +11,7 @@ using System.Linq;
 using common.socks5;
 using server.service.socks5;
 using server.service.udpforward;
+using System.Threading;
 
 namespace server.service
 {
@@ -18,6 +19,8 @@ namespace server.service
     {
         static void Main(string[] args)
         {
+            ThreadPool.SetMinThreads(150, 150);
+
             Config config = File.ReadAllText("appsettings.json").DeJson<Config>();
 
             LoggerConsole();

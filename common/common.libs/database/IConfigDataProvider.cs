@@ -18,6 +18,7 @@ namespace common.libs.database
         public async Task<T> Load()
         {
             string fileName = GetTableName(typeof(T));
+
             if (File.Exists(fileName))
             {
                 string str = (await File.ReadAllTextAsync(fileName).ConfigureAwait(false));

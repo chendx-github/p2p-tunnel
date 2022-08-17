@@ -74,6 +74,7 @@ table {
 
 html {
     font-size: 10px;
+    background-color: #08743d;
 }
 
 body {
@@ -244,9 +245,14 @@ span.split-pad10 {
     width: inherit;
 }
 
+.el-dialog {
+    max-width: 96%;
+}
+
 .el-dialog__body .el-form-item:last-child {
     margin-bottom: 0;
 }
+
 
 /* .el-input__inner:read-only {
     background-color: #fafafa;
@@ -287,4 +293,8 @@ h3.title {
     font-size: 1.6rem;
     padding-bottom: .6rem;
     color: #555;
+}
+
+.el-message-box {
+    max-width: 90%;
 }

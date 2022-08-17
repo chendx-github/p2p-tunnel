@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace server.service.messengers.register
 {
@@ -29,8 +30,8 @@ namespace server.service.messengers.register
             if (cache.Count > 0)
             {
                 long time = DateTimeHelper.GetTimeStamp();
-                var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
-                foreach (RegisterCacheInfo item in offlines)
+                var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay)).ToList();
+                foreach (RegisterCacheInfo item in CollectionsMarshal.AsSpan(offlines))
                 {
                     Remove(item.Id);
                 }

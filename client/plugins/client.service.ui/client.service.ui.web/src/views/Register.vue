@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-12 11:38:43
+ * @LastEditTime: 2022-08-16 15:10:26
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -12,14 +12,14 @@
         <h3 class="title t-c">将本客户端注册到服务器</h3>
         <div class="inner">
             <el-form label-width="8rem" ref="formDom" :model="model" :rules="rules">
-                <el-form-item label="基本信息">
+                <el-form-item label="" label-width="0">
                     <el-row>
-                        <el-col :span="12">
+                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
                             <el-form-item label="名称" prop="ClientName">
                                 <el-input v-model="model.ClientName" maxlength="32" show-word-limit placeholder="设置你的注册名称"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
                             <el-form-item label="分组" prop="GroupId">
                                 <el-tooltip class="box-item" effect="dark" content="设置你的分组编号，两个客户端之间分组编号一致时相互可见" placement="top-start">
                                     <el-input v-model="model.GroupId" maxlength="32" show-word-limit placeholder="设置你的分组编号"></el-input>
@@ -28,141 +28,138 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="服务器">
+                <el-form-item label="" label-width="0">
                     <el-row>
-                        <el-col :span="8">
-                            <el-form-item label="地址" prop="ServerIp">
+                        <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                            <el-form-item label="注册地址" prop="ServerIp">
                                 <el-input v-model="model.ServerIp" placeholder="域名或IP地址"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="Udp端口" prop="ServerUdpPort">
+                        <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                            <el-form-item label="udp端口" prop="ServerUdpPort">
                                 <el-input v-model="model.ServerUdpPort"></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="Tcp端口" prop="ServerTcpPort">
+                        <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                            <el-form-item label="tcp端口" prop="ServerTcpPort">
                                 <el-input v-model="model.ServerTcpPort"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="">
-                    <el-alert title="使用免费打洞服务器p2p.snltty.com，udp 5410，tcp 59410，或者自己部署的服务器地址及端口" type="warning" show-icon />
-                </el-form-item>
-                <el-form-item label="本地">
-                    <el-row>
-                        <el-col :span="8">
-                            <el-form-item label="Udp端口" prop="UdpPort">
-                                <el-input readonly v-model="registerState.LocalInfo.UdpPort"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="Tcp端口" prop="TcpPort">
-                                <el-input readonly v-model="registerState.LocalInfo.TcpPort"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="mac地址" prop="Mac">
-                                <el-input readonly v-model="registerState.LocalInfo.Mac"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="外网">
-                    <el-row>
-                        <el-col :span="8">
-                            <el-form-item label="Udp端口" prop="UdpPort">
-                                <el-input readonly v-model="registerState.RemoteInfo.UdpPort"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="Tcp端口" prop="TcpPort">
-                                <el-input readonly v-model="registerState.RemoteInfo.TcpPort"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="IP地址" prop="Ip">
-                                <el-input readonly v-model="registerState.RemoteInfo.Ip"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="自动注册">
-                    <el-row>
-                        <el-col :span="6">
-                            <el-form-item label="状态" prop="AutoReg">
-                                <el-checkbox v-model="model.AutoReg">自动注册</el-checkbox>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="重试次数" prop="AutoRegTimes">
-                                <el-tooltip class="box-item" effect="dark" content="如果自动注册失败，将要重试几次" placement="top-start">
-                                    <el-input v-model="model.AutoRegTimes"></el-input>
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="重试间隔" prop="AutoRegInterval">
-                                <el-tooltip class="box-item" effect="dark" content="间隔多久重试一次(ms)" placement="top-start">
-                                    <el-input v-model="model.AutoRegInterval"></el-input>
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="重试延迟" prop="AutoRegDelay">
-                                <el-tooltip class="box-item" effect="dark" content="断线后多久重试" placement="top-start">
-                                    <el-input v-model="model.AutoRegDelay"></el-input>
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="数据加密">
-                    <el-row>
-                        <el-col :span="3">
-                            <el-form-item label="客户端" prop="ClientEncode">
-                                <el-tooltip class="box-item" effect="dark" content="客户端之间通信使用加密" placement="top-start">
-                                    <el-switch v-model="model.ClientEncode" />
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="9">
-                            <el-form-item label="密钥" prop="ClientEncodePassword">
-                                <el-tooltip class="box-item" effect="dark" content="加密密钥32位，为空则每次加密随机密钥，如果填写，则各客户端都填写" placement="top-start">
-                                    <el-input v-model="model.ClientEncodePassword"></el-input>
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="3">
-                            <el-form-item label="服务器" prop="ServerEncode">
-                                <el-tooltip class="box-item" effect="dark" content="客户端与服务端之间通信使用加密" placement="top-start">
-                                    <el-switch v-model="model.ServerEncode" />
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="9">
-                            <el-form-item label="密钥" prop="ServerEncodePassword">
-                                <el-tooltip class="box-item" effect="dark" content="加密密钥 32位，为空则每次加密随机密钥，使用p2p.snltty.com服务器则必须留空" placement="top-start">
-                                    <el-input v-model="model.ServerEncodePassword"></el-input>
-                                </el-tooltip>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="注册状态">
-                    <el-row>
-                        <el-col :span="6">
-                            <el-form-item label="UDP" prop="UdpConnected">
-                                <el-switch disabled v-model="registerState.LocalInfo.UdpConnected" />
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="TCP" prop="TcpConnected">
-                                <el-switch disabled v-model="registerState.LocalInfo.TcpConnected" />
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
+                <!-- <el-form-item label="" label-width="0" class="w-100"> -->
+                <el-collapse>
+                    <el-collapse-item title="可选和其它" name="1">
+                        <el-form-item label="" label-width="0">
+                            <el-row>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="本地udp" prop="UdpPort">
+                                        <el-input readonly v-model="registerState.LocalInfo.UdpPort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="本地tcp" prop="TcpPort">
+                                        <el-input readonly v-model="registerState.LocalInfo.TcpPort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="本地mac" prop="Mac">
+                                        <el-input readonly v-model="registerState.LocalInfo.Mac"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item label="" label-width="0">
+                            <el-row>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="外网udp" prop="UdpPort">
+                                        <el-input readonly v-model="registerState.RemoteInfo.UdpPort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="外网tcp" prop="TcpPort">
+                                        <el-input readonly v-model="registerState.RemoteInfo.TcpPort"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="外网IP" prop="Ip">
+                                        <el-input readonly v-model="registerState.RemoteInfo.Ip"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item label="" label-width="0">
+                            <el-row>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="自动注册" prop="AutoReg">
+                                        <el-checkbox v-model="model.AutoReg">自动注册</el-checkbox>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="次数" prop="AutoRegTimes" label-width="40">
+                                        <el-tooltip class="box-item" effect="dark" content="如果自动注册失败，将要重试几次" placement="top-start">
+                                            <el-input v-model="model.AutoRegTimes"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="间隔" prop="AutoRegInterval" label-width="40">
+                                        <el-tooltip class="box-item" effect="dark" content="间隔多久重试一次(ms)" placement="top-start">
+                                            <el-input v-model="model.AutoRegInterval"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="延迟" prop="AutoRegDelay" label-width="40">
+                                        <el-tooltip class="box-item" effect="dark" content="断线后多久重试" placement="top-start">
+                                            <el-input v-model="model.AutoRegDelay"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item label="" label-width="0">
+                            <el-row>
+                                <el-col :xs="6" :sm="3" :md="3" :lg="3" :xl="3">
+                                    <el-form-item label="p2p加密" prop="ClientEncode" label-width="60">
+                                        <el-tooltip class="box-item" effect="dark" content="客户端之间通信使用加密" placement="top-start">
+                                            <el-switch v-model="model.ClientEncode" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="18" :sm="9" :md="9" :lg="9" :xl="9">
+                                    <el-form-item label="密钥" prop="ClientEncodePassword">
+                                        <el-tooltip class="box-item" effect="dark" content="加密密钥32位，为空则每次加密随机密钥，如果填写，则各客户端都填写" placement="top-start">
+                                            <el-input v-model="model.ClientEncodePassword"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="6" :sm="3" :md="3" :lg="3" :xl="3">
+                                    <el-form-item label="注册加密" prop="ServerEncode" label-width="60">
+                                        <el-tooltip class="box-item" effect="dark" content="客户端与服务端之间通信使用加密" placement="top-start">
+                                            <el-switch v-model="model.ServerEncode" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="18" :sm="9" :md="9" :lg="9" :xl="9">
+                                    <el-form-item label="密钥" prop="ServerEncodePassword">
+                                        <el-tooltip class="box-item" effect="dark" content="加密密钥 32位，为空则每次加密随机密钥，使用p2p.snltty.com服务器则必须留空" placement="top-start">
+                                            <el-input v-model="model.ServerEncodePassword"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                    </el-collapse-item>
+                </el-collapse>
+                <!-- </el-form-item> -->
+
+                <el-form-item label="" label-width="80">
+                    <div class="t-c flex">
+                        <el-switch disabled v-model="registerState.LocalInfo.UdpConnected" active-text="udp已注册" inactive-text="udp未注册" />
+                        <span style="width:2rem"></span>
+                        <el-switch disabled v-model="registerState.LocalInfo.TcpConnected" active-text="tcp已注册" inactive-text="tcp未注册" />
+                    </div>
                 </el-form-item>
                 <el-form-item label="" label-width="0" class="t-c">
                     <div class="t-c w-100">

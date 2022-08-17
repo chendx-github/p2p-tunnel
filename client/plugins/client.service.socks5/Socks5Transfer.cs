@@ -15,7 +15,8 @@ namespace client.service.socks5
             this.uiconfig = uiconfig;
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => ClearPac();
-            Console.CancelKeyPress += (s, e) => ClearPac();
+            //安卓注释
+            //Console.CancelKeyPress += (s, e) => ClearPac();
         }
 
         public string GetPac()

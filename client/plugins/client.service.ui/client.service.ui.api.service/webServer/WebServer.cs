@@ -1,6 +1,4 @@
-﻿using common.libs;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -14,9 +12,11 @@ namespace client.service.ui.api.service.webServer
     public class WebServer : IWebServer
     {
         private readonly Config config;
-        public WebServer(Config config)
+        private readonly IWebServerFileReader webServerFileReader;
+        public WebServer(Config config, IWebServerFileReader webServerFileReader)
         {
             this.config = config;
+            this.webServerFileReader = webServerFileReader; 
         }
 
         public void Start()
@@ -41,12 +41,11 @@ namespace client.service.ui.api.service.webServer
                         //默认页面
                         if (path == "/") path = "index.html";
 
-                        string fullPath = Path.Join(config.Web.Root, path);
-                        if (File.Exists(fullPath))
+                        byte[] bytes = webServerFileReader.Read(path);
+                        if (bytes.Length > 0)
                         {
-                            byte[] bytes = File.ReadAllBytes(fullPath);
                             response.ContentLength64 = bytes.Length;
-                            response.ContentType = GetContentType(fullPath);
+                            response.ContentType = GetContentType(path);
                             stream.Write(bytes, 0, bytes.Length);
                         }
                         else

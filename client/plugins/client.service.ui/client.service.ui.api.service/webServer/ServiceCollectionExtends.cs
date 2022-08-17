@@ -8,6 +8,8 @@ namespace client.service.ui.api.service.webServer
         public static ServiceCollection AddWebServer(this ServiceCollection services)
         {
             services.AddSingleton<IWebServer, WebServer>();
+            services.AddSingleton<IWebServerFileReader, WebServerFileReader>();
+
             return services;
         }
         public static ServiceProvider UseWebServer(this ServiceProvider services)

@@ -65,9 +65,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client.service.command", "c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "common.udpforward", "common\common.udpforward\common.udpforward.csproj", "{76F8DB50-EF60-466F-920F-99234919F5A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client.service.udpforward", "client\plugins\client.service.udpforward\client.service.udpforward.csproj", "{779E0116-44BB-4E75-B75B-02075569F276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client.service.udpforward", "client\plugins\client.service.udpforward\client.service.udpforward.csproj", "{779E0116-44BB-4E75-B75B-02075569F276}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server.service.udpforward", "server\plugins\server.service.udpforward\server.service.udpforward.csproj", "{259ECEB0-8218-4C64-82CE-E947B70F602E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "server.service.udpforward", "server\plugins\server.service.udpforward\server.service.udpforward.csproj", "{259ECEB0-8218-4C64-82CE-E947B70F602E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client.service.app", "client\client.service.app\client.service.app.csproj", "{64E4925A-CA3D-4CB8-8377-6F319F89962F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client.realize", "client\client.realize\client.realize.csproj", "{B281838A-3805-48EA-8368-5A1AFD59F95E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -293,6 +297,26 @@ Global
 		{259ECEB0-8218-4C64-82CE-E947B70F602E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{259ECEB0-8218-4C64-82CE-E947B70F602E}.Release|x64.ActiveCfg = Release|Any CPU
 		{259ECEB0-8218-4C64-82CE-E947B70F602E}.Release|x64.Build.0 = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|x64.Build.0 = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|x64.ActiveCfg = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|x64.Build.0 = Release|Any CPU
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F}.Release|x64.Deploy.0 = Release|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Debug|x64.Build.0 = Debug|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|x64.ActiveCfg = Release|Any CPU
+		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -328,6 +352,8 @@ Global
 		{76F8DB50-EF60-466F-920F-99234919F5A6} = {D425C224-EA5F-4F17-A9F5-06AD501854C4}
 		{779E0116-44BB-4E75-B75B-02075569F276} = {689218D7-FC93-47D5-A95B-66780B9D4870}
 		{259ECEB0-8218-4C64-82CE-E947B70F602E} = {B678CEEF-2268-4906-9610-9B12CB9C4D7B}
+		{64E4925A-CA3D-4CB8-8377-6F319F89962F} = {ED711009-8175-4193-BFDA-FD88C4B1E4AD}
+		{B281838A-3805-48EA-8368-5A1AFD59F95E} = {ED711009-8175-4193-BFDA-FD88C4B1E4AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DE8935B2-54F1-4FBD-98BB-8119E42B52A6}
