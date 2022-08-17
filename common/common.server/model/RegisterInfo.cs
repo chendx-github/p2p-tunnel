@@ -156,10 +156,11 @@ namespace common.server.model
             var ipBytes = Ip.GetAddressBytes();
             var groupIdBytes = GroupId.ToBytes();
 
-            var bytes = new byte[1 + 1
+            var bytes = new byte[
+                1 + 1
                 + 2 + 2
-                + 8
                 + timeoutBytes.Length
+                + 8
                 + 1 + ipBytes.Length
                 + groupIdBytes.Length];
 
@@ -185,9 +186,8 @@ namespace common.server.model
             index += 8;
 
             bytes[index] = (byte)ipBytes.Length;
-            index += 1;
-            Array.Copy(ipBytes, 0, bytes, index, ipBytes.Length);
-            index += ipBytes.Length;
+            Array.Copy(ipBytes, 0, bytes, index + 1, ipBytes.Length);
+            index += 1 + ipBytes.Length;
 
             Array.Copy(groupIdBytes, 0, bytes, index, groupIdBytes.Length);
             index += groupIdBytes.Length;

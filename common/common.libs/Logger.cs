@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace common.libs
 {
@@ -97,7 +94,7 @@ namespace common.libs
             }
             Enqueue(new LoggerModel { Type = LoggerTypes.ERROR, Content = content });
         }
-        [Conditional("DEBUG")]
+         [Conditional("DEBUG")]
         public void DebugError(Exception ex)
         {
             Enqueue(new LoggerModel { Type = LoggerTypes.ERROR, Content = ex + "" });

@@ -4,5 +4,4 @@
              xmlns:local="clr-namespace:client.service.app"
              x:Class="client.service.app.MainPage"
              BackgroundColor="#08743d">
-
 </ContentPage>

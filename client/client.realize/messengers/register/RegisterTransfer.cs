@@ -126,6 +126,7 @@ namespace client.realize.messengers.register
                     }
                     catch (Exception ex)
                     {
+                        Logger.Instance.DebugError(ex);
                         success.ErrorMsg = ex.Message;
                     }
 
@@ -169,12 +170,10 @@ namespace client.realize.messengers.register
             tcpSocket.KeepAlive();
             tcpSocket.ReuseBind(bindEndpoint);
             tcpSocket.Connect(new IPEndPoint(serverAddress, config.Server.TcpPort));
-#if DEBUG
             registerState.LocalInfo.LocalIp = (tcpSocket.LocalEndPoint as IPEndPoint).Address;
-#endif
             if (config.Client.UseMac)
             {
-                registerState.LocalInfo.Mac = NetworkHelper.GetMacAddress(registerState.LocalInfo.LocalIp.ToString());
+                //registerState.LocalInfo.Mac = NetworkHelper.GetMacAddress(registerState.LocalInfo.LocalIp.ToString());
             }
             registerState.TcpConnection = tcpServer.BindReceive(tcpSocket, config.Client.TcpBufferSize);
         }

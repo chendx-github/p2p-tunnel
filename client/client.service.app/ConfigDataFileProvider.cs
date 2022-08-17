@@ -1,6 +1,5 @@
 ﻿using common.libs.database;
 using common.libs.extends;
-using Microsoft.Maui.Storage;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
@@ -43,7 +42,8 @@ namespace client.service.app
 
             using FileStream outputStream = File.OpenWrite(targetFile);
             using StreamWriter streamWriter = new StreamWriter(outputStream, Encoding.UTF8);
-            await streamWriter.WriteAsync(model.ToJson());
+            string json = model.ToJson();
+            streamWriter.Write(json);
         }
 
         private string GetTableName(Type type)
