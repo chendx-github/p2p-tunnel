@@ -1,5 +1,6 @@
 ﻿using client.messengers.register;
 using client.realize.messengers;
+using client.realize.messengers.punchHole;
 using client.service.ftp;
 using client.service.logger;
 using client.service.socks5;
@@ -22,6 +23,8 @@ namespace client.service.app
     {
         public static MauiApp CreateMauiApp()
         {
+            ThreadPool.SetMinThreads(150, 150);
+
             var builder = MauiApp.CreateBuilder();
             builder.UseMauiApp<App>();
             builder.Services.AddMauiBlazorWebView();
@@ -56,6 +59,7 @@ namespace client.service.app
                 typeof(CounterClientService).Assembly,
                 typeof(WebRTCMessenger).Assembly,
                 typeof(Socks5Messenger).Assembly,
+                typeof(PunchHoleMessenger).Assembly,
 
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-16 13:13:45
+ * @LastEditTime: 2022-08-18 13:20:50
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\App.vue
@@ -18,9 +18,7 @@
                     <div class="content flex-1 relative scrollbar-10">
                         <router-view />
                     </div>
-                    <div class="copyright">
-                        @snltty
-                    </div>
+                    <Foot></Foot>
                 </div>
             </div>
         </auth-wrap>
@@ -28,6 +26,7 @@
 </template>
 <script>
 import Menu from './components/Menu.vue'
+import Foot from './components/Foot.vue'
 import { provideRegister } from './states/register'
 import { provideWebsocket } from './states/websocket'
 import { provideClients } from './states/clients'
@@ -35,7 +34,7 @@ import { provideShareData } from './states/shareData'
 import { ElConfigProvider } from 'element-plus'
 import zhCn from 'element-plus/lib/locale/lang/zh-cn'
 export default {
-    components: { Menu, ElConfigProvider },
+    components: { Menu, Foot, ElConfigProvider },
     setup () {
         provideRegister();
         provideWebsocket();
@@ -59,12 +58,12 @@ export default {
     max-width: 90rem;
     margin: 0 auto;
 
-@media screen and (max-width: 880px)
+@media screen and (max-width: 768px)
     .wrap
         width: 96%;
         max-width: 90rem;
         margin: 0 auto;
-        padding-top: 1.5rem;
+        margin-top: -1rem;
 
     .content
         margin-top: -1rem;
@@ -72,10 +71,4 @@ export default {
 .content
     background-color: #fff;
     border-radius: 0.4rem;
-
-.copyright
-    padding: 2rem 0;
-    text-align: center;
-    color: #fff;
-    opacity: 0.8;
 </style>

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:05:47
  * @LastEditors: snltty
- * @LastEditTime: 2022-05-28 16:12:00
+ * @LastEditTime: 2022-08-18 12:59:51
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\components\Menu.vue
@@ -13,66 +13,68 @@
             <img src="@/assets/logo.svg" alt="">
         </div>
         <div class="navs flex-1">
-            <router-link :to="{name:'Home'}">首页</router-link>
-            <router-link :to="{name:'Register'}">注册服务 <i class="el-icon-circle-check" :class="{active:registerState.LocalInfo.TcpConnected}"></i></router-link>
-            <el-dropdown size="small">
-                <span class="el-dropdown-link">
-                    <span>客户端应用</span>
-                    <span>{{serviceRouteName}}</span>
-                    <el-icon size="30">
-                        <ArrowDown></ArrowDown>
-                    </el-icon>
-                </span>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <template v-if="websocketState.connected">
-                            <template v-for="(item,index) in servicesMenus" :key="index">
-                                <auth-item :name="item.service">
+            <div class="hidden-xs-only">
+                <router-link :to="{name:'Home'}">首页</router-link>
+                <router-link :to="{name:'Register'}">注册服务 <i class="el-icon-circle-check" :class="{active:registerState.LocalInfo.TcpConnected}"></i></router-link>
+                <el-dropdown size="small">
+                    <span class="el-dropdown-link">
+                        <span>客户端应用</span>
+                        <span>{{serviceRouteName}}</span>
+                        <el-icon size="30">
+                            <ArrowDown></ArrowDown>
+                        </el-icon>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <template v-if="websocketState.connected">
+                                <template v-for="(item,index) in servicesMenus" :key="index">
+                                    <auth-item :name="item.service">
+                                        <el-dropdown-item>
+                                            <router-link :to="{name:item.name}">{{item.text}}</router-link>
+                                        </el-dropdown-item>
+                                    </auth-item>
+                                </template>
+                            </template>
+                            <template v-else>
+                                <template v-for="(item,index) in servicesMenus" :key="index">
                                     <el-dropdown-item>
-                                        <router-link :to="{name:item.name}">{{item.text}}</router-link>
+                                        <router-link :to="{name:item.name}" class="disabled">{{item.text}}</router-link>
                                     </el-dropdown-item>
-                                </auth-item>
+                                </template>
                             </template>
-                        </template>
-                        <template v-else>
-                            <template v-for="(item,index) in servicesMenus" :key="index">
-                                <el-dropdown-item>
-                                    <router-link :to="{name:item.name}" class="disabled">{{item.text}}</router-link>
-                                </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+                <el-dropdown size="small">
+                    <span class="el-dropdown-link">
+                        <span>服务端应用</span>
+                        <span>{{serverRouteName}}</span>
+                        <el-icon size="30">
+                            <ArrowDown></ArrowDown>
+                        </el-icon>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <template v-if="websocketState.connected">
+                                <template v-for="(item,index) in serverMenus" :key="index">
+                                    <auth-item :name="item.service">
+                                        <el-dropdown-item>
+                                            <router-link :to="{name:item.name}">{{item.text}}</router-link>
+                                        </el-dropdown-item>
+                                    </auth-item>
+                                </template>
                             </template>
-                        </template>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
-            <el-dropdown size="small">
-                <span class="el-dropdown-link">
-                    <span>服务端应用</span>
-                    <span>{{serverRouteName}}</span>
-                    <el-icon size="30">
-                        <ArrowDown></ArrowDown>
-                    </el-icon>
-                </span>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <template v-if="websocketState.connected">
-                            <template v-for="(item,index) in serverMenus" :key="index">
-                                <auth-item :name="item.service">
+                            <template v-else>
+                                <template v-for="(item,index) in serverMenus" :key="index">
                                     <el-dropdown-item>
-                                        <router-link :to="{name:item.name}">{{item.text}}</router-link>
+                                        <router-link :to="{name:item.name}" class="disabled">{{item.text}}</router-link>
                                     </el-dropdown-item>
-                                </auth-item>
+                                </template>
                             </template>
-                        </template>
-                        <template v-else>
-                            <template v-for="(item,index) in serverMenus" :key="index">
-                                <el-dropdown-item>
-                                    <router-link :to="{name:item.name}" class="disabled">{{item.text}}</router-link>
-                                </el-dropdown-item>
-                            </template>
-                        </template>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
         </div>
         <div class="meta">
             <a href="javascript:;" @click="editWsUrl" title="点击修改" :class="{active:websocketState.connected}">{{wsUrl}} {{connectStr}}<i class="el-icon-refresh"></i></a>

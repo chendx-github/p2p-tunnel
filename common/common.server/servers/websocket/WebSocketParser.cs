@@ -339,8 +339,8 @@ namespace common.server.servers.websocket
         {
             frameInfo = null;
 
-            //小于6字节不可解析
-            if (data.Length < 6)
+            //小于2字节不可解析
+            if (data.Length < 2)
             {
                 return false;
             }

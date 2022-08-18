@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-06 13:51:08
+ * @LastEditTime: 2022-08-18 13:34:25
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
@@ -16,12 +16,12 @@
                 <el-form-item label="" label-width="0">
                     <div class="w-100">
                         <el-row :gutter="10">
-                            <el-col :span="6">
+                            <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label="监听端口" prop="Port">
                                     <el-input v-model="state.form.Port"></el-input>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="6">
+                            <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label="通信通道" prop="TunnelType">
                                     <el-select v-model="state.form.TunnelType" placeholder="选择类型">
                                         <el-option v-for="(item,index) in shareData.tunnelTypes" :key="index" :label="item" :value="index">
@@ -29,7 +29,7 @@
                                     </el-select>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="6">
+                            <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label="目标端" prop="Name">
                                     <el-select v-model="state.form.Name" placeholder="选择目标">
                                         <el-option v-for="(item,index) in targets" :key="index" :label="item.label" :value="item.Name">
@@ -43,26 +43,26 @@
                 <el-form-item label="" label-width="0">
                     <div class="w-100">
                         <el-row :gutter="10">
-                            <el-col :span="5">
+                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label-width="0" prop="Listening">
                                     <el-checkbox v-model="state.form.Listening" label="开启端口监听" />
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="5">
+                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label-width="0" prop="IsPac">
                                     <el-tooltip class="box-item" effect="dark" content="勾选则设置系统代理，不勾选则需要自己设置" placement="top-start">
                                         <el-checkbox v-model="state.form.IsPac" label="设置系统代理" />
                                     </el-tooltip>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="5">
+                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label-width="0" prop="IsCustomPac">
                                     <el-tooltip class="box-item" effect="dark" content="自定义pac还是使用预制的pac规则" placement="top-start">
                                         <el-checkbox v-model="state.form.IsCustomPac" label="自定义pac" />
                                     </el-tooltip>
                                 </el-form-item>
                             </el-col>
-                            <el-col :span="4">
+                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label-width="0">
                                     <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
                                 </el-form-item>
@@ -70,7 +70,7 @@
                         </el-row>
                     </div>
                 </el-form-item>
-                <el-form-item label-width="0">
+                <el-form-item label-width="0" class="hidden-xs-only">
                     <div class="w-100">
                         <el-input v-model="state.form.Pac" :rows="22" type="textarea" placeholder="写pac内容" resize="none" />
                     </div>
@@ -199,4 +199,8 @@ export default {
     border: 1px solid #eee;
     padding: 2rem;
     border-radius: 0.4rem;
+
+@media screen and (max-width: 768px)
+    .el-col
+        margin-top: 0.6rem;
 </style>

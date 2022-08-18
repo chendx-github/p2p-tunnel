@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-16 14:12:25
+ * @LastEditTime: 2022-08-18 11:14:18
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\home\Clients.vue
@@ -174,6 +174,9 @@ export default {
         flex: 0 0 100%;
 
 @media screen and (max-width: 450px)
+    .wrap
+        padding: 2rem 0.6rem 0.6rem 0.6rem;
+
     .content
         padding-top: 0;
 

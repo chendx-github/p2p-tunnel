@@ -4,4 +4,9 @@
              xmlns:local="clr-namespace:client.service.app"
              x:Class="client.service.app.MainPage"
              BackgroundColor="#08743d">
+    <BlazorWebView HostPage="public/index.html">
+        <BlazorWebView.RootComponents>
+            <RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+        </BlazorWebView.RootComponents>
+    </BlazorWebView>
 </ContentPage>

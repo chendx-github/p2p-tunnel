@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-20 09:12:44
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-17 12:04:08
+ * @LastEditTime: 2022-08-18 13:04:01
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\main.js
@@ -12,7 +12,7 @@ import App from './App.vue'
 import router from './router'
 
 import VConsole from 'vconsole';
-const vConsole = new VConsole();
+// const vConsole = new VConsole();
 
 const app = createApp(App);
 
@@ -23,6 +23,7 @@ app.use(auth);
 
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/display.css'
 
 
 import { Loading, FolderDelete, Connection, ArrowDown } from '@element-plus/icons'

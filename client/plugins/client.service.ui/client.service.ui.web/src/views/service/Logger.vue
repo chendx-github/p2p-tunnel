@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-10-02 14:16:32
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-30 16:06:08
+ * @LastEditTime: 2022-08-18 13:26:45
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\Logger.vue
@@ -10,7 +10,7 @@
 <template>
     <div class="logger-setting-wrap flex flex-column h-100">
         <div class="head flex">
-            <el-select v-model="Type" size="small" @change="loadData">
+            <el-select v-model="Type" size="small" @change="loadData" style="width:6rem;">
                 <el-option :value="-1" label="全部"></el-option>
                 <el-option :value="0" label="debug"></el-option>
                 <el-option :value="1" label="info"></el-option>

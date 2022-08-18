@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-16 15:10:26
+ * @LastEditTime: 2022-08-18 12:56:27
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -325,4 +325,8 @@ export default {
         border: 1px solid #eee;
         padding: 2rem;
         border-radius: 4px;
+
+@media screen and (max-width: 768px)
+    .el-col
+        margin-top: 0.6rem;
 </style>
