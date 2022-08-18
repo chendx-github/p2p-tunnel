@@ -1,8 +1,5 @@
-﻿using client.service.socks5;
-using client.service.ui.api.manager;
-using client.service.ui.api.service.clientServer;
+﻿using client.service.ui.api.service.clientServer;
 using client.service.ui.api.service.webServer;
-using client.service.ui.api.webrtc;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Reflection;
@@ -30,8 +27,6 @@ namespace client.service.ui.api.service
         private static Assembly[] GetAddemblys(Assembly[] assemblys)
         {
             return new Assembly[] {
-              //  typeof(CounterClientService).Assembly,
-               // typeof(WebRTCClientService).Assembly,
             }.Concat(assemblys).ToArray();
         }
     }

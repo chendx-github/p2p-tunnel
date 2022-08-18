@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-20 09:12:44
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 13:04:01
+ * @LastEditTime: 2022-08-19 00:17:08
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\main.js
@@ -11,7 +11,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-import VConsole from 'vconsole';
+// import VConsole from 'vconsole';
 // const vConsole = new VConsole();
 
 const app = createApp(App);

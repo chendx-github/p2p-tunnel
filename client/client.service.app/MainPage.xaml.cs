@@ -6,5 +6,10 @@
         {
             InitializeComponent();
         }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            Launcher.OpenAsync("https://snltty.gitee.io/p2p-tunnel");
+        }
     }
 }

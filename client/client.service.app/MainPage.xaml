@@ -4,9 +4,21 @@
              xmlns:local="clr-namespace:client.service.app"
              x:Class="client.service.app.MainPage"
              BackgroundColor="#08743d">
-    <BlazorWebView HostPage="public/index.html" BackgroundColor="#08743d" >
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Image  WidthRequest="110" HeightRequest="110" Grid.Row="1" Grid.Column="1"  Source="appiconfg.svg" ></Image>
+        <Button WidthRequest="110" Grid.Row="2" Grid.Column="1" FontSize="12" Text="打开操作界面" BackgroundColor="White" TextColor="#333" Clicked="Button_Clicked" VerticalOptions="Center"></Button>
+    </Grid>
 </ContentPage>
