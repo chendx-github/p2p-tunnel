@@ -44,25 +44,11 @@ namespace common.tcpforward
 
         public void AddOrUpdate(string domain, int port, TcpForwardTargetCacheInfo mdoel)
         {
-            cacheHost.AddOrUpdate(JoinHost(domain, port), mdoel, (a, oldValue) =>
-            {
-                if (oldValue.Name == mdoel.Name)
-                {
-                    return mdoel;
-                }
-                return oldValue;
-            });
+            cacheHost.AddOrUpdate(JoinHost(domain, port), mdoel, (a, oldValue) => mdoel);
         }
         public void AddOrUpdate(int port, TcpForwardTargetCacheInfo mdoel)
         {
-            cache.AddOrUpdate(port, mdoel, (a, oldValue) =>
-            {
-                if (oldValue.Name == mdoel.Name)
-                {
-                    return mdoel;
-                }
-                return oldValue;
-            });
+            cache.AddOrUpdate(port, mdoel, (a, oldValue) => mdoel);
         }
 
         public bool Remove(string domain, int port)
@@ -129,7 +115,9 @@ namespace common.tcpforward
     public class TcpForwardTargetCacheInfo
     {
         public string Name { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public IConnection Connection { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public Memory<byte> Endpoint { get; set; }
         public TcpForwardTunnelTypes TunnelType { get; set; } = TcpForwardTunnelTypes.TCP_FIRST;
         public TcpForwardTypes ForwardType { get; set; } = TcpForwardTypes.FORWARD;

@@ -51,13 +51,13 @@ namespace client.service.app
 
             //加载插件程序集，当单文件发布或者动态加载dll外部插件时需要，否则如果本程序集没有显式的使用它的相关内容的话，会加载不出来
             Assembly[] assemblys = new Assembly[] {
-                typeof(FtpMessengerBase).Assembly,
+                //typeof(FtpMessengerBase).Assembly,
                 typeof(LoggerClientService).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
                 typeof(UdpForwardMessenger).Assembly,
                 typeof(ClientServer).Assembly,
                 typeof(CounterClientService).Assembly,
-                typeof(WebRTCMessenger).Assembly,
+                //typeof(WebRTCMessenger).Assembly,
                 typeof(Socks5Messenger).Assembly,
                 typeof(PunchHoleMessenger).Assembly,
 

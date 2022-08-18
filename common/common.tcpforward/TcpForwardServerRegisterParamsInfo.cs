@@ -152,7 +152,7 @@ namespace common.tcpforward
             bytes[index] = (byte)Code;
             index += 1;
 
-            Array.Copy(idBytes, 0, bytes, index, msgBytes.Length);
+            Array.Copy(idBytes, 0, bytes, index, idBytes.Length);
             index += 8;
 
             bytes[index] = (byte)msgBytes.Length;

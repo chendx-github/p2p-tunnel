@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-03-24 15:15:31
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-06 13:36:36
+ * @LastEditTime: 2022-08-18 16:32:33
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\server\tcpforward\AddListen.vue
@@ -60,8 +60,8 @@ export default {
                 ServerPort: 0,
                 Domain: registerState.ServerConfig.Ip,
                 Desc: '',
-                LocalIp: '',
-                LocalPort: 0,
+                LocalIp: '127.0.0.1',
+                LocalPort: 80,
                 TunnelType: '2',
             },
             rules: {

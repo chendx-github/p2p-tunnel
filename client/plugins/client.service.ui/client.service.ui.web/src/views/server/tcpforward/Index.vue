@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-28 16:09:31
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-06 15:44:21
+ * @LastEditTime: 2022-08-18 17:24:36
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\server\tcpforward\Index.vue
@@ -10,48 +10,63 @@
 <template>
     <div class="forward-wrap">
         <h3 class="title t-c">{{$route.meta.name}}</h3>
-        <div class="head flex">
-            <el-button type="primary" size="small" @click="handleAddListen">增加长连接端口</el-button>
-            <el-button size="small" @click="loadPorts">刷新列表</el-button>
-            <span class="flex-1"></span>
-        </div>
-        <el-table v-loading="state.loading" :data="state.list" border size="small" @expand-change="onExpand" row-key="ServerPort" :expand-row-keys="expandKeys">
-            <el-table-column type="expand">
-                <template #default="props">
-                    <el-table :data="props.row.Forwards" border size="small">
-                        <el-table-column prop="sourceText" label="服务端地址"></el-table-column>
-                        <el-table-column prop="distText" label="本地地址"></el-table-column>
-                        <el-table-column prop="Desc" label="说明"></el-table-column>
-                        <el-table-column prop="tunnelTypeText" label="通信通道" width="80"></el-table-column>
-                        <el-table-column prop="Listening" label="注册状态" width="85">
-                            <template #default="scope">
-                                <el-switch @click.stop @change="onListeningChange(props.row,scope.row)" v-model="scope.row.Listening"></el-switch>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="todo" label="操作" width="70" fixed="right" class="t-c">
-                            <template #default="scope">
-                                <el-popconfirm title="删除不可逆，是否确认" @confirm="handleRemoveListen(props.row,scope.row)">
-                                    <template #reference>
-                                        <el-button type="danger" size="small">删除</el-button>
-                                    </template>
-                                </el-popconfirm>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </template>
-            </el-table-column>
-            <el-table-column prop="ServerPort" label="服务器端口"></el-table-column>
-            <el-table-column prop="AliveType" label="连接类型" width="85">
-                <template #default="scope"><span>{{shareData.aliveTypes[scope.row.AliveType]}}</span></template>
-            </el-table-column>
-            <el-table-column prop="todo" label="操作" width="90" fixed="right" class="t-c">
-                <template #default="scope">
-                    <template v-if="scope.row.AliveType == 2">
-                        <el-button type="info" size="small" @click="handleAddForward(scope.row)">增加转发</el-button>
+        <div class="inner">
+            <div class="head flex">
+                <el-button type="primary" size="small" @click="handleAddListen">增加长连接端口</el-button>
+                <el-button size="small" @click="loadPorts">刷新列表</el-button>
+                <span class="flex-1"></span>
+            </div>
+            <div class="content">
+                <el-row>
+                    <template v-for="(item,index) in state.list" :key="index">
+                        <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                            <div class="item">
+                                <dl>
+                                    <dt class="flex">
+                                        <span>{{shareData.aliveTypes[item.AliveType]}}</span>
+                                        <span class="flex-1 t-c">{{item.Domain}}:{{item.ServerPort}}</span>
+                                        <span v-if="item.AliveType == 1">
+                                            <el-switch size="small" @click.stop @change="onListeningChange(item,item.Forwards[0])" v-model="item.Forwards[0].Listening" style="margin-top:-6px;"></el-switch>
+                                        </span>
+                                    </dt>
+                                    <dd>{{item.Desc}}</dd>
+                                    <dd class="forwards">
+                                        <el-collapse>
+                                            <el-collapse-item title="转发列表">
+                                                <ul>
+                                                    <template v-for="(fitem,findex) in item.Forwards" :key="findex">
+                                                        <li>
+                                                            <p class="flex"><span class="flex-1">访问</span><span>{{fitem.sourceText}}</span></p>
+                                                            <p class="flex"><span class="flex-1">目标</span><span>【本机】{{fitem.distText}}</span></p>
+                                                            <p class="flex"><span class="flex-1">通道</span><span>{{fitem.tunnelTypeText}}</span></p>
+                                                            <p class="t-r">
+                                                                <el-popconfirm title="删除不可逆，是否确认" @confirm="handleRemoveListen(item,fitem)">
+                                                                    <template #reference>
+                                                                        <el-button plain type="danger" v-if="item.AliveType == 2" size="small">删除</el-button>
+                                                                    </template>
+                                                                </el-popconfirm>
+                                                            </p>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </el-collapse-item>
+                                        </el-collapse>
+                                    </dd>
+                                    <dd class="btns t-r">
+                                        <el-popconfirm title="删除不可逆，是否确认" @confirm="handleRemoveListen(item,item.Forwards[0])">
+                                            <template #reference>
+                                                <el-button v-if="item.AliveType == 1" plain type="danger" size="small">删除</el-button>
+                                            </template>
+                                        </el-popconfirm>
+                                        <el-button plain type="info" v-if="item.AliveType == 2" size="small" @click="handleAddForward(item)">增加转发</el-button>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </el-col>
                     </template>
-                </template>
-            </el-table-column>
-        </el-table>
+                </el-row>
+            </div>
+        </div>
         <el-alert class="alert" type="warning" show-icon :closable="false" title="服务器代理转发" description="短链接端口是由服务器配置好的，不能自由新增，使用多个转发即可实现访问不同服务。长连接一个端口对应一个服务，只要服务器设定的端口范围未满，即可使用" />
         <AddForward v-if="state.showAddForward" v-model="state.showAddForward" @success="loadPorts"></AddForward>
         <AddListen v-if="state.showAddListen" v-model="state.showAddListen" @success="loadPorts"></AddListen>
@@ -94,6 +109,8 @@ export default {
                 state.list = ports.splice(0, ports.length - 2).map(c => {
                     return {
                         ServerPort: c,
+                        Domain: registerState.ServerConfig.Ip,
+                        Desc: '短链接',
                         AliveType: 2,
                         Forwards: forwards.filter(d => d.AliveType == 2 && d.ServerPort == c).map(d => {
                             return {
@@ -112,8 +129,10 @@ export default {
                 }).concat(forwards.filter(c => c.AliveType == 1).map(d => {
                     return {
                         ServerPort: d.ServerPort,
-                        Desc: d.Desc,
+                        Domain: registerState.ServerConfig.Ip,
+                        Desc: d.Desc || '长连接',
                         AliveType: 1,
+                        Listening: d.Listening,
                         Forwards: [
                             {
                                 Domain: d.Domain,
@@ -198,12 +217,67 @@ export default {
 }
 </script>
 
+<style lang="stylus">
+.forward-wrap
+    .el-collapse-item__header, .el-collapse-item__content, .el-collapse-item__wrap
+        border-right: 0;
+        border-left: 0;
+
+    .el-collapse-item__content
+        padding: 0;
+</style>
 <style lang="stylus" scoped>
+@media screen and (max-width: 500px)
+    .el-col-24
+        max-width: 100%;
+        flex: 0 0 100%;
+
 .forward-wrap
     padding: 2rem;
 
+    .inner
+        border: 1px solid #eee;
+        // padding: 1rem;
+        border-radius: 0.4rem;
+
     .head
-        margin-bottom: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+
+    .content
+        padding: 1rem;
+
+        .item
+            padding: 1rem 0.6rem;
+
+            dl
+                border: 1px solid #eee;
+                border-radius: 0.4rem;
+
+                dt
+                    border-bottom: 1px solid #eee;
+                    padding: 1rem;
+                    font-size: 1.4rem;
+                    font-weight: 600;
+                    color: #555;
+                    line-height: 2.4rem;
+
+                dd
+                    padding: 0.4rem 1rem;
+
+                    &:nth-child(2)
+                        padding: 1rem;
+                        background-color: #fafafa;
+
+                    &.forwards
+                        padding: 0;
+
+                        li
+                            border-bottom: 1px solid #eee;
+                            padding: 1rem;
+
+                            &:last-child
+                                border: 0;
 
     .alert
         margin-top: 1rem;

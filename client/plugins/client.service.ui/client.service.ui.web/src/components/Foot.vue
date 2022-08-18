@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-08-18 13:02:18
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 13:46:43
+ * @LastEditTime: 2022-08-18 14:30:02
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\components\Foot.vue
@@ -115,4 +115,5 @@ export default {
         display: block;
         font-size: 1.4rem;
         padding: 1rem 0;
+        width: 100%;
 </style>

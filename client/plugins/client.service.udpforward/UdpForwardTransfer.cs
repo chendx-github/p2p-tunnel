@@ -285,7 +285,7 @@ namespace client.service.udpforward
             result.DeBytes(resp.Data);
             if (result.Code != UdpForwardRegisterResultCodes.OK)
             {
-                return result.Msg;
+                return $"{resp.Code.GetDesc((byte)resp.Code)},{result.Msg}";
             }
 
             serverConfigInfo.Tunnels.Add(forward);

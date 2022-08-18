@@ -486,6 +486,7 @@ namespace client.service.tcpforward
                 return $"{result.Code.GetDesc((byte)result.Code)},{result.Msg}";
             }
 
+            serverForwards.Remove(serverForwards.FirstOrDefault(c=>c.Domain == forward.Domain && c.ServerPort == forward.ServerPort));
             serverForwards.Add(forward);
             SaveServerConfig();
             return string.Empty;

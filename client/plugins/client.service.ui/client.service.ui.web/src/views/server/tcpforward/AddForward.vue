@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-03-24 15:15:31
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-06 13:37:29
+ * @LastEditTime: 2022-08-18 16:54:53
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\server\tcpforward\AddForward.vue
@@ -10,7 +10,7 @@
 <template>
     <el-dialog title="添加短连接转发" destroy-on-close v-model="show" center :close-on-click-modal="false" width="350px">
         <el-form ref="formDom" :model="form" :rules="rules" label-width="100px">
-            <el-form-item label="服务器地址" prop="Domain">
+            <el-form-item label="服务器域名" prop="Domain">
                 <el-input v-model="form.Domain"></el-input>
             </el-form-item>
             <el-form-item label="本机ip" prop="LocalIp">
@@ -60,8 +60,8 @@ export default {
                 ServerPort: addForwardData.value.ServerPort,
                 Domain: registerState.ServerConfig.Ip,
                 Desc: '',
-                LocalIp: '',
-                LocalPort: 0,
+                LocalIp: '127.0.0.1',
+                LocalPort: 80,
                 TunnelType: '2',
             },
             rules: {

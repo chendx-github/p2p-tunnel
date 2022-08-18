@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 13:20:50
+ * @LastEditTime: 2022-08-18 17:30:26
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\App.vue
@@ -63,7 +63,7 @@ export default {
         width: 96%;
         max-width: 90rem;
         margin: 0 auto;
-        margin-top: -1rem;
+        padding-top: 1.5rem;
 
     .content
         margin-top: -1rem;
