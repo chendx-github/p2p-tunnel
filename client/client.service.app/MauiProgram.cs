@@ -29,13 +29,13 @@ namespace client.service.app
 
             MauiApp app = builder.Build();
 
-            Startup.Start();
+           
 
             return app;
         }
     }
 
-    class Startup
+   public class Startup
     {
         static ServiceProvider serviceProvider = null;
         public static void Start()
@@ -54,6 +54,7 @@ namespace client.service.app
                 typeof(UdpForwardMessenger).Assembly,
                 typeof(ClientServer).Assembly,
                 typeof(CounterClientService).Assembly,
+                typeof(Socks5ClientService).Assembly,
                 typeof(Socks5Messenger).Assembly,
                 typeof(PunchHoleMessenger).Assembly,
 
@@ -75,13 +76,14 @@ namespace client.service.app
 
             serviceProvider = serviceCollection.BuildServiceProvider();
 
-            serviceProvider.UseMiddleware(assemblys);
-            serviceProvider.UseServerPlugin(assemblys);//基础的功能
-            serviceProvider.UseUI(assemblys);//客户端管理
-            serviceProvider.UseTcpForwardPlugin();//客户端tcp转发
-            serviceProvider.UseUdpForwardPlugin();//客户端tcp转发
-            serviceProvider.UseSocks5();//socks5代理
-            serviceProvider.UseLoggerPlugin(); //日志
+            serviceProvider
+                .UseMiddleware(assemblys)
+            .UseServerPlugin(assemblys)//基础的功能
+            .UseUI(assemblys)//客户端管理
+            .UseTcpForwardPlugin()//客户端tcp转发
+            .UseUdpForwardPlugin()//客户端tcp转发
+            .UseSocks5()//socks5代理
+            .UseLoggerPlugin(); //日志
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");

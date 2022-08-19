@@ -52,6 +52,7 @@ namespace client.service
                 typeof(UdpForwardMessenger).Assembly,
                 typeof(ClientServer).Assembly,
                 typeof(CounterClientService).Assembly,
+                typeof(Socks5ClientService).Assembly,
                 typeof(Socks5Messenger).Assembly,
                 typeof(PunchHoleMessenger).Assembly,
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();

@@ -21,7 +21,14 @@ namespace client.service.socks5
 
         public string GetPac()
         {
-            return File.ReadAllText("./socks-custom.pac");
+            try
+            {
+                return File.ReadAllText("./socks-custom.pac");
+            }
+            catch (Exception)
+            {
+            }
+            return String.Empty;
         }
 
         public string UpdatePac(PacSetParamsInfo param)

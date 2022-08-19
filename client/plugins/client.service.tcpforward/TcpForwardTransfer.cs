@@ -665,9 +665,15 @@ namespace client.service.tcpforward
 
         public string GetPac()
         {
-            return File.ReadAllText("./proxy-custom.pac");
+            try
+            {
+                return File.ReadAllText("./proxy-custom.pac");
+            }
+            catch (Exception)
+            {
+            }
+            return string.Empty;
         }
-
         public string UpdatePac(P2PListenInfo param)
         {
             try

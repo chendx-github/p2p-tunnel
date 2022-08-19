@@ -1,4 +1,6 @@
 ﻿using Android.App;
+using Android.Content;
+using Android.OS;
 using Android.Runtime;
 
 namespace client.service.app
@@ -13,4 +15,6 @@ namespace client.service.app
 
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
+
+    
 }
