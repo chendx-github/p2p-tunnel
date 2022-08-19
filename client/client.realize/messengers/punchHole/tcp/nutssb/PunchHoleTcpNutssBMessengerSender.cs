@@ -365,7 +365,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                     State = false,
                     Result = new ConnectFailModel
                     {
-                        Msg = "失败",
+                        Msg = "tcp打洞失败",
                         Type = ConnectFailType.ERROR
                     }
                 });

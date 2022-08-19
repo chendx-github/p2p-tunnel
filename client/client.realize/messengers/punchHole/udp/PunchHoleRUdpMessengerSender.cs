@@ -160,7 +160,7 @@ namespace client.realize.messengers.punchHole.udp
                         }).ConfigureAwait(false);
                         if (connectCache.TryRemove(arg.RawData.FromId, out _))
                         {
-                            cache.Tcs.SetResult(new ConnectResultModel { State = false, Result = new ConnectFailModel { Type = ConnectFailType.ERROR, Msg = "连接失败" } });
+                            cache.Tcs.SetResult(new ConnectResultModel { State = false, Result = new ConnectFailModel { Type = ConnectFailType.ERROR, Msg = "udp打洞失败" } });
                         }
                     }
                 }

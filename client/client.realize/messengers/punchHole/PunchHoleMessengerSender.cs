@@ -107,7 +107,7 @@ namespace client.realize.messengers.punchHole
         public ulong ToId { get; set; }
         public int GuessPort { get; set; } = 0;
 
-        public string TunnelName { get; set; }
+        public string TunnelName { get; set; } = string.Empty;
 
         public T Data { get; set; }
     }

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-09-26 19:51:49
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-07 18:43:54
+ * @LastEditTime: 2022-08-19 13:53:25
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\ftp\Local.vue
@@ -107,20 +107,16 @@ export default {
                                 }).then(() => {
                                     state.loading = true;
                                     sendRemoteUpload(listShareData.clientId || 0, row.Name).then((res) => {
-                                        console.log(res);
                                         state.loading = false;
                                     }).catch((err) => {
-                                        console.log(err);
                                         state.loading = false;
                                     });
                                 });
                             } else {
                                 state.loading = true;
                                 sendRemoteUpload(listShareData.clientId || 0, row.Name).then((res) => {
-                                    console.log(res);
                                     state.loading = false;
                                 }).catch((err) => {
-                                    console.log(err);
                                     state.loading = false;
                                 });
                             }

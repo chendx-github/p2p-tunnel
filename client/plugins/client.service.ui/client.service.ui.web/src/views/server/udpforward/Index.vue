@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-20 00:47:21
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 16:24:06
+ * @LastEditTime: 2022-08-19 13:53:36
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\server\udpforward\Index.vue
@@ -72,7 +72,6 @@ export default {
 
         const getData = () => {
             getServerForwards().then((res) => {
-                console.log(res);
                 state.list = res;
             });
         };

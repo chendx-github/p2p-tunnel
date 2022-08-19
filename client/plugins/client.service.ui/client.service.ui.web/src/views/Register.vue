@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 12:56:27
+ * @LastEditTime: 2022-08-19 13:53:17
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -294,7 +294,6 @@ export default {
                         EncodePassword: state.model.ServerEncodePassword
                     }
                 };
-                console.log(data);
                 registerState.LocalInfo.IsConnecting = true;
                 updateConfig(data).then(() => {
                     sendRegisterMsg().then((res) => {

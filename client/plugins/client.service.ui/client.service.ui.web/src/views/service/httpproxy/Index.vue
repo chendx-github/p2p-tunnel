@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 13:34:25
+ * @LastEditTime: 2022-08-19 13:53:45
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
@@ -170,7 +170,6 @@ export default {
                 const json = JSON.parse(JSON.stringify(state.form));
                 json.Port = Number(json.Port);
                 json.TunnelType = Number(json.TunnelType);
-                console.log(json);
                 addListen(json).then(() => {
                     state.loading = false;
                     ElMessage.success('操作成功！');
