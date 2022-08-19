@@ -100,7 +100,7 @@ namespace server.service
 
             clientRegisterCache.OnChanged.Sub((changeClient) =>
             {
-                List<ClientsClientInfo> clients = clientRegisterCache.GetAll().Where(c => c.GroupId == changeClient.GroupId && c.TcpConnection != null).Select(c => new ClientsClientInfo
+                List<ClientsClientInfo> clients = clientRegisterCache.GetAll().Where(c => c.GroupId == changeClient.GroupId && c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
                 {
                     Address = c.UdpConnection.Address.Address.ToString(),
                     TcpConnection = c.TcpConnection,

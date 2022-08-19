@@ -56,8 +56,9 @@ namespace client.realize.messengers.clients
             tcpServer.OnDisconnect.Sub((connection) =>
             {
                 //客户端掉线
-                if (registerState.TcpConnection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
+                if (registerState.TcpConnection != null  && connection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
                 {
+
                     clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
                     ConnectClient(connection.ConnectId);
                 }

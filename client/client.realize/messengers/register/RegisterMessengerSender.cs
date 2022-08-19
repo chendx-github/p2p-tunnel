@@ -95,6 +95,16 @@ namespace client.realize.messengers.register
             }).ConfigureAwait(false);
         }
 
+        public async Task Exit()
+        {
+            await messengerSender.SendOnly(new MessageRequestWrap
+            {
+                Connection = registerState.TcpConnection,
+                Content = Helper.EmptyArray,
+                Path = "exit/execute"
+            }).ConfigureAwait(false);
+        }
+
         public async Task<int> GetGuessPort(ServerType serverType)
         {
             var connection = GetConnection(serverType);

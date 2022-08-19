@@ -6,7 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace server.service.messengers.register
 {
@@ -29,11 +29,27 @@ namespace server.service.messengers.register
         {
             if (cache.Count > 0)
             {
-                long time = DateTimeHelper.GetTimeStamp();
-                var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay)).ToList();
-                foreach (RegisterCacheInfo item in CollectionsMarshal.AsSpan(offlines))
+                try
                 {
-                    Remove(item.Id);
+                    long time = DateTimeHelper.GetTimeStamp();
+                    var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.Connected && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
+                    if (offlines.Any())
+                    {
+                        foreach (RegisterCacheInfo item in offlines)
+                        {
+                            cache.TryRemove(item.Id, out _);
+                            item.UdpConnection?.Disponse();
+                            item.TcpConnection?.Disponse();
+                        }
+                        foreach (RegisterCacheInfo item in offlines)
+                        {
+                            OnChanged.Push(item);
+                            OnOffline.Push(item);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
                 }
             }
         }
@@ -84,7 +100,7 @@ namespace server.service.messengers.register
             }
             return false;
         }
-        public bool Offline(RegisterCacheInfo client)
+        private bool Offline(RegisterCacheInfo client)
         {
             if (client != null)
             {

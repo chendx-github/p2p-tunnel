@@ -44,7 +44,7 @@ namespace client.realize.messengers.register
 
             tcpServer.OnDisconnect.Sub((connection) =>
             {
-                if (registerState.TcpConnection != null && registerState.TcpConnection.Address.Equals(connection.Address))
+                if (registerState.TcpConnection != null && connection != null && registerState.TcpConnection.Address.Equals(connection.Address))
                 {
                     _ = Register(true);
                 }
@@ -53,6 +53,7 @@ namespace client.realize.messengers.register
 
         public void Exit()
         {
+            registerMessageHelper.Exit().Wait();
             registerState.Offline();
             udpServer.Stop();
             tcpServer.Stop();

@@ -101,7 +101,6 @@ namespace common.server
 
         public virtual void Disponse()
         {
-            Address = null;
             LastTime = 0;
             ReceiveRequestWrap = null;
             ReceiveResponseWrap = null;

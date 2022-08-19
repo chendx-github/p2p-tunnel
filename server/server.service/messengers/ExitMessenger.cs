@@ -1,8 +1,5 @@
-﻿using common.libs;
-using common.libs.extends;
-using common.server;
+﻿using common.server;
 using server.messengers.register;
-using System.Threading.Tasks;
 
 namespace server.service.messengers
 {
@@ -14,10 +11,9 @@ namespace server.service.messengers
             this.clientRegisterCache = clientRegisterCache;
         }
 
-        public byte[] Execute(IConnection connection)
+        public void Execute(IConnection connection)
         {
             var res = clientRegisterCache.Remove(connection.ConnectId);
-            return res ? Helper.TrueArray : Helper.FalseArray;
         }
     }
 }
