@@ -14,7 +14,7 @@
 
 </div>
 
-1. **/public/publish.rar包含客户端和服务端依赖.NET6环境的程序**，更多环境的发布程序，以及**APP**，可自行发布，或者进群获取
+1. **/public/publish.rar包含客户端和服务端依赖.NET6环境的程序**，更多环境的发布程序，以及**APP**，可自行发布，或者进群(**1121552990**)获取
 2. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>，<a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>，<a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
 3. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
 
@@ -49,10 +49,6 @@
 - [x] 高效的打包解包，序列化->打包->粘包解析->解包->反序列化 整个流程时间，作死的全手写序列化
 <p><img src="./public/screenshot/speed.png" width="400"></p>
 <p><img src="./public/screenshot/file-speed.png" width="400"></p>
-
-## QQ群
-有啥兴趣，有啥想了解的，尽可进群
-<p><img src="./public/screenshot/qrcode.jpg" style="border:1px solid #ddd;" width="400"></p>
 
 ## 项目
 1. client
