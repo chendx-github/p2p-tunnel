@@ -57,7 +57,7 @@ namespace server.service.messengers
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
                             Content = model.ToBytes(),
                             MemoryPath = connection.ReceiveRequestWrap.MemoryPath,
-                            RequestId = connection.ReceiveRequestWrap.RequestId
+                            RequestId = connection.ReceiveRequestWrap.RequestId,
                         }).ConfigureAwait(false);
                         return res ? Helper.TrueArray : Helper.FalseArray;
                     }

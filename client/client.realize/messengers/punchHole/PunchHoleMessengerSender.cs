@@ -69,7 +69,7 @@ namespace client.realize.messengers.punchHole
                     PunchType = (byte)msg.PunchType,
                     ToId = arg.ToId,
                     TunnelName = arg.TunnelName,
-                    GuessPort = arg.GuessPort
+                    GuessPort = arg.GuessPort,
                 }.ToBytes()
             }).ConfigureAwait(false);
         }

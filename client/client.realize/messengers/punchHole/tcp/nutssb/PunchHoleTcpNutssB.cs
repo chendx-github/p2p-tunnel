@@ -1,7 +1,10 @@
 ﻿using client.messengers.punchHole;
 using client.messengers.punchHole.tcp;
+using common.libs;
 using common.libs.extends;
 using common.server.model;
+using System;
+using System.Reflection;
 
 namespace client.realize.messengers.punchHole.tcp.nutssb
 {
@@ -52,6 +55,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
             model.DeBytes(arg.Data.Data);
+            Logger.Instance.DebugDebug($"OnStep1:{model.ToJson()}");
             punchHoleTcp.OnStep1(new OnStep1Params
             {
                 Connection = arg.Connection,
@@ -64,6 +68,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
 
             PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
             model.DeBytes(arg.Data.Data);
+            Logger.Instance.DebugDebug($"OnStep2:{model.ToJson()}");
             punchHoleTcp.OnStep2(new OnStep2Params
             {
                 Connection = arg.Connection,
@@ -76,6 +81,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
 
             PunchHoleNotifyInfo model = new PunchHoleNotifyInfo();
             model.DeBytes(arg.Data.Data);
+            Logger.Instance.DebugDebug($"OnStep2Retry:{model.ToJson()}");
             punchHoleTcp.OnStep2Retry(new OnStep2RetryParams
             {
                 Connection = arg.Connection,
@@ -85,6 +91,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         }
         private void Step2Fail(OnPunchHoleArg arg)
         {
+            Logger.Instance.DebugDebug($"OnStep2Fail:{arg.Data.ToJson()}");
             punchHoleTcp.OnStep2Fail(new OnStep2FailParams
             {
                 Connection = arg.Connection,
@@ -93,6 +100,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         }
         private void Step2Stop(OnPunchHoleArg arg)
         {
+            Logger.Instance.DebugDebug($"OnStep2Stop:{arg.Data.ToJson()}");
             punchHoleTcp.OnStep2Stop(new OnStep2StopParams
             {
                 Connection = arg.Connection,
@@ -104,6 +112,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             PunchHoleStep3Info model = new PunchHoleStep3Info();
             model.DeBytes(arg.Data.Data);
+            Logger.Instance.DebugDebug($"OnStep3:{model.ToJson()}");
             punchHoleTcp.OnStep3(new OnStep3Params
             {
                 Connection = arg.Connection,
@@ -115,6 +124,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             PunchHoleStep4Info model = new PunchHoleStep4Info();
             model.DeBytes(arg.Data.Data);
+            Logger.Instance.DebugDebug($"OnStep4:{model.ToJson()}");
             punchHoleTcp.OnStep4(new OnStep4Params
             {
                 Connection = arg.Connection,

@@ -59,19 +59,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 TunnelName = param.TunnelName,
             });
 
-            int port = 0;
-            if (UseGuesstPort)
-            {
-                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
-            }
-            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep1Info>
-            {
-                TunnelName = param.TunnelName,
-                Connection = TcpServer,
-                ToId = param.Id,
-                GuessPort = port,
-                Data = new PunchHoleStep1Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_1, PunchType = PunchHoleTypes.TCP_NUTSSB }
-            }).ConfigureAwait(false);
+            await SendStep1(param.Id, param.TunnelName);
 
             return await tcs.Task.ConfigureAwait(false);
         }
@@ -102,11 +90,9 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 targetSocket.SafeClose();
             }
 
-            int port = 0;
             if (arg.Data.GuessPort > 0)
             {
                 int bindPort = NetworkHelper.GetRandomPort();
-                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
                 int startPort = arg.Data.Port;
                 int endPort = arg.Data.Port;
                 if (arg.Data.GuessPort > 0)
@@ -146,14 +132,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 }
             }
 
-            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
-            {
-                TunnelName = arg.RawData.TunnelName,
-                Connection = TcpServer,
-                ToId = arg.RawData.FromId,
-                GuessPort = port,
-                Data = new PunchHoleStep2Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2, PunchType = PunchHoleTypes.TCP_NUTSSB }
-            }).ConfigureAwait(false);
+            await SendStep2(arg.RawData.FromId, arg.RawData.TunnelName);
         }
 
         public SimpleSubPushHandler<OnStep2Params> OnStep2Handler { get; } = new SimpleSubPushHandler<OnStep2Params>();
@@ -218,17 +197,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                             {
                                 IConnection connection = tcpServer.BindReceive(targetSocket, bufferSize: config.Client.TcpBufferSize);
                                 await CryptoSwap(connection);
-                                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
-                                {
-                                    TunnelName = arg.RawData.TunnelName,
-                                    Connection = connection,
-                                    Data = new PunchHoleStep3Info
-                                    {
-                                        FromId = ConnectId,
-                                        Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
-                                        PunchType = PunchHoleTypes.TCP_NUTSSB
-                                    }
-                                }).ConfigureAwait(false);
+                                await SendStep3(connection, arg.RawData.TunnelName);
                             }
                             else
                             {
@@ -308,22 +277,6 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             }
         }
 
-        private async Task SendStep2Retry(ulong toid, string tunnelName)
-        {
-            int port = 0;
-            if (UseGuesstPort)
-            {
-                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
-            }
-            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2TryInfo>
-            {
-                TunnelName = tunnelName,
-                Connection = TcpServer,
-                ToId = toid,
-                GuessPort = port,
-                Data = new PunchHoleStep2TryInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_TRY, PunchType = PunchHoleTypes.TCP_NUTSSB }
-            }).ConfigureAwait(false);
-        }
         public SimpleSubPushHandler<OnStep2RetryParams> OnStep2RetryHandler { get; } = new SimpleSubPushHandler<OnStep2RetryParams>();
         public void OnStep2Retry(OnStep2RetryParams e)
         {
@@ -342,70 +295,40 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             for (int i = startPort; i <= endPort; i++)
             {
 
-                IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
-                using Socket targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                targetSocket.Ttl = (short)(RouteLevel);
-                targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
-                _ = targetSocket.ConnectAsync(target);
-
-                targetSocket.SafeClose();
-            }
-        }
-
-        public SimpleSubPushHandler<ulong> OnSendStep2FailHandler => new SimpleSubPushHandler<ulong>();
-        private async Task SendStep2Fail(OnStep2Params arg)
-        {
-
-            if (connectTcpCache.TryRemove(arg.RawData.FromId, out ConnectCacheModel cache))
-            {
-                cache.Canceled = true;
-                cache.Tcs.SetResult(new ConnectResultModel
+                Socket targetSocket = null;
+                try
                 {
-                    State = false,
-                    Result = new ConnectFailModel
+                    IPEndPoint target = new IPEndPoint(e.Data.Ip, i);
+                    targetSocket = new Socket(target.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    targetSocket.Ttl = (short)(RouteLevel);
+                    targetSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    targetSocket.Bind(new IPEndPoint(config.Client.BindIp, ClientTcpPort));
+                    _ = targetSocket.ConnectAsync(target);
+                }
+                catch (Exception)
+                {
+                }
+                finally
+                {
+                    if (targetSocket != null)
                     {
-                        Msg = "tcp打洞失败",
-                        Type = ConnectFailType.ERROR
+                        targetSocket.SafeClose();
                     }
-                });
-            }
-            if (arg.Data.IsDefault)
-            {
-                OnSendStep2FailHandler.Push(arg.RawData.FromId);
-                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2FailInfo>
-                {
-                    TunnelName = arg.RawData.TunnelName,
-                    Connection = TcpServer,
-                    ToId = arg.RawData.FromId,
-                    Data = new PunchHoleStep2FailInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_FAIL, PunchType = PunchHoleTypes.TCP_NUTSSB }
-                }).ConfigureAwait(false);
+                }
             }
         }
+
+
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; } = new SimpleSubPushHandler<OnStep2FailParams>();
         public void OnStep2Fail(OnStep2FailParams arg)
         {
             OnStep2FailHandler.Push(arg);
         }
-        public async Task SendStep2Stop(ulong toid)
-        {
-            if (connectTcpCache.TryGetValue(toid, out ConnectCacheModel cache))
-            {
-                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2StopInfo>
-                {
-                    TunnelName = cache.TunnelName,
-                    Connection = TcpServer,
-                    ToId = toid,
-                    Data = new PunchHoleStep2StopInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_STOP, PunchType = PunchHoleTypes.TCP_NUTSSB }
-                }).ConfigureAwait(false);
-                Cancel(toid);
-            }
-        }
+
         public void OnStep2Stop(OnStep2StopParams e)
         {
             Cancel(e.RawData.FromId);
         }
-
         private void Cancel(ulong id)
         {
             if (connectTcpCache.TryRemove(id, out ConnectCacheModel cache))
@@ -427,17 +350,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         public async Task OnStep3(OnStep3Params arg)
         {
             OnStep3Handler.Push(arg);
-            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep4Info>
-            {
-                TunnelName = arg.RawData.TunnelName,
-                Connection = arg.Connection,
-                Data = new PunchHoleStep4Info
-                {
-                    FromId = ConnectId,
-                    Step = (byte)PunchHoleTcpNutssBSteps.STEP_4,
-                    PunchType = PunchHoleTypes.TCP_NUTSSB
-                }
-            });
+            await SendStep4(arg.Connection, arg.RawData.TunnelName);
         }
 
         public SimpleSubPushHandler<OnStep4Params> OnStep4Handler { get; } = new SimpleSubPushHandler<OnStep4Params>();
@@ -448,6 +361,141 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 cache.Tcs.SetResult(new ConnectResultModel { State = true });
             }
             OnStep4Handler.Push(arg);
+        }
+
+
+        public async Task SendStep1(ulong toid, string tunnelName)
+        {
+            int port = 0;
+            if (UseGuesstPort)
+            {
+                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+            }
+
+            Logger.Instance.DebugDebug($"before Send Step1");
+            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep1Info>
+            {
+                TunnelName = tunnelName,
+                Connection = TcpServer,
+                ToId = toid,
+                GuessPort = port,
+                Data = new PunchHoleStep1Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_1, PunchType = PunchHoleTypes.TCP_NUTSSB }
+            }).ConfigureAwait(false);
+            Logger.Instance.DebugDebug($"after Send Step1");
+        }
+        public async Task SendStep2(ulong toid, string tunnelName)
+        {
+            int port = 0;
+            if (UseGuesstPort)
+            {
+                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+            }
+
+            Logger.Instance.DebugDebug($"before Send Step2");
+            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
+            {
+                TunnelName = tunnelName,
+                Connection = TcpServer,
+                ToId = toid,
+                GuessPort = port,
+                Data = new PunchHoleStep2Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2, PunchType = PunchHoleTypes.TCP_NUTSSB }
+            }).ConfigureAwait(false);
+            Logger.Instance.DebugDebug($"after Send Step2");
+        }
+        private async Task SendStep2Retry(ulong toid, string tunnelName)
+        {
+            int port = 0;
+            if (UseGuesstPort)
+            {
+                port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
+            }
+            Logger.Instance.DebugDebug($"before Send Step2Retry");
+            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2TryInfo>
+            {
+                TunnelName = tunnelName,
+                Connection = TcpServer,
+                ToId = toid,
+                GuessPort = port,
+                Data = new PunchHoleStep2TryInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_TRY, PunchType = PunchHoleTypes.TCP_NUTSSB }
+            }).ConfigureAwait(false);
+            Logger.Instance.DebugDebug($"after Send Step2Retry");
+        }
+        public SimpleSubPushHandler<ulong> OnSendStep2FailHandler => new SimpleSubPushHandler<ulong>();
+        private async Task SendStep2Fail(OnStep2Params arg)
+        {
+
+            if (connectTcpCache.TryRemove(arg.RawData.FromId, out ConnectCacheModel cache))
+            {
+                cache.Canceled = true;
+                cache.Tcs.SetResult(new ConnectResultModel
+                {
+                    State = false,
+                    Result = new ConnectFailModel
+                    {
+                        Msg = "tcp打洞失败",
+                        Type = ConnectFailType.ERROR
+                    }
+                });
+            }
+            if (arg.Data.IsDefault)
+            {
+                OnSendStep2FailHandler.Push(arg.RawData.FromId);
+                Logger.Instance.DebugDebug($"before Send Step2Fail");
+                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2FailInfo>
+                {
+                    TunnelName = arg.RawData.TunnelName,
+                    Connection = TcpServer,
+                    ToId = arg.RawData.FromId,
+                    Data = new PunchHoleStep2FailInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_FAIL, PunchType = PunchHoleTypes.TCP_NUTSSB }
+                }).ConfigureAwait(false);
+                Logger.Instance.DebugDebug($"after Send Step2Fail");
+            }
+        }
+        public async Task SendStep2Stop(ulong toid)
+        {
+            if (connectTcpCache.TryGetValue(toid, out ConnectCacheModel cache))
+            {
+                await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2StopInfo>
+                {
+                    TunnelName = cache.TunnelName,
+                    Connection = TcpServer,
+                    ToId = toid,
+                    Data = new PunchHoleStep2StopInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_STOP, PunchType = PunchHoleTypes.TCP_NUTSSB }
+                }).ConfigureAwait(false);
+                Cancel(toid);
+            }
+        }
+        private async Task SendStep3(IConnection connection, string tunnelName)
+        {
+            Logger.Instance.DebugDebug($"before Send Step3");
+            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
+            {
+                TunnelName = tunnelName,
+                Connection = connection,
+                Data = new PunchHoleStep3Info
+                {
+                    FromId = ConnectId,
+                    Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
+                    PunchType = PunchHoleTypes.TCP_NUTSSB
+                }
+            }).ConfigureAwait(false);
+            Logger.Instance.DebugDebug($"after Send Step3");
+        }
+        private async Task SendStep4(IConnection connection, string tunnelName)
+        {
+            Logger.Instance.DebugDebug($"before Send Step4");
+            await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep4Info>
+            {
+                TunnelName = tunnelName,
+                Connection = connection,
+                Data = new PunchHoleStep4Info
+                {
+                    FromId = ConnectId,
+                    Step = (byte)PunchHoleTcpNutssBSteps.STEP_4,
+                    PunchType = PunchHoleTypes.TCP_NUTSSB
+                }
+            });
+            Logger.Instance.DebugDebug($"after Send Step4");
         }
     }
 }

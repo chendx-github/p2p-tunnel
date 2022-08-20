@@ -26,8 +26,9 @@ namespace common.server.model
             var nameBytes = TunnelName.ToBytes();
 
             var bytes = new byte[
-                1 + 1 + 1 + 8 + 8
+                1 + 1 + 1
                 + 2
+                + 8 + 8
                 + 1 + nameBytes.Length + Data.Length
                 ];
             int index = 0;
@@ -122,6 +123,7 @@ namespace common.server.model
 
             var ipBytes = Ip.GetAddressBytes();
             length += 1 + ipBytes.Length;
+
             var port = Port.ToBytes();
             length += 2;
             var localport = LocalPort.ToBytes();
@@ -145,9 +147,8 @@ namespace common.server.model
             index += 1;
 
             bytes[index] = (byte)ipBytes.Length;
-            index += 1;
-            Array.Copy(ipBytes, 0, bytes, index, ipBytes.Length);
-            index += ipBytes.Length;
+            Array.Copy(ipBytes, 0, bytes, index + 1, ipBytes.Length);
+            index += 1 + ipBytes.Length;
 
 
             bytes[index] = port[0];
