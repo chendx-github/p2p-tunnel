@@ -59,7 +59,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 TunnelName = param.TunnelName,
             });
 
-            await SendStep1(param.Id, param.TunnelName);
+            await SendStep1(param);
 
             return await tcs.Task.ConfigureAwait(false);
         }
@@ -132,7 +132,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 }
             }
 
-            await SendStep2(arg.RawData.FromId, arg.RawData.TunnelName);
+            await SendStep2(arg);
         }
 
         public SimpleSubPushHandler<OnStep2Params> OnStep2Handler { get; } = new SimpleSubPushHandler<OnStep2Params>();
@@ -214,7 +214,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                             targetSocket.SafeClose();
                             targetSocket = null;
                             interval = 100;
-                            await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                            await SendStep2Retry(arg).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {
                                 interval = 0;
@@ -239,7 +239,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                         }
                         else
                         {
-                            await SendStep2Retry(arg.RawData.FromId, arg.RawData.TunnelName).ConfigureAwait(false);
+                            await SendStep2Retry(arg).ConfigureAwait(false);
                             if (arg.Data.GuessPort > 0)
                             {
                                 interval = 0;
@@ -318,7 +318,6 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             }
         }
 
-
         public SimpleSubPushHandler<OnStep2FailParams> OnStep2FailHandler { get; } = new SimpleSubPushHandler<OnStep2FailParams>();
         public void OnStep2Fail(OnStep2FailParams arg)
         {
@@ -350,7 +349,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         public async Task OnStep3(OnStep3Params arg)
         {
             OnStep3Handler.Push(arg);
-            await SendStep4(arg.Connection, arg.RawData.TunnelName);
+            await SendStep4(arg);
         }
 
         public SimpleSubPushHandler<OnStep4Params> OnStep4Handler { get; } = new SimpleSubPushHandler<OnStep4Params>();
@@ -364,7 +363,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         }
 
 
-        public async Task SendStep1(ulong toid, string tunnelName)
+        public async Task SendStep1(ConnectParams param)
         {
             int port = 0;
             if (UseGuesstPort)
@@ -375,15 +374,15 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             Logger.Instance.DebugDebug($"before Send Step1");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep1Info>
             {
-                TunnelName = tunnelName,
+                TunnelName = param.TunnelName,
                 Connection = TcpServer,
-                ToId = toid,
+                ToId = param.Id,
                 GuessPort = port,
                 Data = new PunchHoleStep1Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_1, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
             Logger.Instance.DebugDebug($"after Send Step1");
         }
-        public async Task SendStep2(ulong toid, string tunnelName)
+        public async Task SendStep2(OnStep1Params arg)
         {
             int port = 0;
             if (UseGuesstPort)
@@ -394,15 +393,15 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             Logger.Instance.DebugDebug($"before Send Step2");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
             {
-                TunnelName = tunnelName,
+                TunnelName = arg.RawData.TunnelName,
                 Connection = TcpServer,
-                ToId = toid,
+                ToId = arg.RawData.FromId,
                 GuessPort = port,
                 Data = new PunchHoleStep2Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
             Logger.Instance.DebugDebug($"after Send Step2");
         }
-        private async Task SendStep2Retry(ulong toid, string tunnelName)
+        private async Task SendStep2Retry(OnStep2Params arg)
         {
             int port = 0;
             if (UseGuesstPort)
@@ -412,9 +411,9 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             Logger.Instance.DebugDebug($"before Send Step2Retry");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2TryInfo>
             {
-                TunnelName = tunnelName,
+                TunnelName = arg.RawData.TunnelName,
                 Connection = TcpServer,
-                ToId = toid,
+                ToId = arg.RawData.FromId,
                 GuessPort = port,
                 Data = new PunchHoleStep2TryInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_TRY, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
@@ -481,13 +480,13 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             }).ConfigureAwait(false);
             Logger.Instance.DebugDebug($"after Send Step3");
         }
-        private async Task SendStep4(IConnection connection, string tunnelName)
+        private async Task SendStep4(OnStep3Params arg)
         {
             Logger.Instance.DebugDebug($"before Send Step4");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep4Info>
             {
-                TunnelName = tunnelName,
-                Connection = connection,
+                TunnelName = arg.RawData.TunnelName,
+                Connection = arg.Connection,
                 Data = new PunchHoleStep4Info
                 {
                     FromId = ConnectId,
