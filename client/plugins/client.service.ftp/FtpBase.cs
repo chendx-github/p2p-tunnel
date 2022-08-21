@@ -196,7 +196,8 @@ namespace client.service.ftp
 
                         fs.Read(readData, 0, readData.Length);
                         cmd.WriteData(readData, sendData);
-                        if (!await SendOnlyTcp(sendData, connection).ConfigureAwait(false))
+                        bool res = await SendOnlyTcp(sendData, connection).ConfigureAwait(false);
+                        if (res == false)
                         {
                             save.State = UploadStates.Error;
                         }

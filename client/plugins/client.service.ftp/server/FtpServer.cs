@@ -108,7 +108,14 @@ namespace client.service.ftp.server
             currentPaths.TryGetValue(clientId, out string path);
             if (string.IsNullOrWhiteSpace(path))
             {
-                path = config.ServerRoot;
+                try
+                {
+                    path = new DirectoryInfo(config.ServerRoot).FullName;
+                }
+                catch (Exception)
+                {
+                    path = new DirectoryInfo("./").FullName;
+                }
                 SetCurrentPath(path, clientId);
             }
             return path;
