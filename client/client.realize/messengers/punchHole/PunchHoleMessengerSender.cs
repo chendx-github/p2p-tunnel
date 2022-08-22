@@ -79,7 +79,7 @@ namespace client.realize.messengers.punchHole
         }
 
         public SimpleSubPushHandler<OnPunchHoleArg> OnReverse { get; } = new SimpleSubPushHandler<OnPunchHoleArg>();
-        public async Task SendReverse(ulong toid, bool tryreverse = false)
+        public async Task SendReverse(ulong toid, byte tryreverse = 0)
         {
             await Send(new SendPunchHoleArg<PunchHoleReverseInfo>
             {

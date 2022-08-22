@@ -92,7 +92,8 @@ namespace client.realize.messengers.register
                         }
 
                         IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
-                        registerState.LocalInfo.TcpPort = registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort();
+                        registerState.LocalInfo.TcpPort =  NetworkHelper.GetRandomPort();
+                        registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort(new System.Collections.Generic.List<int> { registerState.LocalInfo.TcpPort });
                         registerState.LocalInfo.Mac = string.Empty;
                         //绑定udp
                         UdpBind(serverAddress);

@@ -56,7 +56,7 @@ namespace client.realize.messengers.clients
             tcpServer.OnDisconnect.Sub((connection) =>
             {
                 //客户端掉线
-                if (registerState.TcpConnection != null  && connection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
+                if (registerState.TcpConnection != null && connection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
                 {
 
                     clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
@@ -78,9 +78,9 @@ namespace client.realize.messengers.clients
         }
         public void ConnectClient(ClientInfo info)
         {
-            ConnectClient(info, true);
+            ConnectClient(info, 0);
         }
-        public void ConnectClient(ClientInfo info, bool tryreverse = false)
+        public void ConnectClient(ClientInfo info, byte tryreverse = 0)
         {
             if (info.Id == registerState.ConnectId)
             {
@@ -89,33 +89,38 @@ namespace client.realize.messengers.clients
 
             Task.Run(async () =>
             {
+                bool udp = false, tcp = false;
                 if (info.UdpConnecting == false && info.UdpConnected == false)
                 {
-                    await ConnectUdp(info, tryreverse).ConfigureAwait(false);
+                    udp = await ConnectUdp(info).ConfigureAwait(false);
                 }
                 if (info.TcpConnecting == false && info.TcpConnected == false)
                 {
-                    await ConnectTcp(info, tryreverse).ConfigureAwait(false);
+                    tcp = await ConnectTcp(info).ConfigureAwait(false);
+                }
+
+                if ((!udp || !tcp) && tryreverse < 2)
+                {
+                    ConnectReverse(info.Id, tryreverse);
                 }
             });
         }
 
         public void ConnectReverse(ulong id)
         {
-            ConnectReverse(id, false);
+            ConnectReverse(id, 0);
         }
-        private void ConnectReverse(ulong id, bool tryreverse)
+        private void ConnectReverse(ulong id, byte tryreverse)
         {
             punchHoleMessengerSender.SendReverse(id, tryreverse).ConfigureAwait(false);
         }
-
         private void OnReverse(OnPunchHoleArg arg)
         {
             if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
             {
                 PunchHoleReverseInfo model = new PunchHoleReverseInfo();
                 model.DeBytes(arg.Data.Data);
-                ConnectClient(client, model.TryReverse);
+                ConnectClient(client, (byte)(model.TryReverse + 1));
             }
         }
 
@@ -129,7 +134,7 @@ namespace client.realize.messengers.clients
             punchHoleTcp.SendStep2Stop(id);
         }
 
-        private async Task ConnectUdp(ClientInfo info, bool tryreverse = false)
+        private async Task<bool> ConnectUdp(ClientInfo info)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.UDP);
             var result = await punchHoleUdp.Send(new ConnectParams
@@ -138,27 +143,25 @@ namespace client.realize.messengers.clients
                 TunnelName = "udp",
                 TryTimes = 5
             }).ConfigureAwait(false);
-
-            if (!result.State)
+            if (result.State)
             {
-                if (registerState.RemoteInfo.Relay)
-                {
-                    IConnection connection = registerState.UdpConnection.Clone();
-                    connection.Relay = registerState.RemoteInfo.Relay;
-                    clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
-                }
-                else
-                {
-                    Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
-                    clientInfoCaching.Offline(info.Id, ServerType.UDP);
-                    if (tryreverse)
-                    {
-                        ConnectReverse(info.Id);
-                    }
-                }
+                return result.State;
             }
+            if (registerState.RemoteInfo.Relay)
+            {
+                IConnection connection = registerState.UdpConnection.Clone();
+                connection.Relay = registerState.RemoteInfo.Relay;
+                clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
+                return true;
+            }
+            else
+            {
+                Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
+                clientInfoCaching.Offline(info.Id, ServerType.UDP);
+            }
+            return false;
         }
-        private async Task ConnectTcp(ClientInfo info, bool tryreverse = false)
+        private async Task<bool> ConnectTcp(ClientInfo info)
         {
             clientInfoCaching.Connecting(info.Id, true, ServerType.TCP);
             var result = await punchHoleTcp.Send(new ConnectParams
@@ -167,24 +170,23 @@ namespace client.realize.messengers.clients
                 TunnelName = "tcp",
                 TryTimes = 5
             }).ConfigureAwait(false);
-            if (!result.State)
+            if (result.State)
             {
-                if (registerState.RemoteInfo.Relay)
-                {
-                    IConnection connection = registerState.TcpConnection.Clone();
-                    connection.Relay = registerState.RemoteInfo.Relay;
-                    clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
-                }
-                else
-                {
-                    Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
-                    clientInfoCaching.Offline(info.Id, ServerType.TCP);
-                    if (tryreverse)
-                    {
-                        ConnectReverse(info.Id);
-                    }
-                }
+                return result.State;
             }
+            if (registerState.RemoteInfo.Relay)
+            {
+                IConnection connection = registerState.TcpConnection.Clone();
+                connection.Relay = registerState.RemoteInfo.Relay;
+                clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
+                return true;
+            }
+            else
+            {
+                Logger.Instance.Error((result.Result as ConnectFailModel).Msg);
+                clientInfoCaching.Offline(info.Id, ServerType.TCP);
+            }
+            return false;
         }
 
         private void OnRegisterStateChange(bool state)
@@ -230,7 +232,7 @@ namespace client.realize.messengers.clients
                         }
                         else
                         {
-                            ConnectReverse(client.Id, true);
+                            ConnectReverse(client.Id);
                         }
                     }
                 }

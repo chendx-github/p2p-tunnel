@@ -172,7 +172,7 @@ namespace client.messengers.punchHole
 
         public byte Step { get; set; } = 0;
 
-        public bool TryReverse { get; set; } = false;
+        public byte TryReverse { get; set; } = 0;
 
         public byte[] ToBytes()
         {
@@ -180,7 +180,7 @@ namespace client.messengers.punchHole
                 (byte)PunchType,
                 (byte)ForwardType,
                 Step,
-                (byte)(TryReverse?1:0)
+                TryReverse
             };
         }
         public void DeBytes(ReadOnlyMemory<byte> data)
@@ -189,7 +189,7 @@ namespace client.messengers.punchHole
             PunchType = (PunchHoleTypes)span[0];
             ForwardType = (PunchForwardTypes)span[1];
             Step = span[2];
-            TryReverse = span[3] == 1 ? true : false;
+            TryReverse = span[3];
         }
     }
 
