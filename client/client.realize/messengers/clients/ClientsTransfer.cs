@@ -25,6 +25,9 @@ namespace client.realize.messengers.clients
         private readonly IClientInfoCaching clientInfoCaching;
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
 
+        private const byte TryReverseMinValue = 1;
+        private const byte TryReverseMaxValue = 2;
+
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
             IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
             RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer
@@ -53,18 +56,6 @@ namespace client.realize.messengers.clients
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
 
-            tcpServer.OnDisconnect.Sub((connection) =>
-            {
-                //客户端掉线
-                if (registerState.TcpConnection != null && connection != null && !registerState.TcpConnection.Address.Equals(connection.Address))
-                {
-
-                    clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
-                    ConnectClient(connection.ConnectId);
-                }
-
-            });
-
             Logger.Instance.Info("获取外网距离ing...");
             registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
         }
@@ -78,9 +69,9 @@ namespace client.realize.messengers.clients
         }
         public void ConnectClient(ClientInfo info)
         {
-            ConnectClient(info, 0);
+            ConnectClient(info, TryReverseMinValue);
         }
-        public void ConnectClient(ClientInfo info, byte tryreverse = 0)
+        public void ConnectClient(ClientInfo info, byte tryreverse)
         {
             if (info.Id == registerState.ConnectId)
             {
@@ -99,7 +90,7 @@ namespace client.realize.messengers.clients
                     tcp = await ConnectTcp(info).ConfigureAwait(false);
                 }
 
-                if ((!udp || !tcp) && tryreverse < 2)
+                if ((!udp || !tcp) && tryreverse < TryReverseMaxValue)
                 {
                     ConnectReverse(info.Id, tryreverse);
                 }
@@ -108,7 +99,7 @@ namespace client.realize.messengers.clients
 
         public void ConnectReverse(ulong id)
         {
-            ConnectReverse(id, 0);
+            ConnectReverse(id, TryReverseMinValue);
         }
         private void ConnectReverse(ulong id, byte tryreverse)
         {
@@ -232,7 +223,7 @@ namespace client.realize.messengers.clients
                         }
                         else
                         {
-                            ConnectReverse(client.Id);
+                            ConnectReverse(client.Id, TryReverseMinValue);
                         }
                     }
                 }

@@ -43,6 +43,7 @@ namespace common.server
         public void Disponse();
 
         public IConnection Clone();
+
     }
 
     public abstract class Connection : IConnection
@@ -107,7 +108,6 @@ namespace common.server
         }
 
         public abstract IConnection Clone();
-
     }
 
     public class UdpConnection : Connection

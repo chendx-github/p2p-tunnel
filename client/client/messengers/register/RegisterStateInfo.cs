@@ -76,16 +76,20 @@ namespace client.messengers.register
 
             ConnectId = 0;
 
-            if (TcpConnection != null)
+            var tcp = TcpConnection;
+            TcpConnection = null;
+            if (tcp != null)
             {
-                TcpConnection.Disponse();
-                TcpConnection = null;
+                tcp.Disponse();
             }
-            if (UdpConnection != null)
+
+            var udp = UdpConnection;
+            UdpConnection = null;
+            if (udp != null)
             {
-                UdpConnection.Disponse();
-                UdpConnection = null;
+                udp.Disponse();
             }
+
             OnRegisterStateChange.Push(false);
         }
         public void Online(ulong id, IPAddress ip, int udpPort, int tcpPort)

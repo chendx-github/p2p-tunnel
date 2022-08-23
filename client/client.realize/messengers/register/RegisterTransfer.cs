@@ -44,7 +44,7 @@ namespace client.realize.messengers.register
 
             tcpServer.OnDisconnect.Sub((connection) =>
             {
-                if (registerState.TcpConnection != null && connection != null && registerState.TcpConnection.Address.Equals(connection.Address))
+                if (registerState.TcpConnection == connection)
                 {
                     _ = Register(true);
                 }
@@ -220,7 +220,7 @@ namespace client.realize.messengers.register
 
         private void Heart(object state)
         {
-            if (registerState.UdpConnection != null && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp(), registerState.RemoteInfo.TimeoutDelay))
+            if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp(), registerState.RemoteInfo.TimeoutDelay))
             {
                 _ = heartMessengerSender.Heart(registerState.UdpConnection);
             }
