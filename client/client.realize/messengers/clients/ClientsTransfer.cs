@@ -30,7 +30,7 @@ namespace client.realize.messengers.clients
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
             IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
-            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer
+            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer, IUdpServer udpServer
         )
         {
             this.punchHoleUdp = punchHoleUdp;
@@ -55,6 +55,21 @@ namespace client.realize.messengers.clients
             registerState.OnRegisterStateChange.Sub(OnRegisterStateChange);
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
+
+            tcpServer.OnDisconnect.Sub((connection) =>
+            {
+                if (registerState.TcpConnection != connection)
+                {
+                    clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
+                }
+            });
+            udpServer.OnDisconnect.Sub((connection) =>
+            {
+                if (registerState.UdpConnection != connection)
+                {
+                    clientInfoCaching.Offline(connection.ConnectId, ServerType.UDP);
+                }
+            });
 
             Logger.Instance.Info("获取外网距离ing...");
             registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
