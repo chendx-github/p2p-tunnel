@@ -64,6 +64,7 @@ namespace client.realize.messengers.register
                     {
                         return;
                     }
+                    Logger.Instance.Info($"检测到掉线");
                     _ = Register(true);
                 }
 
@@ -72,6 +73,7 @@ namespace client.realize.messengers.register
 
         public void Exit()
         {
+            Logger.Instance.Info($"主动退出");
             registerMessageHelper.Exit().Wait();
             registerState.Offline();
             udpServer.Stop();
@@ -93,9 +95,6 @@ namespace client.realize.messengers.register
                 return success;
             }
 
-            //先退出
-            Exit();
-
             return await Task.Run(async () =>
             {
 
@@ -110,6 +109,10 @@ namespace client.realize.messengers.register
                             success.ErrorMsg = "注册操作中...";
                             break;
                         }
+
+                        //先退出
+                        Exit();
+                        Logger.Instance.Info($"开始注册");
 
                         registerState.LocalInfo.IsConnecting = true;
 
