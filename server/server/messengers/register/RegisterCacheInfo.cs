@@ -1,4 +1,5 @@
-﻿using common.server;
+﻿using common.libs;
+using common.server;
 using common.server.model;
 using System;
 using System.Collections.Concurrent;
@@ -30,11 +31,13 @@ namespace server.messengers.register
         {
             UdpConnection = connection;
             UdpConnection.ConnectId = Id;
+            Logger.Instance.DebugDebug($"UpdateUdpInfo :{UdpConnection.ConnectId}");
         }
         public void UpdateTcpInfo(IConnection connection)
         {
             TcpConnection = connection;
             TcpConnection.ConnectId = Id;
+            Logger.Instance.DebugDebug($"UpdateTcpInfo :{TcpConnection.ConnectId}");
         }
 
         private ConcurrentDictionary<string, TunnelRegisterCacheInfo> tunnels = new ConcurrentDictionary<string, TunnelRegisterCacheInfo>();

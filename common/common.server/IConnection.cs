@@ -48,7 +48,22 @@ namespace common.server
 
     public abstract class Connection : IConnection
     {
-        public ulong ConnectId { get; set; } = 0;
+        private ulong connectId = 0;
+        public ulong ConnectId
+        {
+            get
+            {
+                return connectId;
+            }
+            set
+            {
+                connectId = value;
+                if (value == 0)
+                {
+                    Logger.Instance.DebugDebug(Helper.GetStackTraceModelName());
+                }
+            }
+        }
         public virtual bool Connected => false;
         public bool Relay { get; set; } = false;
         public object State { get; set; }

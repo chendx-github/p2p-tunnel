@@ -152,6 +152,7 @@ namespace common.server.servers.iocp
                     if (!token.Socket.Connected)
                     {
                         token.Connection.SocketError = SocketError.SocketError;
+                        Logger.Instance.DebugDebug($"!Connected:{SocketError.SocketError}");
                         CloseClientSocket(e);
                         return;
                     }
@@ -164,6 +165,7 @@ namespace common.server.servers.iocp
                 {
                     token.Connection.SocketError = e.SocketError;
                     CloseClientSocket(e);
+                    Logger.Instance.DebugDebug($"error:{e.SocketError}");
                 }
             }
             catch (Exception ex)
