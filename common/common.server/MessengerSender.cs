@@ -82,7 +82,7 @@ namespace common.server
                 bool res = await msg.Connection.Send(bytes, length).ConfigureAwait(false);
                 msg.Return(bytes);
 
-                if (res & msg.Connection.ServerType == ServerType.UDP)
+                if (res)
                 {
                     msg.Connection.UpdateTime(DateTimeHelper.GetTimeStamp());
                 }
@@ -112,9 +112,8 @@ namespace common.server
                 (byte[] bytes, int length) = msg.ToArray(msg.Connection.ServerType, true);
                 bool res = await msg.Connection.Send(bytes, length).ConfigureAwait(false);
                 msg.Return(bytes);
-                //wrap.Reset();
 
-                if (res & msg.Connection.ServerType == ServerType.UDP)
+                if (res)
                 {
                     msg.Connection.UpdateTime(DateTimeHelper.GetTimeStamp());
                 }

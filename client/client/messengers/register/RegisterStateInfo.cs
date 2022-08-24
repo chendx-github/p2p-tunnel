@@ -13,12 +13,12 @@ namespace client.messengers.register
         /// TCP连接对象
         /// </summary>
         public IConnection TcpConnection { get; set; }
-        public bool TcpOnline => TcpConnection != null && ConnectId > 0;
+        public bool TcpOnline => TcpConnection != null && TcpConnection.Connected;
         /// <summary>
         /// UDP连接对象
         /// </summary>
         public IConnection UdpConnection { get; set; }
-        public bool UdpOnline => UdpConnection != null && ConnectId > 0;
+        public bool UdpOnline => UdpConnection != null && UdpConnection.Connected;
         /// <summary>
         /// 远程信息
         /// </summary>
@@ -42,21 +42,7 @@ namespace client.messengers.register
                 connectid = value;
                 RemoteInfo.ConnectId = connectid;
 
-                if (connectid == 0)
-                {
-                    if (TcpConnection != null)
-                    {
-                        TcpConnection.Disponse();
-                    }
-                    TcpConnection = null;
-
-                    if (UdpConnection != null)
-                    {
-                        UdpConnection.Disponse();
-                    }
-                    UdpConnection = null;
-                }
-                else
+                if (connectid > 0)
                 {
                     UdpConnection.ConnectId = connectid;
                     TcpConnection.ConnectId = connectid;
@@ -66,6 +52,8 @@ namespace client.messengers.register
 
         public void Offline()
         {
+            bool online = TcpOnline;
+
             LocalInfo.IsConnecting = false;
             LocalInfo.UdpConnected = false;
             LocalInfo.TcpConnected = false;
@@ -90,7 +78,10 @@ namespace client.messengers.register
                 udp.Disponse();
             }
 
-            OnRegisterStateChange.Push(false);
+            if (online != TcpOnline)
+            {
+                OnRegisterStateChange.Push(false);
+            }
         }
         public void Online(ulong id, IPAddress ip, int udpPort, int tcpPort)
         {

@@ -21,6 +21,7 @@ namespace client.realize.messengers.register
         private readonly RegisterStateInfo registerState;
         private readonly HeartMessengerSender heartMessengerSender;
         private readonly CryptoSwap cryptoSwap;
+        private readonly object lockObject = new();
 
         public RegisterTransfer(
             RegisterMessengerSender registerMessageHelper, HeartMessengerSender heartMessengerSender,
@@ -44,10 +45,28 @@ namespace client.realize.messengers.register
 
             tcpServer.OnDisconnect.Sub((connection) =>
             {
-                if (registerState.TcpConnection == connection)
+                if (registerState.TcpConnection != connection)
                 {
+                    return;
+                }
+                if (registerState.LocalInfo.IsConnecting)
+                {
+                    return;
+                }
+
+                lock (lockObject)
+                {
+                    if (registerState.TcpConnection != connection)
+                    {
+                        return;
+                    }
+                    if (registerState.LocalInfo.IsConnecting)
+                    {
+                        return;
+                    }
                     _ = Register(true);
                 }
+
             });
         }
 
@@ -67,9 +86,19 @@ namespace client.realize.messengers.register
         /// <returns></returns>
         public async Task<CommonTaskResponseInfo<bool>> Register(bool autoReg = false)
         {
+            CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = string.Empty };
+            if (registerState.LocalInfo.IsConnecting)
+            {
+                success.ErrorMsg = "注册操作中...";
+                return success;
+            }
+
+            //先退出
+            Exit();
+
             return await Task.Run(async () =>
             {
-                CommonTaskResponseInfo<bool> success = new CommonTaskResponseInfo<bool> { Data = false, ErrorMsg = string.Empty };
+
                 int interval = autoReg ? config.Client.AutoRegDelay : 0;
 
                 for (int i = 0; i < config.Client.AutoRegTimes; i++)
@@ -82,8 +111,6 @@ namespace client.realize.messengers.register
                             break;
                         }
 
-                        //先退出
-                        Exit();
                         registerState.LocalInfo.IsConnecting = true;
 
                         if (interval > 0)
@@ -92,7 +119,7 @@ namespace client.realize.messengers.register
                         }
 
                         IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
-                        registerState.LocalInfo.TcpPort =  NetworkHelper.GetRandomPort();
+                        registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort();
                         registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort(new System.Collections.Generic.List<int> { registerState.LocalInfo.TcpPort });
                         registerState.LocalInfo.Mac = string.Empty;
                         //绑定udp
@@ -220,9 +247,20 @@ namespace client.realize.messengers.register
 
         private void Heart(object state)
         {
-            if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(DateTimeHelper.GetTimeStamp(), registerState.RemoteInfo.TimeoutDelay))
+            lock (lockObject)
             {
-                _ = heartMessengerSender.Heart(registerState.UdpConnection);
+                if (!registerState.LocalInfo.IsConnecting)
+                {
+                    long time = DateTimeHelper.GetTimeStamp();
+                    if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                    {
+                        _ = heartMessengerSender.Heart(registerState.UdpConnection);
+                    }
+                    if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
+                    {
+                        Exit();
+                    }
+                }
             }
         }
     }

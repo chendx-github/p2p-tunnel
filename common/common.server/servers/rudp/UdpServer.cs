@@ -23,8 +23,8 @@ namespace common.server.servers.rudp
             server = new NetManager(listener);
             server.NatPunchEnabled = true;
             server.UnsyncedEvents = true;
-            server.PingInterval = 5000;
-            server.DisconnectTimeout = 20000;
+            server.PingInterval = 20000;
+            server.DisconnectTimeout = 60000;
             server.MaxConnectAttempts = 1;
             server.Start(port);
 
@@ -40,10 +40,10 @@ namespace common.server.servers.rudp
             };
             listener.PeerDisconnectedEvent += (peer, disconnectInfo) =>
             {
-                if (peer.Tag is IConnection connecrtion)
+                if (peer.Tag is IConnection connection)
                 {
-                    OnDisconnect.Push(connecrtion);
-                    connecrtion.Disponse();
+                    OnDisconnect.Push(connection);
+                    connection.Disponse();
                 }
             };
             listener.NetworkErrorEvent += (endPoint, socketError) =>

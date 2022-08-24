@@ -51,7 +51,7 @@ namespace client.realize.messengers.clients
         {
             if (clients.TryGetValue(id, out ClientInfo client))
             {
-                client.Offline();
+                client.OfflineUdp();
                 client.OfflineTcp();
                 OnOffline.Push(client);
             }
@@ -84,7 +84,7 @@ namespace client.realize.messengers.clients
             var _clients = clients.Values;
             foreach (var item in _clients)
             {
-                item.Offline();
+                item.OfflineUdp();
                 item.OfflineTcp();
                 OnOffline.Push(item);
                 clients.TryRemove(item.Id, out _);

@@ -2,6 +2,7 @@
 using common.server;
 using common.server.model;
 using server.messengers.register;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace server.service.messengers.register
@@ -109,7 +110,7 @@ namespace server.service.messengers.register
             else
             {
                 //第一次注册，检查有没有重名
-                client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name);
+                client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name).FirstOrDefault();
                 if (client == null)
                 {
                     client = new()

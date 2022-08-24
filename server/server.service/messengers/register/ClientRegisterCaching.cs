@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace server.service.messengers.register
 {
@@ -19,11 +18,21 @@ namespace server.service.messengers.register
         public SimpleSubPushHandler<RegisterCacheInfo> OnChanged { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
         public SimpleSubPushHandler<RegisterCacheInfo> OnOffline { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
 
+        public int Count { get => cache.Count; }
 
-        public ClientRegisterCaching(WheelTimer<object> wheelTimer, Config config)
+        public ClientRegisterCaching(WheelTimer<object> wheelTimer, Config config, IUdpServer udpServer, ITcpServer tcpServer)
         {
             wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
             this.config = config;
+
+            tcpServer.OnDisconnect.Sub((IConnection connection) =>
+            {
+                Remove(connection.ConnectId);
+            });
+            udpServer.OnDisconnect.Sub((IConnection connection) =>
+            {
+                Remove(connection.ConnectId);
+            });
         }
         private void TimeoutCallback(WheelTimerTimeout<object> timeout)
         {
@@ -32,7 +41,9 @@ namespace server.service.messengers.register
                 try
                 {
                     long time = DateTimeHelper.GetTimeStamp();
-                    var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.Connected && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
+                    var offlines = cache.Values
+                        .Where(c => c.TcpConnection != null && c.TcpConnection.Connected)
+                        .Where(c => c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
                     if (offlines.Any())
                     {
                         foreach (RegisterCacheInfo item in offlines)
@@ -54,30 +65,6 @@ namespace server.service.messengers.register
             }
         }
 
-        public int Count()
-        {
-            return cache.Count;
-        }
-
-        public bool Get(ulong id, out RegisterCacheInfo client)
-        {
-            return cache.TryGetValue(id, out client);
-        }
-
-        public RegisterCacheInfo GetBySameGroup(string groupid, string name)
-        {
-            return cache.Values.FirstOrDefault(c => c.GroupId == groupid && c.Name == name);
-        }
-
-        public List<RegisterCacheInfo> GetAll()
-        {
-            return cache.Values.ToList();
-        }
-        public RegisterCacheInfo GetByName(string name)
-        {
-            return cache.Values.FirstOrDefault(c => c.Name == name);
-        }
-
         public ulong Add(RegisterCacheInfo model)
         {
             if (model.Id == 0)
@@ -92,25 +79,40 @@ namespace server.service.messengers.register
             return model.Id;
         }
 
-        public bool Remove(ulong id)
+        public bool Get(ulong id, out RegisterCacheInfo client)
+        {
+            return cache.TryGetValue(id, out client);
+        }
+        public IEnumerable<RegisterCacheInfo> GetBySameGroup(string groupid)
+        {
+            return cache.Values.Where(c => c.GroupId == groupid);
+        }
+        public IEnumerable<RegisterCacheInfo> GetBySameGroup(string groupid, string name)
+        {
+            return cache.Values.Where(c => c.GroupId == groupid && c.Name == name);
+        }
+        public List<RegisterCacheInfo> GetAll()
+        {
+            return cache.Values.ToList();
+        }
+        public RegisterCacheInfo GetByName(string name)
+        {
+            return cache.Values.FirstOrDefault(c => c.Name == name);
+        }
+
+
+        private void Remove(ulong id)
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
-                return Offline(client);
+                if (client != null)
+                {
+                    client.UdpConnection?.Disponse();
+                    client.TcpConnection?.Disponse();
+                    OnChanged.Push(client);
+                    OnOffline.Push(client);
+                }
             }
-            return false;
-        }
-        private bool Offline(RegisterCacheInfo client)
-        {
-            if (client != null)
-            {
-                client.UdpConnection?.Disponse();
-                client.TcpConnection?.Disponse();
-                OnChanged.Push(client);
-                OnOffline.Push(client);
-                return true;
-            }
-            return false;
         }
 
         public bool Notify(IConnection connection)
@@ -121,7 +123,5 @@ namespace server.service.messengers.register
             }
             return false;
         }
-
-
     }
 }

@@ -26,7 +26,7 @@ namespace server.service.manager
 
                     counterResultInfo = new CounterResultInfo
                     {
-                        OnlineCount = clientRegisterCaching.Count(),
+                        OnlineCount = clientRegisterCaching.Count,
                         Cpu = ProcessHelper.GetCpu(proc),
                         Memory = ProcessHelper.GetMemory(proc),
                         RunTime = (int)(DateTime.Now - startTime).TotalSeconds,

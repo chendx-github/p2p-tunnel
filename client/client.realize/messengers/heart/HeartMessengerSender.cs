@@ -1,6 +1,7 @@
 ﻿using common.libs;
 using common.server;
 using common.server.model;
+using System;
 using System.Threading.Tasks;
 
 namespace client.realize.messengers.heart
@@ -16,14 +17,16 @@ namespace client.realize.messengers.heart
         /// 发送心跳消息
         /// </summary>
         /// <param name="arg"></param>
-        public async Task<MessageResponeInfo> Heart(IConnection connection)
+        public async Task<bool> Heart(IConnection connection)
         {
-            return await messengerSender.SendReply(new MessageRequestWrap
+            var resp = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
                 Path = "heart/Execute",
                 Content = Helper.EmptyArray
             }).ConfigureAwait(false);
+
+            return resp.Code == MessageResponeCodes.OK && Helper.TrueArray.AsSpan().SequenceEqual(resp.Data.Span);
         }
     }
 }

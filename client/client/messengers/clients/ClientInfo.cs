@@ -3,6 +3,7 @@ using System;
 using System.Text.Json.Serialization;
 using common.server;
 using System.ComponentModel;
+using System.Net;
 
 namespace client.messengers.clients
 {
@@ -18,7 +19,7 @@ namespace client.messengers.clients
 
         public string Name { get; set; } = string.Empty;
         public string Mac { get; set; } = string.Empty;
-        public string Ip { get; set; } = string.Empty;
+        public IPAddress Ip { get; set; } = IPAddress.Any;
         public ulong Id { get; set; } = 0;
 
 
@@ -30,7 +31,7 @@ namespace client.messengers.clients
         [JsonIgnore]
         public IConnection UdpConnection { get; set; } = null;
 
-        public void Offline()
+        public void OfflineUdp()
         {
             UdpConnecting = false;
             if (UdpConnection != null)
@@ -48,12 +49,11 @@ namespace client.messengers.clients
             }
             TcpConnection = null;
         }
-
         public void Offline(ServerType serverType)
         {
             if (serverType == ServerType.UDP)
             {
-                Offline();
+                OfflineUdp();
             }
             else
             {
@@ -67,13 +67,13 @@ namespace client.messengers.clients
             if (connection.ServerType == ServerType.UDP)
             {
                 UdpConnection = connection;
-                Ip = connection.Address.Address.ToString();
+                Ip = connection.Address.Address;
                 UdpConnectType = connectType;
             }
             else
             {
                 TcpConnection = connection;
-                Ip = connection.Address.Address.ToString();
+                Ip = connection.Address.Address;
                 TcpConnectType = connectType;
             }
             Connecting(false, connection.ServerType);

@@ -3,7 +3,9 @@ using client.messengers.punchHole;
 using client.messengers.punchHole.tcp;
 using client.messengers.punchHole.udp;
 using client.messengers.register;
+using client.realize.messengers.heart;
 using client.realize.messengers.punchHole;
+using client.realize.messengers.register;
 using common.libs;
 using common.libs.extends;
 using common.server;
@@ -24,19 +26,21 @@ namespace client.realize.messengers.clients
         private readonly RegisterStateInfo registerState;
         private readonly IClientInfoCaching clientInfoCaching;
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
+        private readonly HeartMessengerSender heartMessengerSender;
 
         private const byte TryReverseMinValue = 1;
         private const byte TryReverseMaxValue = 2;
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
             IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
-            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer, IUdpServer udpServer
+            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer, IUdpServer udpServer, HeartMessengerSender heartMessengerSender
         )
         {
             this.punchHoleUdp = punchHoleUdp;
             this.punchHoleTcp = punchHoleTcp;
             this.registerState = registerState;
             this.clientInfoCaching = clientInfoCaching;
+            this.heartMessengerSender = heartMessengerSender;
 
             punchHoleUdp.OnStep1Handler.Sub((e) => clientInfoCaching.Connecting(e.RawData.FromId, true, ServerType.UDP));
             punchHoleUdp.OnStep2FailHandler.Sub((e) => clientInfoCaching.Offline(e.RawData.FromId, ServerType.UDP));
@@ -61,6 +65,11 @@ namespace client.realize.messengers.clients
                 if (registerState.TcpConnection != connection)
                 {
                     clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
+                    bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
+                    if (heart)
+                    {
+                        ConnectClient(connection.ConnectId);
+                    }
                 }
             });
             udpServer.OnDisconnect.Sub((connection) =>
@@ -68,6 +77,11 @@ namespace client.realize.messengers.clients
                 if (registerState.UdpConnection != connection)
                 {
                     clientInfoCaching.Offline(connection.ConnectId, ServerType.UDP);
+                    bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
+                    if (heart)
+                    {
+                        ConnectClient(connection.ConnectId);
+                    }
                 }
             });
 

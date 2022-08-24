@@ -87,28 +87,14 @@ namespace server.service
             MessengerResolver messengerResolver = services.GetService<MessengerResolver>();
             MessengerSender messengerSender = services.GetService<MessengerSender>();
 
-            var server = services.GetService<ITcpServer>();
-            var udpServer = services.GetService<IUdpServer>();
-            server.OnDisconnect.Sub((IConnection connection) =>
-            {
-                clientRegisterCache.Remove(connection.ConnectId);
-            });
-            udpServer.OnDisconnect.Sub((IConnection connection) =>
-            {
-                clientRegisterCache.Remove(connection.ConnectId);
-            });
-
             clientRegisterCache.OnChanged.Sub((changeClient) =>
             {
-                List<ClientsClientInfo> clients = clientRegisterCache.GetAll().Where(c => c.GroupId == changeClient.GroupId && c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
+                List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
                 {
-                    Address = c.UdpConnection.Address.Address.ToString(),
                     TcpConnection = c.TcpConnection,
                     UdpConnection = c.UdpConnection,
                     Id = c.Id,
                     Name = c.Name,
-                    Port = c.UdpConnection.Address.Port,
-                    TcpPort = c.TcpConnection.Address.Port,
                     Mac = c.Mac
                 }).ToList();
                 if (clients.Any())
