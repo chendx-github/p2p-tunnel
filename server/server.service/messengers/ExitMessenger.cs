@@ -15,10 +15,8 @@ namespace server.service.messengers
 
         public void Execute(IConnection connection)
         {
-            Logger.Instance.DebugDebug($"{connection.ConnectId}退出");
+            Logger.Instance.DebugDebug($"{connection.ConnectId}退出,集合对象hashcode:{clientRegisterCaching.GetHashCode()}");
             connection.Disponse();
-
-            Logger.Instance.DebugDebug(clientRegisterCaching.GetAll().ToJson());
         }
     }
 }
