@@ -60,30 +60,30 @@ namespace client.realize.messengers.clients
             //收到来自服务器的 在线客户端 数据
             clientsMessengerSender.OnServerClientsData.Sub(OnServerSendClients);
 
-            tcpServer.OnDisconnect.Sub((connection) =>
-            {
-                if (registerState.TcpConnection != connection)
-                {
-                    clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
-                    bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
-                    if (heart)
-                    {
-                        ConnectClient(connection.ConnectId);
-                    }
-                }
-            });
-            udpServer.OnDisconnect.Sub((connection) =>
-            {
-                if (registerState.UdpConnection != connection)
-                {
-                    clientInfoCaching.Offline(connection.ConnectId, ServerType.UDP);
-                    bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
-                    if (heart)
-                    {
-                        ConnectClient(connection.ConnectId);
-                    }
-                }
-            });
+            //tcpServer.OnDisconnect.Sub((connection) =>
+            //{
+            //    if (registerState.TcpConnection != connection)
+            //    {
+            //        clientInfoCaching.Offline(connection.ConnectId, ServerType.TCP);
+            //        bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
+            //        if (heart)
+            //        {
+            //            ConnectClient(connection.ConnectId);
+            //        }
+            //    }
+            //});
+            //udpServer.OnDisconnect.Sub((connection) =>
+            //{
+            //    if (registerState.UdpConnection != connection)
+            //    {
+            //        clientInfoCaching.Offline(connection.ConnectId, ServerType.UDP);
+            //        bool heart = heartMessengerSender.Heart(registerState.TcpConnection).Result;
+            //        if (heart)
+            //        {
+            //            ConnectClient(connection.ConnectId);
+            //        }
+            //    }
+            //});
 
             Logger.Instance.Info("获取外网距离ing...");
             registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();

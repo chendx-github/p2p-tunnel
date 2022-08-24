@@ -63,7 +63,9 @@ namespace common.server.model
         public string Name { get; set; } = string.Empty;
         public string Mac { get; set; } = string.Empty;
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public IConnection TcpConnection { get; set; } = null;
+        [System.Text.Json.Serialization.JsonIgnore]
         public IConnection UdpConnection { get; set; } = null;
 
         public byte[] ToBytes()
