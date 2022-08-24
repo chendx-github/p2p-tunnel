@@ -58,10 +58,6 @@ namespace common.server
             set
             {
                 connectId = value;
-                if (value == 0)
-                {
-                    Logger.Instance.DebugDebug(Helper.GetStackTraceModelName());
-                }
             }
         }
         public virtual bool Connected => false;

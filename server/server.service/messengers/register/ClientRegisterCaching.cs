@@ -27,12 +27,12 @@ namespace server.service.messengers.register
 
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                Logger.Instance.DebugDebug($"{connection.ConnectId} tcp 掉线");
+                Logger.Instance.DebugDebug($"{connection.ConnectId},{connection.GetHashCode()} tcp 掉线");
                 Remove(connection.ConnectId);
             });
             udpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                Logger.Instance.DebugDebug($"{connection.ConnectId} udp 掉线");
+                Logger.Instance.DebugDebug($"{connection.ConnectId},{connection.GetHashCode()} udp 掉线");
                 Remove(connection.ConnectId);
             });
         }
