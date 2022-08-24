@@ -261,10 +261,7 @@ namespace common.server.servers.iocp
                 ArrayPool<byte>.Shared.Return(PoolBuffer);
             }
 
-
-            Logger.Instance.DebugDebug($"{Connection.ConnectId} close");
             Socket?.SafeClose();
-            Connection.Disponse();
             Socket = null;
 
             DataBuffer.Clear(true);

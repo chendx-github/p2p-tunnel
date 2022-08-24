@@ -259,6 +259,10 @@ namespace client.realize.messengers.register
                     {
                         _ = heartMessengerSender.Heart(registerState.UdpConnection);
                     }
+                    if (registerState.TcpOnline && registerState.TcpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                    {
+                        _ = heartMessengerSender.Heart(registerState.TcpConnection);
+                    }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
                     {
                         Exit();

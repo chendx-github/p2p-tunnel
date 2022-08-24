@@ -9,9 +9,12 @@ namespace server.service.messengers
         {
         }
 
-        public byte[] Execute(IConnection connection)
+        public void Execute(IConnection connection)
         {
-            return Helper.TrueArray;
+            if (connection.ServerType == common.server.model.ServerType.TCP)
+            {
+                Logger.Instance.Warning($"收到：{connection.ConnectId} 的心跳");
+            }
         }
     }
 }

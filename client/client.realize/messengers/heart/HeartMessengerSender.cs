@@ -19,14 +19,12 @@ namespace client.realize.messengers.heart
         /// <param name="arg"></param>
         public async Task<bool> Heart(IConnection connection)
         {
-            var resp = await messengerSender.SendReply(new MessageRequestWrap
+            return await messengerSender.SendOnly(new MessageRequestWrap
             {
                 Connection = connection,
                 Path = "heart/Execute",
                 Content = Helper.EmptyArray
             }).ConfigureAwait(false);
-
-            return resp.Code == MessageResponeCodes.OK && Helper.TrueArray.AsSpan().SequenceEqual(resp.Data.Span);
         }
     }
 }

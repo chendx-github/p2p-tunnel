@@ -102,7 +102,7 @@ namespace common.server
         public bool IsTimeout(long time, int timeout) => (LastTime > 0 && time - LastTime > timeout);
         public bool IsNeedHeart(long time, int timeout)
         {
-            return (LastTime == 0 || time - LastTime > (timeout / 2));
+            return (LastTime == 0 || time - LastTime > (timeout / 4));
         }
 
         public long SendBytes { get; set; } = 0;
