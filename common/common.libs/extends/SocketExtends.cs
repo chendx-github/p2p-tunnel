@@ -15,6 +15,7 @@ namespace common.libs.extends
                 try
                 {
                     socket.Shutdown(SocketShutdown.Both);
+                    socket.Disconnect(false);
                 }
                 catch (Exception)
                 {

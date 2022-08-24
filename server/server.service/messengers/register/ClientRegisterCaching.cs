@@ -44,7 +44,7 @@ namespace server.service.messengers.register
                 {
                     long time = DateTimeHelper.GetTimeStamp();
                     var offlines = cache.Values
-                        .Where(c => c.TcpConnection != null && c.TcpConnection.Connected)
+                        .Where(c => c.TcpConnection != null)
                         .Where(c => c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
                     if (offlines.Any())
                     {
