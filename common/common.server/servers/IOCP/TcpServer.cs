@@ -172,9 +172,9 @@ namespace common.server.servers.iocp
             }
             catch (Exception ex)
             {
+                Logger.Instance.DebugError(ex);
                 token.Connection.SocketError = SocketError.SocketError;
                 CloseClientSocket(e);
-                Logger.Instance.DebugError(ex);
             }
         }
         private void ReadPacket(AsyncUserToken token, byte[] data, int offset, int length)
@@ -218,6 +218,7 @@ namespace common.server.servers.iocp
             }
             else
             {
+                Logger.Instance.DebugDebug($"send error:{e.SocketError}");
                 CloseClientSocket(e);
             }
         }
