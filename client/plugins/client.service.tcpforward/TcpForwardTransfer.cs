@@ -68,6 +68,8 @@ namespace client.service.tcpforward
             p2PConfigInfo = ReadP2PConfig();
             serverForwardConfigInfo = ReadServerConfig();
 
+            StartP2PAllWithListening();
+
             tcpForwardServer.Init(config.NumConnections, config.BufferSize);
             tcpForwardServer.OnListeningChange.Sub((model) =>
             {
@@ -120,6 +122,7 @@ namespace client.service.tcpforward
                 }
 
                 P2PListenInfo old = GetP2PByID(param.ID);
+                bool listening = old.Listening;
                 if (old.ID > 0)
                 {
                     StopP2PListen(old);
@@ -150,7 +153,8 @@ namespace client.service.tcpforward
                         Desc = param.Desc
                     });
                 }
-                if (param.Listening)
+
+                if (listening)
                 {
                     StartP2P(param.ID);
                 }
@@ -325,6 +329,7 @@ namespace client.service.tcpforward
             }
             catch (Exception ex)
             {
+                Logger.Instance.DebugError(ex);
                 return ex.Message;
             }
             return string.Empty;
@@ -333,6 +338,20 @@ namespace client.service.tcpforward
         {
             StopP2PListen(GetP2PByID(id));
             return string.Empty;
+        }
+        private void StartP2PAllWithListening()
+        {
+            p2pListens.ForEach(c =>
+            {
+                if (c.Listening)
+                {
+                    string error = StartP2P(c);
+                    if (!string.IsNullOrWhiteSpace(error))
+                    {
+                        Logger.Instance.Error(error);
+                    }
+                }
+            });
         }
         public void StopP2PAll()
         {
@@ -364,17 +383,6 @@ namespace client.service.tcpforward
                     {
                     }
                 }
-                if (listen.Listening)
-                {
-                    try
-                    {
-                        StartP2P(listen);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Instance.Error(ex.Message);
-                    }
-                }
             }
             foreach (var listen in config.Tunnels)
             {
@@ -392,17 +400,6 @@ namespace client.service.tcpforward
                     }
                     catch (Exception)
                     {
-                    }
-                }
-                if (listen.Listening)
-                {
-                    try
-                    {
-                        StartP2P(listen);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Instance.Error(ex.Message);
                     }
                 }
             }
@@ -470,7 +467,7 @@ namespace client.service.tcpforward
                 return $"{result.Code.GetDesc((byte)result.Code)},{result.Msg}";
             }
 
-            serverForwards.Remove(serverForwards.FirstOrDefault(c=>c.Domain == forward.Domain && c.ServerPort == forward.ServerPort));
+            serverForwards.Remove(serverForwards.FirstOrDefault(c => c.Domain == forward.Domain && c.ServerPort == forward.ServerPort));
             serverForwards.Add(forward);
             SaveServerConfig();
             return string.Empty;
