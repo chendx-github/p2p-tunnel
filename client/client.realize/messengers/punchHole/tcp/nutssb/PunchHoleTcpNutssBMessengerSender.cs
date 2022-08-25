@@ -359,7 +359,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             if (connectTcpCache.TryRemove(arg.Data.FromId, out ConnectCacheModel cache))
             {
-                if(cache.Step3Timeout != null)
+                if (cache.Step3Timeout != null)
                 {
                     cache.Step3Timeout.Cancel();
                 }
@@ -505,7 +505,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 Callback = SendStep3Timeout,
                 State = toid
             }, 2000);
-            if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
+            if (connectTcpCache.TryGetValue(toid, out ConnectCacheModel cache))
             {
                 cache.Step3Timeout = step3Timeout;
             }
