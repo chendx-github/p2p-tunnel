@@ -18,21 +18,12 @@
 2. <a href="http://snltty.gitee.io/p2p-tunnel/" target="_blank">在线web管理端</a>，<a href="https://www.cnblogs.com/snltty/" target="_blank">使用说明</a>，<a href="https://update7.simplix.info/UpdatePack7R2.exe" target="_blank">win7不能运行.NET6的补丁</a>
 3. 服务器 或 内网电脑，暴露服务在公网时，请做好安全防范
 
-<p><img src="./public/screenshot/pc.jpg" width="400"></p>
-<p><img src="./public/screenshot/app1.jpg" width="200"><img src="./public/screenshot/app2.jpg" width="200"></p>
+## 都有哪些穿透方式，选择一种喜欢的即可
+1. p2p打洞、A<---->B（网络环境支持打洞时，打洞连接效率最好）
+2. 中继、A<---->server<---->B（免费打洞服务器不开启，服务器开启时，打洞失败则退化为服务器中继）
+3. 服务器代理、server<---->A（免费打洞服务器不开启，网络环境不支持打洞，可以选择服务器代理）
 
-## 通信方式
-1. p2p、A<---->B
-2. 中继、A<---->server<---->B（免费打洞服务器不开启）
-3. 服务器代理、server<---->A（免费打洞服务器不开启）
-
-## 通信模式
-1. **udp转发**1对1
-1. **tcp转发**1对1
-2. **http1.1代理**多对多
-3. **socks5代理**多对多
- 
-## 要点
+## 都有哪些内容
 - [x] .NET6 跨平台，小尺寸，小内存<a href="https://github.com/RevenantX/LiteNetLib" target="_blank">LiteNetLib rudp</a>
 - [x] 内网穿透 访问内网web，内网桌面，及其它TCP上层协议服务<br>windows<-->windows 可使用mstsc，其它可使用 TightVNC
 - [x] p2p 打洞、tcp、udp
@@ -46,45 +37,14 @@
 - [x] 支持通信数据加密
 - [x] 可扩展的插件式
 - [x] 免费的打洞服务器
-- [x] 高效的打包解包，序列化->打包->粘包解析->解包->反序列化 整个流程时间，作死的全手写序列化
-<p><img src="./public/screenshot/speed.png" width="400"></p>
-<p><img src="./public/screenshot/file-speed.png" width="400"></p>
+- [x] 高效的打包解包，作死的全手写序列化
 
-## 项目
-1. client
-    1. plugins
-        1. client.service.ui //客户端的管理工具
-            1. client.service.ui.api  //接口定义， 这样可以在开发别的插件的时候也使用ui配置
-            2. client.service.ui.api.manager    //服务器管理接口，与服务器端对应
-            3. client.service.ui.api.service //服务
-            4. client.service.ui.api.webrtc
-            5. client.service.ui.web //web界面
-        2. client.service.ftp 客户端服务的  文件服务插件
-        3. client.service.logger  日志记录的web展示
-        4. client.service.socks5  socks5代理客户端及服务端
-        5. client.service.tcpforward tcp转发，及 http代理
-        5. client.service.udpforward udp转发
-    2. client 客户端公共定义
-    2. client.realize 客户端公共实现
-    3. client.service **pc客户端**
-    3. client.service.app **MAUI app客户端**
-    4. client.service.command 客户端命令行管理工具
-    5. client.service.tary 客户端托盘工具
-2. common 一些公共的功能
-    1. common.libs 一些公共的功能
-    2. common.server 服务器
-    3. common.socks5 socks5代理(支持tcp、udp，不实现bind)
-    4. common.tcpforward tcp转发公共定义
-    4. common.udpforward udp转发公共定义
-3. server
-    1. plugins
-        1. server.service.manager 服务端管理接口
-        2. server.service.manager.models 服务端管理接口定义
-        3. server.service.socks5 socks5代理服务端
-        4. server.service.tcpforward 服务端代理转发，实现内网穿透
-        4. server.service.udpforward 服务端代理转发，实现内网穿透
-        5. server.service.webrtc webrtc
-        6. server.service.webrtc.models
-    2. server //打洞服务端定义
-    3. server.service **服务端**
-
+## 使用说明
+- <a href="./public/md/1、注册及打洞.md">1、注册及打洞.md</a>
+- <a href="./public/md/2、TCP转发.md">2、TCP转发.md</a>
+- <a href="./public/md/3、HTTP1.1代理.md">3、HTTP1.1代理.md</a>
+- <a href="./public/md/4、UDP转发.md">4、UDP转发.md</a>
+- <a href="./public/md/5、socks5代理.md">5、socks5代理.md</a>
+- <a href="./public/md/6、部署服务端.md">6、部署服务端.md</a>
+- <a href="./public/md/7、服务端代理TCP转发.md">7、服务端代理TCP转发.md</a>
+- <a href="./public/md/8、服务端代理UDP转发.md">8、服务端代理UDP转发.md</a>

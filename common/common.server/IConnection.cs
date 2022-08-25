@@ -197,6 +197,10 @@ namespace common.server
             {
                 try
                 {
+                    while (NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
+                    {
+                        System.Threading.Thread.Sleep(1);
+                    }
                     NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
                     SendBytes += data.Length;
                     return new ValueTask<bool>(true);

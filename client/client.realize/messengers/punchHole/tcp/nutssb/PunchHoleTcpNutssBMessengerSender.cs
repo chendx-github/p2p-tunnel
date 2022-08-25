@@ -476,9 +476,6 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             {
                 ulong toid = (ulong)timeout.Task.State;
                 timeout.Cancel();
-
-                Logger.Instance.DebugDebug($"{toid} cache  timeout");
-
                 if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
                 {
                     Logger.Instance.DebugDebug($"{toid} cache  timeout1");
@@ -517,7 +514,6 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             }, 2000);
             if (connectTcpCache.TryGetValue(toid, out ConnectCacheModel cache))
             {
-                Logger.Instance.DebugDebug($"{toid} cache");
                 cache.Step3Timeout = step3Timeout;
             }
 
