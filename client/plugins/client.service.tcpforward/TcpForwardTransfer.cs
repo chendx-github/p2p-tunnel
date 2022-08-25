@@ -308,10 +308,6 @@ namespace client.service.tcpforward
             SaveP2PConfig();
         }
 
-        public void StartP2P()
-        {
-            StartP2PAll();
-        }
         public string StartP2P(int id)
         {
             return StartP2P(GetP2PByID(id));
@@ -333,18 +329,6 @@ namespace client.service.tcpforward
             }
             return string.Empty;
         }
-        public void StartP2PAll()
-        {
-            StopP2PAll();
-            p2pListens.ForEach(c =>
-            {
-                if (c.Listening)
-                {
-                    StartP2P(c);
-                }
-            });
-        }
-
         public string StopP2P(int id)
         {
             StopP2PListen(GetP2PByID(id));
@@ -410,6 +394,7 @@ namespace client.service.tcpforward
                     {
                     }
                 }
+                Console.WriteLine($"{listen.Port} {listen.Listening}");
                 if (listen.Listening)
                 {
                     try

@@ -18,6 +18,8 @@ namespace server.messengers.register
         public List<RegisterCacheInfo> GetAll();
         public RegisterCacheInfo GetByName(string name);
 
+        public void Remove(ulong id);
+
         public bool Notify(IConnection connection);
     }
 }

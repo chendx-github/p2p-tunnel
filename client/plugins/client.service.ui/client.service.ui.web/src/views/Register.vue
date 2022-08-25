@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-19 13:53:17
+ * @LastEditTime: 2022-08-25 20:39:34
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -155,10 +155,26 @@
                 <!-- </el-form-item> -->
 
                 <el-form-item label="" label-width="80">
-                    <div class="t-c flex">
-                        <el-switch disabled v-model="registerState.LocalInfo.UdpConnected" active-text="udp已注册" inactive-text="udp未注册" />
-                        <span style="width:2rem"></span>
-                        <el-switch disabled v-model="registerState.LocalInfo.TcpConnected" active-text="tcp已注册" inactive-text="tcp未注册" />
+                    <div class="t-c">
+                        <el-row>
+                            <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-form-item label="UDP" prop="UdpConnected">
+                                    <el-switch disabled v-model="registerState.LocalInfo.UdpConnected">UDP</el-switch>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-form-item label="TCP" prop="TcpConnected">
+                                    <el-switch disabled v-model="registerState.LocalInfo.TcpConnected">TCP</el-switch>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-form-item label="自动打洞" prop="AutoPunchHole">
+                                    <el-tooltip class="box-item" effect="dark" content="发现新客户端后是否自动打洞" placement="top-start">
+                                        <el-switch v-model="model.AutoPunchHole">TCP</el-switch>
+                                    </el-tooltip>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
                     </div>
                 </el-form-item>
                 <el-form-item label="" label-width="0" class="t-c">
@@ -198,6 +214,7 @@ export default {
                 ClientEncodePassword: "",
                 ServerEncode: false,
                 ServerEncodePassword: "",
+                AutoPunchHole: false
             },
             rules: {
                 ClientName: [{ required: true, message: '必填', trigger: 'blur' }],
@@ -256,6 +273,7 @@ export default {
             state.model.UseMac = registerState.ClientConfig.UseMac = json.ClientConfig.UseMac;
             state.model.ClientEncode = registerState.ClientConfig.Encode = json.ClientConfig.Encode;
             state.model.ClientEncodePassword = registerState.ClientConfig.ClientEncodePassword = json.ClientConfig.EncodePassword;
+            state.model.AutoPunchHole = registerState.ClientConfig.AutoPunchHole = json.ClientConfig.AutoPunchHole;
 
             state.model.ServerIp = registerState.ServerConfig.Ip = json.ServerConfig.Ip;
             state.model.ServerUdpPort = registerState.ServerConfig.UdpPort = json.ServerConfig.UdpPort;
@@ -284,7 +302,8 @@ export default {
                         AutoRegDelay: +state.model.AutoRegDelay,
                         UseMac: state.model.UseMac,
                         Encode: state.model.ClientEncode,
-                        EncodePassword: state.model.ClientEncodePassword
+                        EncodePassword: state.model.ClientEncodePassword,
+                        AutoPunchHole: state.model.AutoPunchHole
                     },
                     ServerConfig: {
                         Ip: state.model.ServerIp,

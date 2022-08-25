@@ -22,7 +22,7 @@ namespace client.service.tcpforward
         }
         public static ServiceProvider UseTcpForwardPlugin(this ServiceProvider services)
         {
-            services.GetService<TcpForwardTransfer>().StartP2P();
+            services.GetService<TcpForwardTransfer>();
             services.GetService<TcpForwardResolver>();
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));

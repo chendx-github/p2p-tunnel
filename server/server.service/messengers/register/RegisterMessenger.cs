@@ -120,14 +120,7 @@ namespace server.service.messengers.register
                     bool alive = await Alive(client.TcpConnection);
                     if (!alive)
                     {
-                        if (client.TcpConnection != null)
-                        {
-                            client.TcpConnection.Disponse();
-                        }
-                        if (client.UdpConnection != null)
-                        {
-                            client.UdpConnection.Disponse();
-                        }
+                        clientRegisterCache.Remove(client.Id);
                         client = null;
                     }
                 }

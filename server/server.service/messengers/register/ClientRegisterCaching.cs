@@ -101,7 +101,7 @@ namespace server.service.messengers.register
         }
 
 
-        private void Remove(ulong id)
+        public void Remove(ulong id)
         {
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
