@@ -1,4 +1,5 @@
-﻿using common.server;
+﻿using common.libs;
+using common.server;
 using common.server.model;
 using System;
 using System.Threading.Tasks;
@@ -51,6 +52,8 @@ namespace client.messengers.punchHole
         public bool Canceled { get; set; } = false;
         public TaskCompletionSource<ConnectResultModel> Tcs { get; set; }
         public string TunnelName { get; set; }
+
+        public WheelTimerTimeout<object> Step3Timeout { get; set; }
     }
     public class ConnectResultModel
     {

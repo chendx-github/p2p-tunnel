@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace client.realize.messengers.punchHole.tcp.nutssb
@@ -23,15 +22,17 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         private readonly RegisterStateInfo registerState;
         private readonly CryptoSwap cryptoSwap;
         private readonly Config config;
+        private readonly WheelTimer<object> wheelTimer;
 
         public PunchHoleTcpNutssBMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer,
-            RegisterStateInfo registerState, CryptoSwap cryptoSwap, Config config)
+            RegisterStateInfo registerState, CryptoSwap cryptoSwap, Config config, WheelTimer<object> wheelTimer)
         {
             this.punchHoleMessengerSender = punchHoleMessengerSender;
             this.tcpServer = tcpServer;
             this.registerState = registerState;
             this.cryptoSwap = cryptoSwap;
             this.config = config;
+            this.wheelTimer = wheelTimer;
         }
 
         private IConnection TcpServer => registerState.TcpConnection;
@@ -358,11 +359,14 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             if (connectTcpCache.TryRemove(arg.Data.FromId, out ConnectCacheModel cache))
             {
+                if(cache.Step3Timeout != null)
+                {
+                    cache.Step3Timeout.Cancel();
+                }
                 cache.Tcs.SetResult(new ConnectResultModel { State = true });
             }
             OnStep4Handler.Push(arg);
         }
-
 
         public async Task SendStep1(ConnectParams param)
         {
@@ -465,16 +469,48 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 Cancel(toid);
             }
         }
+
+        private void SendStep3Timeout(WheelTimerTimeout<object> timeout)
+        {
+            ulong toid = (ulong)timeout.State;
+            timeout.Cancel();
+
+            if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
+            {
+                cache.Canceled = true;
+                cache.Tcs.SetResult(new ConnectResultModel
+                {
+                    State = false,
+                    Result = new ConnectFailModel
+                    {
+                        Msg = "tcp打洞失败",
+                        Type = ConnectFailType.ERROR
+                    }
+                });
+            }
+            OnSendStep2FailHandler.Push(toid);
+            punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2FailInfo>
+            {
+                TunnelName = string.Empty,
+                Connection = TcpServer,
+                ToId = toid,
+                Data = new PunchHoleStep2FailInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_FAIL, PunchType = PunchHoleTypes.TCP_NUTSSB }
+            }).ConfigureAwait(false);
+
+        }
         private async Task SendStep3(IConnection connection, string tunnelName, ulong toid)
         {
-            Logger.Instance.DebugDebug($"before Send Step3, toid:{toid},fromid:{ConnectId}");
-            var bytes = new PunchHoleStep3Info
+            WheelTimerTimeout<object> step3Timeout = wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object>
             {
-                FromId = ConnectId,
-                Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
-                PunchType = PunchHoleTypes.TCP_NUTSSB
-            }.ToBytes();
-            Logger.Instance.DebugDebug($"before Send Step3, {string.Join(",", bytes)}");
+                Callback = SendStep3Timeout,
+                State = toid
+            }, 2000);
+            if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
+            {
+                cache.Step3Timeout = step3Timeout;
+            }
+
+            Logger.Instance.DebugDebug($"before Send Step3, toid:{toid},fromid:{ConnectId}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
             {
                 TunnelName = tunnelName,
