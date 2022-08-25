@@ -89,7 +89,7 @@ namespace client
 
         public string EncodePassword { get; set; } = string.Empty;
 
-        public bool PunchHole { get; set; } = false;
+        public bool AutoPunchHole { get; set; } = false;
 
         [JsonIgnore]
         public IPAddress BindIp

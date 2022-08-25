@@ -26,21 +26,21 @@ namespace client.realize.messengers.clients
         private readonly RegisterStateInfo registerState;
         private readonly IClientInfoCaching clientInfoCaching;
         private readonly PunchHoleMessengerSender punchHoleMessengerSender;
-        private readonly HeartMessengerSender heartMessengerSender;
+        private readonly Config config;
 
         private const byte TryReverseMinValue = 1;
         private const byte TryReverseMaxValue = 2;
 
         public ClientsTransfer(ClientsMessengerSender clientsMessengerSender,
             IPunchHoleUdp punchHoleUdp, IPunchHoleTcp punchHoleTcp, IClientInfoCaching clientInfoCaching,
-            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, ITcpServer tcpServer, IUdpServer udpServer, HeartMessengerSender heartMessengerSender
+            RegisterStateInfo registerState, PunchHoleMessengerSender punchHoleMessengerSender, Config config
         )
         {
             this.punchHoleUdp = punchHoleUdp;
             this.punchHoleTcp = punchHoleTcp;
             this.registerState = registerState;
             this.clientInfoCaching = clientInfoCaching;
-            this.heartMessengerSender = heartMessengerSender;
+            this.config = config;
 
             punchHoleUdp.OnStep1Handler.Sub((e) => clientInfoCaching.Connecting(e.RawData.FromId, true, ServerType.UDP));
             punchHoleUdp.OnStep2FailHandler.Sub((e) => clientInfoCaching.Offline(e.RawData.FromId, ServerType.UDP));
@@ -219,7 +219,7 @@ namespace client.realize.messengers.clients
                         Mac = item.Mac
                     };
                     clientInfoCaching.Add(client);
-                    if (firstClients.Get())
+                    if (firstClients.Get() && config.Client.AutoPunchHole)
                     {
                         if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort)
                         {
