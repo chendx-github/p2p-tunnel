@@ -472,30 +472,40 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
 
         private void SendStep3Timeout(WheelTimerTimeout<object> timeout)
         {
-            ulong toid = (ulong)timeout.State;
-            timeout.Cancel();
+            try
+            {
+                ulong toid = (ulong)timeout.State;
+                timeout.Cancel();
 
-            if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
-            {
-                cache.Canceled = true;
-                cache.Tcs.SetResult(new ConnectResultModel
+                Logger.Instance.DebugDebug($"{toid} cache  timeout");
+
+                if (connectTcpCache.TryRemove(toid, out ConnectCacheModel cache))
                 {
-                    State = false,
-                    Result = new ConnectFailModel
+                    Logger.Instance.DebugDebug($"{toid} cache  timeout1");
+                    cache.Canceled = true;
+                    cache.Tcs.SetResult(new ConnectResultModel
                     {
-                        Msg = "tcp打洞失败",
-                        Type = ConnectFailType.ERROR
-                    }
-                });
+                        State = false,
+                        Result = new ConnectFailModel
+                        {
+                            Msg = "tcp打洞失败",
+                            Type = ConnectFailType.ERROR
+                        }
+                    });
+                }
+                OnSendStep2FailHandler.Push(toid);
+                punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2FailInfo>
+                {
+                    TunnelName = string.Empty,
+                    Connection = TcpServer,
+                    ToId = toid,
+                    Data = new PunchHoleStep2FailInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_FAIL, PunchType = PunchHoleTypes.TCP_NUTSSB }
+                }).ConfigureAwait(false);
             }
-            OnSendStep2FailHandler.Push(toid);
-            punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2FailInfo>
+            catch (Exception ex)
             {
-                TunnelName = string.Empty,
-                Connection = TcpServer,
-                ToId = toid,
-                Data = new PunchHoleStep2FailInfo { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2_FAIL, PunchType = PunchHoleTypes.TCP_NUTSSB }
-            }).ConfigureAwait(false);
+                Logger.Instance.Error(ex);
+            }
 
         }
         private async Task SendStep3(IConnection connection, string tunnelName, ulong toid)
@@ -507,6 +517,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
             }, 2000);
             if (connectTcpCache.TryGetValue(toid, out ConnectCacheModel cache))
             {
+                Logger.Instance.DebugDebug($"{toid} cache");
                 cache.Step3Timeout = step3Timeout;
             }
 
