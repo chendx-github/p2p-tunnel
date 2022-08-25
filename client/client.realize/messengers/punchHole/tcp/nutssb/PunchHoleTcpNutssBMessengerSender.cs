@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace client.realize.messengers.punchHole.tcp.nutssb
@@ -197,7 +198,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                             {
                                 IConnection connection = tcpServer.BindReceive(targetSocket, bufferSize: config.Client.TcpBufferSize);
                                 await CryptoSwap(connection);
-                                await SendStep3(connection, arg.RawData.TunnelName);
+                                await SendStep3(connection, arg.RawData.TunnelName, arg.RawData.FromId);
                             }
                             else
                             {
@@ -371,7 +372,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             }
 
-            Logger.Instance.DebugDebug($"before Send Step1");
+            Logger.Instance.DebugDebug($"before Send Step1, toid:{param.Id},fromid:{ConnectId}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep1Info>
             {
                 TunnelName = param.TunnelName,
@@ -380,7 +381,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 GuessPort = port,
                 Data = new PunchHoleStep1Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_1, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
-            Logger.Instance.DebugDebug($"after Send Step1");
+            Logger.Instance.DebugDebug($"after Send Step1, toid:{param.Id},fromid:{ConnectId}");
         }
         public async Task SendStep2(OnStep1Params arg)
         {
@@ -390,7 +391,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 port = await punchHoleMessengerSender.GetGuessPort(common.server.model.ServerType.TCP);
             }
 
-            Logger.Instance.DebugDebug($"before Send Step2");
+            Logger.Instance.DebugDebug($"before Send Step2, toid:{arg.RawData.FromId},fromid:{ConnectId}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep2Info>
             {
                 TunnelName = arg.RawData.TunnelName,
@@ -399,7 +400,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 GuessPort = port,
                 Data = new PunchHoleStep2Info { Step = (byte)PunchHoleTcpNutssBSteps.STEP_2, PunchType = PunchHoleTypes.TCP_NUTSSB }
             }).ConfigureAwait(false);
-            Logger.Instance.DebugDebug($"after Send Step2");
+            Logger.Instance.DebugDebug($"after Send Step2, toid:{arg.RawData.FromId},fromid:{ConnectId}");
         }
         private async Task SendStep2Retry(OnStep2Params arg)
         {
@@ -464,9 +465,9 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                 Cancel(toid);
             }
         }
-        private async Task SendStep3(IConnection connection, string tunnelName)
+        private async Task SendStep3(IConnection connection, string tunnelName, ulong toid)
         {
-            Logger.Instance.DebugDebug($"before Send Step3");
+            Logger.Instance.DebugDebug($"before Send Step3, toid:{toid},fromid:{ConnectId}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
             {
                 TunnelName = tunnelName,
@@ -478,11 +479,11 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                     PunchType = PunchHoleTypes.TCP_NUTSSB
                 }
             }).ConfigureAwait(false);
-            Logger.Instance.DebugDebug($"after Send Step3");
+            Logger.Instance.DebugDebug($"after Send Step3, toid:{toid},fromid:{ConnectId}");
         }
         private async Task SendStep4(OnStep3Params arg)
         {
-            Logger.Instance.DebugDebug($"before Send Step4");
+            Logger.Instance.DebugDebug($"before Send Step4, toid:{arg.RawData.FromId},fromid:{ConnectId}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep4Info>
             {
                 TunnelName = arg.RawData.TunnelName,
@@ -494,7 +495,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                     PunchType = PunchHoleTypes.TCP_NUTSSB
                 }
             });
-            Logger.Instance.DebugDebug($"after Send Step4");
+            Logger.Instance.DebugDebug($"after Send Step4, toid:{arg.RawData.FromId},fromid:{ConnectId}");
         }
     }
 }

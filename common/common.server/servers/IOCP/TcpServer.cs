@@ -142,7 +142,6 @@ namespace common.server.servers.iocp
                             else
                             {
                                 token.Connection.SocketError = SocketError.SocketError;
-                                Logger.Instance.DebugDebug($"empty close");
                                 CloseClientSocket(e);
                                 ArrayPool<byte>.Shared.Return(arr);
                                 return;
@@ -154,7 +153,6 @@ namespace common.server.servers.iocp
                     if (!token.Socket.Connected)
                     {
                         token.Connection.SocketError = SocketError.SocketError;
-                        Logger.Instance.DebugDebug($"!Connected:{SocketError.SocketError}");
                         CloseClientSocket(e);
                         return;
                     }
@@ -166,7 +164,6 @@ namespace common.server.servers.iocp
                 else
                 {
                     token.Connection.SocketError = e.SocketError;
-                    Logger.Instance.DebugDebug($"error:{e.SocketError}");
                     CloseClientSocket(e);
                 }
             }
@@ -218,7 +215,6 @@ namespace common.server.servers.iocp
             }
             else
             {
-                Logger.Instance.DebugDebug($"send error:{e.SocketError}");
                 CloseClientSocket(e);
             }
         }

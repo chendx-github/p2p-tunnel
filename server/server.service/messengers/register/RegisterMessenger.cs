@@ -1,7 +1,9 @@
-﻿using common.libs.extends;
+﻿using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using server.messengers.register;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,15 +14,17 @@ namespace server.service.messengers.register
         private readonly IClientRegisterCaching clientRegisterCache;
         private readonly Config config;
         private readonly IRegisterKeyValidator registerKeyValidator;
+        private readonly MessengerSender messengerSender;
 
-        public RegisterMessenger(IClientRegisterCaching clientRegisterCache, Config config, IRegisterKeyValidator registerKeyValidator)
+        public RegisterMessenger(IClientRegisterCaching clientRegisterCache, Config config, IRegisterKeyValidator registerKeyValidator, MessengerSender messengerSender)
         {
             this.clientRegisterCache = clientRegisterCache;
             this.config = config;
             this.registerKeyValidator = registerKeyValidator;
+            this.messengerSender = messengerSender;
         }
 
-        public byte[] Execute(IConnection connection)
+        public async Task<byte[]> Execute(IConnection connection)
         {
             RegisterParamsInfo model = new RegisterParamsInfo();
             model.DeBytes(connection.ReceiveRequestWrap.Memory);
@@ -32,14 +36,14 @@ namespace server.service.messengers.register
 
             return connection.ServerType switch
             {
-                ServerType.UDP => Udp(connection, model),
-                ServerType.TCP => Tcp(connection, model),
+                ServerType.UDP => await Udp(connection, model),
+                ServerType.TCP => await Tcp(connection, model),
                 _ => new RegisterResultInfo { Code = RegisterResultInfo.RegisterResultInfoCodes.UNKNOW }.ToBytes()
             };
         }
-        private byte[] Udp(IConnection connection, RegisterParamsInfo model)
+        private async Task<byte[]> Udp(IConnection connection, RegisterParamsInfo model)
         {
-            (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
+            (RegisterResultInfo verify, RegisterCacheInfo client) = await VerifyAndAdd(model);
             if (verify != null)
             {
                 return verify.ToBytes();
@@ -66,9 +70,9 @@ namespace server.service.messengers.register
                 TimeoutDelay = config.TimeoutDelay
             }.ToBytes();
         }
-        private byte[] Tcp(IConnection connection, RegisterParamsInfo model)
+        private async Task<byte[]> Tcp(IConnection connection, RegisterParamsInfo model)
         {
-            (RegisterResultInfo verify, RegisterCacheInfo client) = VerifyAndAdd(model);
+            (RegisterResultInfo verify, RegisterCacheInfo client) = await VerifyAndAdd(model);
             if (verify != null)
             {
                 return verify.ToBytes();
@@ -95,7 +99,7 @@ namespace server.service.messengers.register
                 TimeoutDelay = config.TimeoutDelay
             }.ToBytes();
         }
-        private (RegisterResultInfo, RegisterCacheInfo) VerifyAndAdd(RegisterParamsInfo model)
+        private async Task<(RegisterResultInfo, RegisterCacheInfo)> VerifyAndAdd(RegisterParamsInfo model)
         {
             RegisterResultInfo verify = null;
             RegisterCacheInfo client;
@@ -111,6 +115,23 @@ namespace server.service.messengers.register
             {
                 //第一次注册，检查有没有重名
                 client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name).FirstOrDefault();
+                if (client != null)
+                {
+                    bool alive = await Alive(client.TcpConnection);
+                    if (!alive)
+                    {
+                        if (client.TcpConnection != null)
+                        {
+                            client.TcpConnection.Disponse();
+                        }
+                        if (client.UdpConnection != null)
+                        {
+                            client.UdpConnection.Disponse();
+                        }
+                        client = null;
+                    }
+                }
+
                 if (client == null)
                 {
                     client = new()
@@ -145,5 +166,16 @@ namespace server.service.messengers.register
             clientRegisterCache.Notify(connection);
         }
 
+        private async Task<bool> Alive(IConnection connection)
+        {
+            var resp = await messengerSender.SendReply(new MessageRequestWrap
+            {
+                Connection = connection,
+                Content = Helper.EmptyArray,
+                Path = "heart/alive",
+                Timeout = 2000,
+            });
+            return resp.Code == MessageResponeCodes.OK && Helper.TrueArray.AsSpan().SequenceEqual(resp.Data.Span);
+        }
     }
 }

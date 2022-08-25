@@ -21,8 +21,6 @@ namespace server.messengers.register
         public string GroupId { get; set; } = string.Empty;
 
         [JsonIgnore]
-        public long LastTime { get; set; }
-        [JsonIgnore]
         public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
         [JsonIgnore]
         public string Mac { get; set; } = string.Empty;
@@ -31,13 +29,11 @@ namespace server.messengers.register
         {
             UdpConnection = connection;
             UdpConnection.ConnectId = Id;
-            Logger.Instance.DebugDebug($"UpdateUdpInfo :{UdpConnection.GetHashCode()},{UdpConnection.ConnectId}");
         }
         public void UpdateTcpInfo(IConnection connection)
         {
             TcpConnection = connection;
             TcpConnection.ConnectId = Id;
-            Logger.Instance.DebugDebug($"UpdateTcpInfo :{TcpConnection.GetHashCode()},{TcpConnection.ConnectId}");
         }
 
         private ConcurrentDictionary<string, TunnelRegisterCacheInfo> tunnels = new ConcurrentDictionary<string, TunnelRegisterCacheInfo>();

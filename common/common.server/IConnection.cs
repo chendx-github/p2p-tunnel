@@ -99,10 +99,10 @@ namespace common.server
 
         public long LastTime { get; private set; } = DateTimeHelper.GetTimeStamp();
         public void UpdateTime(long time) => LastTime = time;
-        public bool IsTimeout(long time, int timeout) => (LastTime > 0 && time - LastTime > timeout);
+        public bool IsTimeout(long time, int timeout) => (time - LastTime > timeout);
         public bool IsNeedHeart(long time, int timeout)
         {
-            return (LastTime == 0 || time - LastTime > (timeout / 4));
+            return (time - LastTime > (timeout / 4));
         }
 
         public long SendBytes { get; set; } = 0;
@@ -113,7 +113,6 @@ namespace common.server
 
         public virtual void Disponse()
         {
-            LastTime = 0;
             ReceiveRequestWrap = null;
             ReceiveResponseWrap = null;
         }

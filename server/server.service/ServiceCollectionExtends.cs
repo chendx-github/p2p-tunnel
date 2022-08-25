@@ -99,12 +99,10 @@ namespace server.service
                 }).ToList();
                 if (clients.Any())
                 {
-                    var clients1 = new ClientsInfo
+                    byte[] bytes = new ClientsInfo
                     {
                         Clients = clients.ToArray()
-                    };
-                    Logger.Instance.DebugDebug(clients1.ToJson());
-                    byte[] bytes = clients1.ToBytes();
+                    }.ToBytes();
                     foreach (ClientsClientInfo client in clients)
                     {
                         _ = messengerSender.SendOnly(new MessageRequestWrap

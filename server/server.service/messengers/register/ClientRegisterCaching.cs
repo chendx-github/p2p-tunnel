@@ -27,12 +27,10 @@ namespace server.service.messengers.register
 
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                Logger.Instance.DebugDebug($"{connection.ConnectId},{connection.GetHashCode()} tcp 掉线,cache hashcode:{this.GetHashCode()}");
                 Remove(connection.ConnectId);
             });
             udpServer.OnDisconnect.Sub((IConnection connection) =>
             {
-                Logger.Instance.DebugDebug($"{connection.ConnectId},{connection.GetHashCode()} udp 掉线,cache hashcode:{this.GetHashCode()}");
                 Remove(connection.ConnectId);
             });
         }
@@ -50,7 +48,6 @@ namespace server.service.messengers.register
                     {
                         foreach (RegisterCacheInfo item in offlines)
                         {
-                            Logger.Instance.DebugDebug($"{item.Id} 超时");
                             cache.TryRemove(item.Id, out _);
                             item.UdpConnection?.Disponse();
                             item.TcpConnection?.Disponse();

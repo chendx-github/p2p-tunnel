@@ -50,9 +50,8 @@ namespace server.service.messengers
         }
         public byte[] Test(IConnection connection)
         {
-            Console.WriteLine($"encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(connection.ReceiveRequestWrap.Memory).Span)}");
-
-            return Helper.TrueArray ;
+            Logger.Instance.DebugDebug($"encoder test : {Encoding.UTF8.GetString(connection.Crypto.Decode(connection.ReceiveRequestWrap.Memory).Span)}");
+            return Helper.TrueArray;
         }
         public byte[] Clear(IConnection connection)
         {

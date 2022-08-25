@@ -64,7 +64,6 @@ namespace client.realize.messengers.register
                     {
                         return;
                     }
-                    Logger.Instance.Info($"检测到掉线");
                     _ = Register(true);
                 }
 
@@ -73,7 +72,6 @@ namespace client.realize.messengers.register
 
         public void Exit()
         {
-            Logger.Instance.Info($"主动退出");
             registerMessageHelper.Exit().Wait();
             registerState.Offline();
             udpServer.Stop();
@@ -258,10 +256,6 @@ namespace client.realize.messengers.register
                     if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
                     {
                         _ = heartMessengerSender.Heart(registerState.UdpConnection);
-                    }
-                    if (registerState.TcpOnline && registerState.TcpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
-                    {
-                        _ = heartMessengerSender.Heart(registerState.TcpConnection);
                     }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
                     {
