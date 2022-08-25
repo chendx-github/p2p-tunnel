@@ -474,7 +474,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         {
             try
             {
-                ulong toid = (ulong)timeout.State;
+                ulong toid = (ulong)timeout.Task.State;
                 timeout.Cancel();
 
                 Logger.Instance.DebugDebug($"{toid} cache  timeout");
