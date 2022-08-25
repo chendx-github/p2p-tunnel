@@ -52,6 +52,7 @@ namespace client.service.udpforward
             p2PConfigInfo = ReadP2PConfig();
             this.serverConfigDataProvider = serverConfigDataProvider;
             serverConfigInfo = ReadServerConfig();
+            StartP2PAllWithListening();
 
             this.clientConfig = clientConfig;
             this.registerStateInfo = registerStateInfo;
@@ -86,6 +87,7 @@ namespace client.service.udpforward
             {
 
                 P2PListenInfo oldPort = GetP2PByPort(param.Port);
+                bool listening = oldPort.Listening;
                 if (oldPort.ID > 0 && oldPort.ID != param.ID)
                 {
                     return "已存在";
@@ -126,9 +128,9 @@ namespace client.service.udpforward
                     Endpoint = NetworkHelper.EndpointToArray(param.TargetIp, param.TargetPort)
                 });
 
-                if (param.Listening)
+                if (listening)
                 {
-                    StartP2P(GetP2PByPort(param.Port));
+                    StartP2P(param.Port);
                 }
                 SaveP2PConfig();
             }
@@ -153,37 +155,29 @@ namespace client.service.udpforward
                 SaveP2PConfig();
             }
         }
+
         public void StopP2PListen(int port)
         {
-            StopP2PListen(GetP2PByPort(port));
+            try
+            {
+                udpForwardServer.Stop(port);
+            }
+            catch (Exception)
+            {
+            }
         }
         private void StopP2PListen(P2PListenInfo listen)
         {
-            if (listen.ID > 0)
-            {
-                udpForwardServer.Stop(listen.Port);
-            }
+            StopP2PListen(listen.Port);
         }
         public P2PListenInfo GetP2PByPort(int port)
         {
             return p2PConfigInfo.Tunnels.FirstOrDefault(c => c.Port == port) ?? new P2PListenInfo { };
         }
-        public void StartP2P()
-        {
-            StartP2PAll();
-        }
+        
         public string StartP2P(P2PListenInfo listen)
         {
-            try
-            {
-                udpForwardServer.Start(listen.Port);
-                SaveP2PConfig();
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return string.Empty;
+            return StartP2P(listen.Port);
         }
         public string StartP2P(int port)
         {
@@ -198,20 +192,12 @@ namespace client.service.udpforward
             }
             return string.Empty;
         }
-        public void StartP2PAll()
+        public void StartP2PAllWithListening()
         {
-            StopP2PAll();
             foreach (var item in p2PConfigInfo.Tunnels.Where(c => c.Listening))
             {
                 StartP2P(item);
             }
-        }
-        public void StopP2PAll()
-        {
-            p2PConfigInfo.Tunnels.ForEach(c =>
-            {
-                StopP2PListen(c);
-            });
         }
 
         private P2PConfigInfo ReadP2PConfig()
@@ -227,10 +213,6 @@ namespace client.service.udpforward
                         Name = listen.Name,
                         TunnelType = listen.TunnelType
                     });
-                    if (listen.Listening)
-                    {
-                        udpForwardServer.Start(listen.Port);
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -240,17 +222,9 @@ namespace client.service.udpforward
             listenNS.Reset(config.Tunnels.Count > 0 ? config.Tunnels.Max(c => c.ID) : 1);
             return config;
         }
-        private string SaveP2PConfig()
+        private void SaveP2PConfig()
         {
-            try
-            {
-                p2pConfigDataProvider.Save(p2PConfigInfo);
-                return string.Empty;
-            }
-            catch (Exception ex)
-            {
-                return (ex.Message);
-            }
+            p2pConfigDataProvider.Save(p2PConfigInfo);
         }
         #endregion
 

@@ -22,7 +22,7 @@ namespace client.service.udpforward
         }
         public static ServiceProvider UseUdpForwardPlugin(this ServiceProvider services)
         {
-            services.GetService<UdpForwardTransfer>().StartP2P();
+            services.GetService<UdpForwardTransfer>();
             services.GetService<UdpForwardResolver>();
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));

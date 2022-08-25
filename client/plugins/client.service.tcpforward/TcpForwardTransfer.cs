@@ -288,7 +288,7 @@ namespace client.service.tcpforward
 
             SaveP2PConfig();
 
-            return String.Empty;
+            return string.Empty;
         }
         public void RemoveP2PForward(P2PForwardRemoveParams forward)
         {
@@ -331,6 +331,7 @@ namespace client.service.tcpforward
             }
             return string.Empty;
         }
+
         public string StopP2P(int id)
         {
             StopP2PListen(GetP2PByID(id));
@@ -348,13 +349,6 @@ namespace client.service.tcpforward
                         Logger.Instance.Error(error);
                     }
                 }
-            });
-        }
-        public void StopP2PAll()
-        {
-            p2pListens.ForEach(c =>
-            {
-                StopP2PListen(c);
             });
         }
 
