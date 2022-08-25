@@ -394,7 +394,6 @@ namespace client.service.tcpforward
                     {
                     }
                 }
-                Console.WriteLine($"{listen.Port} {listen.Listening}");
                 if (listen.Listening)
                 {
                     try
