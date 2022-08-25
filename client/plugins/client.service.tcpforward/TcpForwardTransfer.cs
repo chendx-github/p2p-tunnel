@@ -83,10 +83,7 @@ namespace client.service.tcpforward
                 else
                 {
                     P2PListenInfo listen = GetP2PByPort(model.Port);
-                    if (listen != null)
-                    {
-                        listen.Listening = model.State;
-                    }
+                    listen.Listening = model.State;
                 }
 
             });
@@ -413,20 +410,12 @@ namespace client.service.tcpforward
 
             return config;
         }
-        private string SaveP2PConfig()
+        private void SaveP2PConfig()
         {
-            try
-            {
-                p2PConfigInfo.Webs = p2pListens.Where(c => c.AliveType == TcpForwardAliveTypes.WEB).ToList();
-                p2PConfigInfo.Tunnels = p2pListens.Where(c => c.AliveType == TcpForwardAliveTypes.TUNNEL).ToList();
+            p2PConfigInfo.Webs = p2pListens.Where(c => c.AliveType == TcpForwardAliveTypes.WEB).ToList();
+            p2PConfigInfo.Tunnels = p2pListens.Where(c => c.AliveType == TcpForwardAliveTypes.TUNNEL).ToList();
 
-                p2pConfigDataProvider.Save(p2PConfigInfo);
-                return string.Empty;
-            }
-            catch (Exception ex)
-            {
-                return (ex.Message);
-            }
+            p2pConfigDataProvider.Save(p2PConfigInfo);
         }
         #endregion
 
