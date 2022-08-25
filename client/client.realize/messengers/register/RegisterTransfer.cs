@@ -64,6 +64,7 @@ namespace client.realize.messengers.register
                     {
                         return;
                     }
+                    Logger.Instance.DebugDebug($"检测到掉线");
                     _ = Register(true);
                 }
 

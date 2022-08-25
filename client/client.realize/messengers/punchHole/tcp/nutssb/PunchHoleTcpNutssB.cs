@@ -108,6 +108,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
 
         private void Step3(OnPunchHoleArg arg)
         {
+            Logger.Instance.DebugDebug($"fromid:{arg.Data.FromId} step3");
             PunchHoleStep3Info model = new PunchHoleStep3Info();
             model.DeBytes(arg.Data.Data);
             Logger.Instance.DebugDebug($"fromid:{arg.Data.FromId},OnStep3:{model.ToJson()}");
@@ -120,6 +121,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         }
         private void Step4(OnPunchHoleArg arg)
         {
+            Logger.Instance.DebugDebug($"fromid:{arg.Data.FromId} step4");
             PunchHoleStep4Info model = new PunchHoleStep4Info();
             model.DeBytes(arg.Data.Data);
             Logger.Instance.DebugDebug($"fromid:{arg.Data.FromId},OnStep4:{model.ToJson()}");

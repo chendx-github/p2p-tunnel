@@ -468,6 +468,13 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         private async Task SendStep3(IConnection connection, string tunnelName, ulong toid)
         {
             Logger.Instance.DebugDebug($"before Send Step3, toid:{toid},fromid:{ConnectId}");
+            var bytes = new PunchHoleStep3Info
+            {
+                FromId = ConnectId,
+                Step = (byte)PunchHoleTcpNutssBSteps.STEP_3,
+                PunchType = PunchHoleTypes.TCP_NUTSSB
+            }.ToBytes();
+            Logger.Instance.DebugDebug($"before Send Step3, {string.Join(",", bytes)}");
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
             {
                 TunnelName = tunnelName,
