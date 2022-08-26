@@ -71,11 +71,7 @@ namespace common.tcpforward
             SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
             saea.RemoteEndPoint = endpoint;
             saea.Completed += IO_Completed;
-            if (arg.Buffer.Length > 0 && arg.ForwardType != TcpForwardTypes.PROXY)
-            {
-                saea.SetBuffer(arg.Buffer);
-            }
-            arg.Buffer = Helper.EmptyArray;
+
             saea.UserToken = new ConnectUserToken
             {
                 Key = new ConnectionKey(arg.Connection.ConnectId, arg.RequestId),
@@ -113,6 +109,11 @@ namespace common.tcpforward
                     {
                         Receive(token, HttpConnectMethodHelper.ConnectSuccessMessage());
                     }
+                    if (token.SendArg.Buffer.Length > 0 && token.SendArg.ForwardType != TcpForwardTypes.PROXY)
+                    {
+                        e.ConnectSocket.Send(token.SendArg.Buffer.Span, SocketFlags.None);
+                    }
+                    token.SendArg.Buffer = Helper.EmptyArray;
 
                     token.TargetSocket = e.ConnectSocket;
                     token.Buffer = ArrayPool<byte>.Shared.Rent(config.BufferSize);

@@ -335,9 +335,10 @@ namespace common.socks5
         }
         private void TargetProcessReceive(SocketAsyncEventArgs e)
         {
-            AsyncServerUserToken token = (AsyncServerUserToken)e.UserToken;
+           
             try
             {
+                AsyncServerUserToken token = (AsyncServerUserToken)e.UserToken;
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     int offset = e.Offset;
