@@ -44,6 +44,10 @@ namespace common.socks5
 
         public static IPEndPoint GetRemoteEndPoint(Memory<byte> data)
         {
+            if(data.Length < 3)
+            {
+                return null;
+            }
             //VERSION COMMAND RSV ATYPE  DST.ADDR  DST.PORT
             //去掉 VERSION COMMAND RSV
            var span = data.Span.Slice(3);

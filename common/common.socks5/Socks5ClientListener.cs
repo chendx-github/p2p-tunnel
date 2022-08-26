@@ -116,13 +116,9 @@ namespace common.socks5
         }
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
-           
+
             try
             {
-                if(e.UserToken == null)
-                {
-                    return;
-                }
                 AsyncUserToken token = (AsyncUserToken)e.UserToken;
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
@@ -295,7 +291,6 @@ namespace common.socks5
                 ArrayPool<byte>.Shared.Return(PoolBuffer);
             }
             Socket?.SafeClose();
-            DataWrap = null;
             Disposabled = true;
         }
     }

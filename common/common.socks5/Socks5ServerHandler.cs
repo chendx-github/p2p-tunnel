@@ -179,7 +179,11 @@ namespace common.socks5
                 if (command == Socks5EnumRequestCommand.Connect)
                 {
                     IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
-                    if (!config.LanConnectEnable && remoteEndPoint.IsLan())
+                    if (remoteEndPoint == null)
+                    {
+                        ConnectReponse(data, Socks5EnumResponseCommand.AddressNotAllow, connection);
+                    }
+                    else if (!config.LanConnectEnable && remoteEndPoint.IsLan())
                     {
                         ConnectReponse(data, Socks5EnumResponseCommand.AddressNotAllow, connection);
                     }
