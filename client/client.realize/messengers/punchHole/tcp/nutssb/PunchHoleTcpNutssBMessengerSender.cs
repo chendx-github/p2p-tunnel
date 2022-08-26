@@ -41,7 +41,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
         private int ClientTcpPort => registerState.LocalInfo.TcpPort;
         private int RouteLevel => registerState.LocalInfo.RouteLevel + 5;
 #if DEBUG
-        private bool UseLocalPort = false;
+        private bool UseLocalPort = true;
 #else
         private bool UseLocalPort = true;
 #endif
@@ -226,7 +226,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                     }
                     catch (SocketException ex)
                     {
-                        Logger.Instance.DebugError(ex);
+                        Logger.Instance.DebugError($"{targetEndpoint}--------{ex}");
                         targetSocket.SafeClose();
                         targetSocket = null;
                         interval = 100;
@@ -251,7 +251,7 @@ namespace client.realize.messengers.punchHole.tcp.nutssb
                     }
                     catch (Exception ex)
                     {
-                        Logger.Instance.Error(ex);
+                        Logger.Instance.Error($"{targetEndpoint}--------{ex}");
                     }
                 }
 

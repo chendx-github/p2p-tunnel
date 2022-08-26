@@ -52,8 +52,7 @@ namespace client.service.udpforward
             p2PConfigInfo = ReadP2PConfig();
             this.serverConfigDataProvider = serverConfigDataProvider;
             serverConfigInfo = ReadServerConfig();
-            StartP2PAllWithListening();
-
+            
             this.clientConfig = clientConfig;
             this.registerStateInfo = registerStateInfo;
 
@@ -78,6 +77,7 @@ namespace client.service.udpforward
                     RegisterServerForward();
                 }
             });
+            StartP2PAllWithListening();
         }
 
         #region p2p

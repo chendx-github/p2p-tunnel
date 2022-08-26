@@ -68,8 +68,6 @@ namespace client.service.tcpforward
             p2PConfigInfo = ReadP2PConfig();
             serverForwardConfigInfo = ReadServerConfig();
 
-            StartP2PAllWithListening();
-
             tcpForwardServer.Init(config.NumConnections, config.BufferSize);
             tcpForwardServer.OnListeningChange.Sub((model) =>
             {
@@ -98,6 +96,9 @@ namespace client.service.tcpforward
             AppDomain.CurrentDomain.ProcessExit += (s, e) => ClearPac();
             //安卓注释
             //Console.CancelKeyPress += (s, e) => ClearPac();
+
+
+            StartP2PAllWithListening();
         }
 
         #region p2p
@@ -339,6 +340,8 @@ namespace client.service.tcpforward
         }
         private void StartP2PAllWithListening()
         {
+            //IEnumerable<(int, TcpForwardAliveTypes)> a = p2pListens.Where(c=>c.Listening == true).Select(c => (c.Port, c.AliveType));
+
             p2pListens.ForEach(c =>
             {
                 if (c.Listening)

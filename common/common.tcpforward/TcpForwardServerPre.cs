@@ -56,10 +56,11 @@ namespace common.tcpforward
         public void Start(int port, TcpForwardAliveTypes aliveType)
         {
             if (serversManager.Contains(port))
+            {
                 return;
+            }
 
             BindAccept(port, aliveType);
-
             OnListeningChange.Push(new ListeningChangeInfo { Port = port, State = true });
         }
 

@@ -43,7 +43,7 @@ namespace common.socks5
 
         public void InputData(IConnection connection)
         {
-            Socks5EnumStep step = (Socks5EnumStep)connection.ReceiveRequestWrap.Memory.Span[0];
+            Socks5EnumStep step = (Socks5EnumStep)(byte)(connection.ReceiveRequestWrap.Memory.Span[0] >> 4);
             if (handles.TryGetValue(step, out Action<IConnection> action))
             {
                 action(connection);

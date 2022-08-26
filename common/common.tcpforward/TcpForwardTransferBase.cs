@@ -31,7 +31,6 @@ namespace common.tcpforward
                 request.Connection = null;
                 GetTarget(request);
             }
-
             if (request.Connection == null)
             {
                 request.Buffer = HttpParseHelper.BuildMessage("未选择转发对象，或者未与转发对象建立连接");

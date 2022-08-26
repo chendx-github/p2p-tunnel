@@ -116,9 +116,14 @@ namespace common.socks5
         }
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
-            AsyncUserToken token = (AsyncUserToken)e.UserToken;
+           
             try
             {
+                if(e.UserToken == null)
+                {
+                    return;
+                }
+                AsyncUserToken token = (AsyncUserToken)e.UserToken;
                 if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     Memory<byte> buffer = e.Buffer.AsMemory(e.Offset, e.BytesTransferred);
@@ -160,7 +165,7 @@ namespace common.socks5
             }
             catch (Exception ex)
             {
-                token.Clear();
+                CloseClientSocket(e);
                 Logger.Instance.DebugError(ex);
             }
         }

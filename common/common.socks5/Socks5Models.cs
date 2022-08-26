@@ -12,8 +12,10 @@ namespace common.socks5
         public byte Version { get; set; } = 0;
         public ulong Id { get; set; } = 0;
         public IPEndPoint SourceEP { get; set; }
-        public Memory<byte> Data { get; set; } = Helper.EmptyArray;
 
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Memory<byte> Data { get; set; } = Helper.EmptyArray;
+        [System.Text.Json.Serialization.JsonIgnore]
         public byte[] Response { get; set; } = new byte[1];
         public byte[] ToBytes()
         {
