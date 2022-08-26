@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 23:04:50
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-27 14:24:02
+ * @LastEditTime: 2022-08-27 00:26:26
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\apis\request.js
@@ -75,7 +75,7 @@ export const onWebsocketMsg = (msg) => {
         } else if (json.Code == -1) {
             callback.reject(json.Content);
             if (!callback.errHandle) {
-                ElMessage.error(json.Content);
+                ElMessage.error(`${callback.path}:${json.Content}`);
             }
         } else {
             pushListener.push(json.Path, json.Content);
@@ -101,7 +101,7 @@ export const sendWebsocketMsg = (path, msg = {}, errHandle = false) => {
     return new Promise((resolve, reject) => {
         let id = ++requestId;
         try {
-            requests[id] = { resolve, reject, errHandle };
+            requests[id] = { resolve, reject, errHandle, path };
             let str = JSON.stringify({
                 Path: path,
                 RequestId: id,
