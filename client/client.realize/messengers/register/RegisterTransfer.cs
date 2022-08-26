@@ -64,7 +64,34 @@ namespace client.realize.messengers.register
                     {
                         return;
                     }
-                    _ = Register(true);
+                    Logger.Instance.DebugDebug($"tcp掉线");
+                    _ = Register(true).Result;
+                }
+
+            });
+            udpServer.OnDisconnect.Sub((connection) =>
+            {
+                if (registerState.UdpConnection != connection)
+                {
+                    return;
+                }
+                if (registerState.LocalInfo.IsConnecting)
+                {
+                    return;
+                }
+
+                lock (lockObject)
+                {
+                    if (registerState.UdpConnection != connection)
+                    {
+                        return;
+                    }
+                    if (registerState.LocalInfo.IsConnecting)
+                    {
+                        return;
+                    }
+                    Logger.Instance.DebugDebug($"udp掉线");
+                    _ = Register(true).Result;
                 }
 
             });

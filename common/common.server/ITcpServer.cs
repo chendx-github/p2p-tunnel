@@ -12,6 +12,6 @@ namespace common.server
         public IConnection BindReceive(Socket socket, int bufferSize = 8 * 1024);
 
         public IConnection CreateConnection(Socket socket);
-        
+
     }
 }

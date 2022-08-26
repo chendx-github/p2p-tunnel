@@ -32,6 +32,10 @@
 	  <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	  <DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="messengers\register\ClientRegisterCaching.cs~RF2a422f1.TMP" />
+	</ItemGroup>
 	
 	<ItemGroup>
 		<Content Include="appsettings.json">

@@ -10,6 +10,7 @@ namespace common.server.servers.rudp
     {
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
         public SimpleSubPushHandler<IConnection> OnDisconnect => new SimpleSubPushHandler<IConnection>();
+        public Action<IConnection> OnConnected { get; set; } = (IConnection connection) => { };
 
         Semaphore maxNumberConnectings = new Semaphore(1, 1);
         NumberSpaceDefault maxNumberConnectingNumberSpace = new NumberSpaceDefault();
@@ -37,6 +38,7 @@ namespace common.server.servers.rudp
             {
                 RudpConnection connection = new RudpConnection(peer, peer.EndPoint);
                 peer.Tag = connection;
+                OnConnected(connection);
             };
             listener.PeerDisconnectedEvent += (peer, disconnectInfo) =>
             {

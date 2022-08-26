@@ -16,6 +16,7 @@ namespace common.server.servers.iocp
 
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
         public SimpleSubPushHandler<IConnection> OnDisconnect { get; } = new SimpleSubPushHandler<IConnection>();
+        public Action<IConnection> OnConnected { get; set; } = (connection) => { };
 
         public TcpServer() { }
 
@@ -104,6 +105,7 @@ namespace common.server.servers.iocp
                 Socket = socket,
                 Connection = CreateConnection(socket),
             };
+            OnConnected(userToken.Connection);
             SocketAsyncEventArgs readEventArgs = new SocketAsyncEventArgs
             {
                 UserToken = userToken,

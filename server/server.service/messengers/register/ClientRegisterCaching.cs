@@ -17,12 +17,13 @@ namespace server.service.messengers.register
 
         public SimpleSubPushHandler<RegisterCacheInfo> OnChanged { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
         public SimpleSubPushHandler<RegisterCacheInfo> OnOffline { get; } = new SimpleSubPushHandler<RegisterCacheInfo>();
+        WheelTimer<IConnection> wheelTimer = new WheelTimer<IConnection>();
 
         public int Count { get => cache.Count; }
 
-        public ClientRegisterCaching(WheelTimer<object> wheelTimer, Config config, IUdpServer udpServer, ITcpServer tcpServer)
+        public ClientRegisterCaching(Config config, IUdpServer udpServer, ITcpServer tcpServer)
         {
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = TimeoutCallback, }, 1000, true);
+            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<IConnection> { Callback = TimeoutCallback, }, 1000, true);
             this.config = config;
 
             tcpServer.OnDisconnect.Sub((IConnection connection) =>
@@ -33,29 +34,44 @@ namespace server.service.messengers.register
             {
                 Remove(connection.ConnectId);
             });
+            tcpServer.OnConnected = (IConnection connection) =>
+            {
+                wheelTimer.NewTimeout(new WheelTimerTimeoutTask<IConnection>
+                {
+                    Callback = ConnectionTimeoutCallback,
+                    State = connection
+                }, config.RegisterTimeout, false);
+            };
+            udpServer.OnConnected = (IConnection connection) =>
+            {
+                wheelTimer.NewTimeout(new WheelTimerTimeoutTask<IConnection>
+                {
+                    Callback = ConnectionTimeoutCallback,
+                    State = connection
+                }, config.RegisterTimeout, false);
+            };
         }
-        private void TimeoutCallback(WheelTimerTimeout<object> timeout)
+        private void ConnectionTimeoutCallback(WheelTimerTimeout<IConnection> timeout)
+        {
+            IConnection connection = timeout.Task.State;
+            if (connection != null && connection.ConnectId == 0)
+            {
+                connection.Disponse();
+            }
+        }
+        private void TimeoutCallback(WheelTimerTimeout<IConnection> timeout)
         {
             if (cache.Count > 0)
             {
                 try
                 {
                     long time = DateTimeHelper.GetTimeStamp();
-                    var offlines = cache.Values
-                        .Where(c => c.TcpConnection != null)
-                        .Where(c => c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
+                    var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
                     if (offlines.Any())
                     {
                         foreach (RegisterCacheInfo item in offlines)
                         {
-                            cache.TryRemove(item.Id, out _);
-                            item.UdpConnection?.Disponse();
-                            item.TcpConnection?.Disponse();
-                        }
-                        foreach (RegisterCacheInfo item in offlines)
-                        {
-                            OnChanged.Push(item);
-                            OnOffline.Push(item);
+                            Remove(item.Id);
                         }
                     }
                 }
@@ -99,7 +115,6 @@ namespace server.service.messengers.register
         {
             return cache.Values.FirstOrDefault(c => c.Name == name);
         }
-
 
         public void Remove(ulong id)
         {

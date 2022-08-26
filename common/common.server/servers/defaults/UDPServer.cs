@@ -20,6 +20,7 @@ namespace common.server.servers.defaults
         private UdpClient UdpClient { get; set; } = null;
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
         public SimpleSubPushHandler<IConnection> OnDisconnect => new SimpleSubPushHandler<IConnection>();
+        public Action<IConnection> OnConnected { get; set; } = (IConnection connection) => { };
 
         private ConcurrentDictionary<int, IConnection> connections = new ConcurrentDictionary<int, IConnection>();
 

@@ -1,4 +1,5 @@
 ﻿using common.libs;
+using System;
 using System.Net;
 
 namespace common.server
@@ -11,5 +12,6 @@ namespace common.server
 
         public SimpleSubPushHandler<IConnection> OnPacket { get; }
         public SimpleSubPushHandler<IConnection> OnDisconnect { get; }
+        public Action<IConnection> OnConnected { get; set; }
     }
 }

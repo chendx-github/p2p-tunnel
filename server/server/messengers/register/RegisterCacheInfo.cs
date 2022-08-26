@@ -11,19 +11,18 @@ namespace server.messengers.register
     public class RegisterCacheInfo
     {
         [JsonIgnore]
-        public IConnection TcpConnection { get; private set; } = null;
+        public IConnection TcpConnection { get; private set; }
         [JsonIgnore]
-        public IConnection UdpConnection { get; private set; } = null;
+        public IConnection UdpConnection { get; private set; }
 
-        public ulong Id { get; set; } = 0;
-        public string Name { get; set; } = string.Empty;
-
-        public string GroupId { get; set; } = string.Empty;
+        public ulong Id { get; set; }
+        public string Name { get; set; }
+        public string GroupId { get; set; }
 
         [JsonIgnore]
-        public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
+        public IPAddress[] LocalIps { get; set; }
         [JsonIgnore]
-        public string Mac { get; set; } = string.Empty;
+        public string Mac { get; set; }
 
         public void UpdateUdpInfo(IConnection connection)
         {
@@ -49,15 +48,6 @@ namespace server.messengers.register
         {
             return tunnels.TryGetValue(tunnelName, out model);
         }
-    }
-
-    public class UpdateUdpParamsInfo
-    {
-        public IConnection Connection { get; set; } = null;
-    }
-    public class UpdateTcpParamsInfo
-    {
-        public IConnection Connection { get; set; } = null;
     }
 
     public class TunnelRegisterCacheInfo
