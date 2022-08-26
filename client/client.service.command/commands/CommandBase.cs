@@ -16,7 +16,7 @@ namespace client.service.command.commands
 
         protected string Request(string path, string content = "")
         {
-            Instance.WriteLine(new ClientServiceRequestInfo { Path = path, Content = content }.ToJson());
+            Instance.WriteLine(new ClientServiceRequestInfo { Path = path, Content = content }.ToJsonPipeline());
             return Instance.ReadLine();
         }
         protected void RunAsNotDefaultValue(string value, Action action)

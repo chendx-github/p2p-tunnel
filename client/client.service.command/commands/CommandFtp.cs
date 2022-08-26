@@ -38,7 +38,7 @@ namespace client.service.command.commands
             list.SetHandler((path, id) =>
             {
                 string remotePath = id == 0 ? "ftp/LocalCreate" : "ftp/RemoteCreate";
-                string data = id == 0 ? path : new { ID = id, Path = path }.ToJson();
+                string data = id == 0 ? path : new { ID = id, Path = path }.ToJsonPipeline();
                 JsonNode res = JsonNode.Parse(Request(remotePath, data));
                 PrintRequestState(res);
 
@@ -54,7 +54,7 @@ namespace client.service.command.commands
             list.SetHandler((path, id) =>
             {
                 string remotePath = id == 0 ? "ftp/LocalDelete" : "ftp/RemoteDelete";
-                string data = id == 0 ? path : new { ID = id, Path = path }.ToJson();
+                string data = id == 0 ? path : new { ID = id, Path = path }.ToJsonPipeline();
                 JsonNode res = JsonNode.Parse(Request(remotePath, data));
                 PrintRequestState(res);
 
@@ -71,7 +71,7 @@ namespace client.service.command.commands
             upload.Add(targetPath);
             upload.SetHandler((connectId, path, targetPath) =>
             {
-                JsonNode res = JsonNode.Parse(Request("ftp/upload", new { ID = connectId, Path = path, TargetPath = targetPath }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("ftp/upload", new { ID = connectId, Path = path, TargetPath = targetPath }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, connectId, path, targetPath);
 
@@ -86,7 +86,7 @@ namespace client.service.command.commands
             upload.Add(downloadTargetPath);
             upload.SetHandler((connectId, path, targetPath) =>
             {
-                JsonNode res = JsonNode.Parse(Request("ftp/download", new { ID = connectId, Path = path, TargetPath = targetPath }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("ftp/download", new { ID = connectId, Path = path, TargetPath = targetPath }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, downloadConnectId, downloadPath, downloadTargetPath);
 
@@ -100,13 +100,13 @@ namespace client.service.command.commands
             if (Path.IsPathRooted(listpath))
             {
                 path = isLocal ? "SetLocalPath" : "SetRemotePath";
-                data = isLocal ? filepath : new { ID = listid, Path = filepath }.ToJson();
+                data = isLocal ? filepath : new { ID = listid, Path = filepath }.ToJsonPipeline();
                 JsonNode.Parse(Request($"ftp/{path}", data));
                 filepath = string.Empty;
             }
 
             path = isLocal ? "LocalList" : "RemoteList";
-            data = isLocal ? filepath : new { ID = listid, Path = filepath }.ToJson();
+            data = isLocal ? filepath : new { ID = listid, Path = filepath }.ToJsonPipeline();
 
 
             JsonNode res = JsonNode.Parse(Request($"ftp/{path}", data));

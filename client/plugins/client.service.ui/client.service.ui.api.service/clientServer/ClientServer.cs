@@ -107,7 +107,7 @@ namespace client.service.ui.api.service.clientServer
             {
                 return new ClientServiceResponseInfo
                 {
-                    Content = "不存在这个路径",
+                    Content = "not exists this path",
                     RequestId = model.RequestId,
                     Path = model.Path,
                     Code = -1

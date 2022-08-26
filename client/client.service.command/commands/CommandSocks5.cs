@@ -75,10 +75,10 @@ namespace client.service.command.commands
                     RunAsNotDefaultValue(node["updateNum"].ToString(), () => { proxy["NumConnections"] = int.Parse(node["updateNum"].ToString()); });
                     RunAsNotDefaultValue(node["updateBufferSize"].ToString(), () => { proxy["BufferSize"] = int.Parse(node["updateBufferSize"].ToString()); });
 
-                    Request("socks5/Set", proxy.ToJson());
+                    Request("socks5/Set", proxy.ToJsonPipeline());
                     if (proxy["IsPac"].GetValue<bool>())
                     {
-                        Request("socks5/SetPac", new { }.ToJson());
+                        Request("socks5/SetPac", new { }.ToJsonPipeline());
                     }
                 }
 

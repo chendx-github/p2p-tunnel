@@ -41,8 +41,8 @@ namespace client.service.command.commands
                         Port = addPort,
                         AliveType = addAliveType,
                         ForwardType = (int)TcpForwardTypes.FORWARD,
-                    }.ToJson()
-                }.ToJson()));
+                    }.ToJsonPipeline()
+                }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, addPort, addAliveType);
 
@@ -52,7 +52,7 @@ namespace client.service.command.commands
             del.Add(delid);
             del.SetHandler((delid) =>
             {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveListen", new { id = delid, content = string.Empty }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveListen", new { id = delid, content = string.Empty }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, delid);
 
@@ -63,7 +63,7 @@ namespace client.service.command.commands
             start.Add(startid);
             start.SetHandler((startid) =>
             {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/Start", new { id = startid, content = string.Empty }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("tcpforward/Start", new { id = startid, content = string.Empty }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, startid);
 
@@ -74,7 +74,7 @@ namespace client.service.command.commands
             stop.Add(stopid);
             stop.SetHandler((stopid) =>
             {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/Stop", new { id = stopid, content = string.Empty }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("tcpforward/Stop", new { id = stopid, content = string.Empty }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, stopid);
 
@@ -110,8 +110,8 @@ namespace client.service.command.commands
                             TargetIp = ip.Address.ToString(),
                             TargetPort = ip.Port
                         },
-                    }.ToJson()
-                }.ToJson()));
+                    }.ToJsonPipeline()
+                }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, listenid, addTunnelType, addName, addSourceIp, addTarget);
 
@@ -123,7 +123,7 @@ namespace client.service.command.commands
             delForward.Add(delForwardid);
             delForward.SetHandler((delListenid, delForwardid) =>
             {
-                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveForward", new { id = 0, content = new { ListenID = delListenid, ForwardID = delForwardid }.ToJson() }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("tcpforward/RemoveForward", new { id = 0, content = new { ListenID = delListenid, ForwardID = delForwardid }.ToJsonPipeline() }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, delListenid, delForwardid);
 
@@ -180,8 +180,8 @@ namespace client.service.command.commands
                         AliveType = (int)TcpForwardAliveTypes.WEB,
                         ForwardType = (int)TcpForwardTypes.PROXY,
                         IsPac = Boolean.Parse(addProxyIsPac)
-                    }.ToJson()
-                }.ToJson()));
+                    }.ToJsonPipeline()
+                }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, addProxyPort, addProxyTunnelType, addProxyName, addProxyListening, addProxyIsPac);
 
@@ -212,7 +212,7 @@ namespace client.service.command.commands
                         RunAsNotDefaultValue(updateProxyName, () => { proxy["Name"] = updateProxyName; });
                         RunAsNotDefaultValue(updateProxyListening, () => { proxy["Listening"] = bool.Parse(updateProxyListening); });
                         RunAsNotDefaultValue(updateProxyIsPac, () => { proxy["IsPac"] = bool.Parse(updateProxyIsPac); });
-                        Request("tcpforward/AddListen", new { id = 0, content = proxy.ToJson() }.ToJson());
+                        Request("tcpforward/AddListen", new { id = 0, content = proxy.ToJsonPipeline() }.ToJsonPipeline());
                     }
                     else
                     {

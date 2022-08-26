@@ -34,7 +34,6 @@ namespace server.service
                 typeof(CounterMessenger).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
                 typeof(UdpForwardMessenger).Assembly,
-                typeof(WebRTCMessenger).Assembly,
                 typeof(Socks5Messenger).Assembly,
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 

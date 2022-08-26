@@ -2,15 +2,12 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-27 00:20:35
+ * @LastEditTime: 2022-08-27 01:26:53
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\router\index.js
  */
 import { createRouter, createWebHashHistory } from 'vue-router'
-
-import abouts from '../views/about/index'
-
 const routes = [
     {
         path: '/',
@@ -58,12 +55,6 @@ const routes = [
                 component: () => import('../views/service/ftp/Index.vue'),
                 meta: { name: '文件服务', service: 'FtpClientService' }
             },
-            // {
-            //     path: '/webrtc.html',
-            //     name: 'Webrtc',
-            //     component: () => import('../views/service/webrtc/Index.vue'),
-            //     meta: { name: 'webrtc', service: 'WebRTCClientService' }
-            // },
             {
                 path: '/service-logger.html',
                 name: 'ServiceLogger',

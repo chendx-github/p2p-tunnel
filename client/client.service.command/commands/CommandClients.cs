@@ -26,7 +26,7 @@ namespace client.service.command.commands
             connect.Add(connectId);
             connect.SetHandler((connectId) =>
             {
-                JsonNode res = JsonNode.Parse(Request("clients/connect", new { ID = connectId }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("clients/connect", new { ID = connectId }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, connectId);
 
@@ -37,7 +37,7 @@ namespace client.service.command.commands
             connectReverse.Add(connectReverseId);
             connectReverse.SetHandler((connectReverseId) =>
             {
-                JsonNode res = JsonNode.Parse(Request("clients/connectReverse", new { ID = connectReverseId }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("clients/connectReverse", new { ID = connectReverseId }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, connectReverseId);
 
@@ -48,7 +48,7 @@ namespace client.service.command.commands
             offline.Add(offlineId);
             offline.SetHandler((offlineId) =>
             {
-                JsonNode res = JsonNode.Parse(Request("clients/offline", new { ID = offlineId }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("clients/offline", new { ID = offlineId }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, offlineId);
 
@@ -59,7 +59,7 @@ namespace client.service.command.commands
             reset.Add(resetId);
             reset.SetHandler((resetId) =>
             {
-                JsonNode res = JsonNode.Parse(Request("clients/reset", new { ID = resetId }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("clients/reset", new { ID = resetId }.ToJsonPipeline()));
                 PrintRequestState(res);
             }, resetId);
 
@@ -74,7 +74,7 @@ namespace client.service.command.commands
             test.Add(testCount);
             test.SetHandler((testId, testKb, testCount) =>
             {
-                JsonNode res = JsonNode.Parse(Request("test/packet", new { Id = testId, KB = testKb, Count = testCount }.ToJson()));
+                JsonNode res = JsonNode.Parse(Request("test/packet", new { Id = testId, KB = testKb, Count = testCount }.ToJsonPipeline()));
 
                 if (res.Root["Code"].GetValue<int>() == 0)
                 {

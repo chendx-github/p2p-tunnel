@@ -75,7 +75,7 @@ namespace client.service.command.commands
                     RunAsNotDefaultValue(configServerTcpPort, () => { content["ServerConfig"]["TcpPort"] = int.Parse(configServerTcpPort); });
                     RunAsNotDefaultValue(configServerEncode, () => { content["ServerConfig"]["Encode"] = Boolean.Parse(configServerEncode); });
 
-                    JsonNode res = JsonNode.Parse(Request("register/config", content.ToJson()));
+                    JsonNode res = JsonNode.Parse(Request("register/config", content.ToJsonPipeline()));
                     PrintRequestState(node);
                 }
                 else

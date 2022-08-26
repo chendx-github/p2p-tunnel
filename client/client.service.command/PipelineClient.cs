@@ -55,7 +55,7 @@ namespace client.service.command
             ReadCommentHandling = JsonCommentHandling.Skip,
             PropertyNameCaseInsensitive = true
         };
-        public static string ToJson(this object obj)
+        public static string ToJsonPipeline(this object obj)
         {
             return JsonSerializer.Serialize(obj, options: jsonSerializerOptions);
         }
