@@ -52,6 +52,30 @@ namespace client.realize.messengers.clients
             punchHoleTcp.OnStep3Handler.Sub((e) => clientInfoCaching.Online(e.Data.FromId, e.Connection, ClientConnectTypes.P2P));
             punchHoleTcp.OnStep4Handler.Sub((e) => clientInfoCaching.Online(e.Data.FromId, e.Connection, ClientConnectTypes.P2P));
 
+            punchHoleMessengerSender.OnDelay.Sub((param) =>
+            {
+                if (clientInfoCaching.Get(param.Raw.Data.FromId, out ClientInfo client))
+                {
+                    IConnection connection = null;
+                    switch (param.Delay.ServerType)
+                    {
+                        case ServerType.TCP:
+                            connection = registerState.TcpConnection.Clone();
+                            break;
+                        case ServerType.UDP:
+                            connection = registerState.UdpConnection.Clone();
+                            break;
+                        default:
+                            break;
+                    }
+                    if (connection != null)
+                    {
+                        connection.Relay = registerState.RemoteInfo.Relay;
+                        clientInfoCaching.Online(param.Raw.Data.FromId, connection, ClientConnectTypes.Relay);
+                    }
+                }
+            });
+
             this.punchHoleMessengerSender = punchHoleMessengerSender;
             //有人要求反向链接
             punchHoleMessengerSender.OnReverse.Sub(OnReverse);
@@ -147,6 +171,7 @@ namespace client.realize.messengers.clients
                 IConnection connection = registerState.UdpConnection.Clone();
                 connection.Relay = registerState.RemoteInfo.Relay;
                 clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
+                _ =punchHoleMessengerSender.SendRelay(info.Id, ServerType.UDP);
                 return true;
             }
             else
@@ -174,6 +199,7 @@ namespace client.realize.messengers.clients
                 IConnection connection = registerState.TcpConnection.Clone();
                 connection.Relay = registerState.RemoteInfo.Relay;
                 clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
+                _ = punchHoleMessengerSender.SendRelay(info.Id, ServerType.TCP);
                 return true;
             }
             else

@@ -21,9 +21,12 @@ namespace common.tcpforward
         public TcpForwardAliveTypes AliveType { get; set; }
         public TcpForwardTypes ForwardType { get; set; }
         public ulong RequestId { get; set; }
-        public Memory<byte> TargetEndpoint { get; set; }
-        public Memory<byte> Buffer { get; set; }
 
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Memory<byte> TargetEndpoint { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Memory<byte> Buffer { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public IConnection Connection { get; set; }
 
         public byte[] ToBytes()

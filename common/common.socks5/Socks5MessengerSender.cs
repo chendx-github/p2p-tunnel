@@ -26,7 +26,7 @@ namespace common.socks5
             _ = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "socks5/response",
-                Connection = connection,
+                Connection = connection.FromConnection,
                 Content = data.ToBytes()
             }).ConfigureAwait(false);
         }

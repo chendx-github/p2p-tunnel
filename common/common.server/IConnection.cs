@@ -13,7 +13,9 @@ namespace common.server
     {
         public ulong ConnectId { get; set; }
         public bool Connected { get; }
+
         public bool Relay { get; set; }
+        public IConnection FromConnection { get; set; }
 
         public bool EncodeEnabled { get; }
         public ICrypto Crypto { get; }
@@ -61,8 +63,9 @@ namespace common.server
             }
         }
         public virtual bool Connected => false;
+
         public bool Relay { get; set; } = false;
-        public object State { get; set; }
+        public IConnection FromConnection { get; set; }
 
         public bool EncodeEnabled => Crypto != null;
         public ICrypto Crypto { get; private set; }
@@ -82,7 +85,6 @@ namespace common.server
 
         public MessageRequestWrap ReceiveRequestWrap { get; private set; } = new MessageRequestWrap();
         public MessageResponseWrap ReceiveResponseWrap { get; private set; } = new MessageResponseWrap();
-
         private Memory<byte> receiveData = Helper.EmptyArray;
         public Memory<byte> ReceiveData
         {
@@ -107,6 +109,7 @@ namespace common.server
 
         public long SendBytes { get; set; } = 0;
         public long ReceiveBytes { get; set; } = 0;
+
 
         public abstract ValueTask<bool> Send(ReadOnlyMemory<byte> data);
         public abstract ValueTask<bool> Send(byte[] data, int length);

@@ -89,6 +89,17 @@ namespace client.realize.messengers.punchHole
             }).ConfigureAwait(false);
         }
 
+        public SimpleSubPushHandler<OnDelayParam> OnDelay { get; } = new SimpleSubPushHandler<OnDelayParam>();
+        public async Task SendRelay(ulong toid, ServerType serverType)
+        {
+            await Send(new SendPunchHoleArg<PunchHoleRelayInfo>
+            {
+                Connection = registerState.TcpConnection,
+                ToId = toid,
+                Data = new PunchHoleRelayInfo { ServerType = serverType }
+            }).ConfigureAwait(false);
+        }
+
         public async Task SendReset(ulong toid)
         {
             await Send(new SendPunchHoleArg<PunchHoleResetInfo>
@@ -98,6 +109,12 @@ namespace client.realize.messengers.punchHole
                 Data = new PunchHoleResetInfo { }
             }).ConfigureAwait(false);
         }
+    }
+
+    public class OnDelayParam
+    {
+        public OnPunchHoleArg Raw { get; set; }
+        public PunchHoleRelayInfo Delay { get; set; }
     }
 
     public class SendPunchHoleArg<T>

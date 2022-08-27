@@ -53,6 +53,7 @@ namespace server.service
         public static ServiceCollection AddMessenger(this ServiceCollection services, Assembly[] assemblys)
         {
             services.AddSingleton<IClientRegisterCaching, ClientRegisterCaching>();
+            services.AddSingleton<ISourceConnectionSelector, SourceConnectionSelector>();
             services.AddSingleton<IRegisterKeyValidator, DefaultRegisterKeyValidator>();
             services.AddSingleton<MessengerResolver>();
             services.AddSingleton<MessengerSender>();

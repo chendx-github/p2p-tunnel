@@ -18,6 +18,8 @@ namespace client.messengers.punchHole
         REVERSE,
         [Description("重启")]
         RESET,
+        [Description("中继")]
+        Relay,
     }
 
 
@@ -215,6 +217,35 @@ namespace client.messengers.punchHole
             PunchType = (PunchHoleTypes)span[0];
             ForwardType = (PunchForwardTypes)span[1];
             Step = span[2];
+        }
+    }
+
+    public class PunchHoleRelayInfo : IPunchHoleStepInfo
+    {
+        public PunchHoleTypes PunchType { get; private set; } = PunchHoleTypes.Relay;
+
+        public PunchForwardTypes ForwardType { get; private set; } = PunchForwardTypes.FORWARD;
+
+        public byte Step { get; set; } = 0;
+
+        public ServerType ServerType { get; set; } = ServerType.TCP;
+
+        public byte[] ToBytes()
+        {
+            return new byte[] {
+                (byte)PunchType,
+                (byte)ForwardType,
+                Step,
+                (byte)ServerType,
+            };
+        }
+        public void DeBytes(ReadOnlyMemory<byte> data)
+        {
+            var span = data.Span;
+            PunchType = (PunchHoleTypes)span[0];
+            ForwardType = (PunchForwardTypes)span[1];
+            Step = span[2];
+            ServerType = (ServerType)span[3];
         }
     }
 }

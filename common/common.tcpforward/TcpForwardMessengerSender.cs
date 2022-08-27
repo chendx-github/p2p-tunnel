@@ -35,7 +35,7 @@ namespace common.tcpforward
             var res = messengerSender.SendOnly(new MessageRequestWrap
             {
                 Path = "TcpForward/Response",
-                Connection = arg.Connection,
+                Connection = arg.Connection.FromConnection,
                 Content = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;

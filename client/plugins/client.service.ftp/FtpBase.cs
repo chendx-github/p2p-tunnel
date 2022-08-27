@@ -301,7 +301,7 @@ namespace client.service.ftp
 
                 if (fs.IndexLength >= cmd.Size)
                 {
-                    await SendOnlyTcp(new FtpFileEndCommand { Md5 = cmd.Md5 }, wrap.Connection).ConfigureAwait(false);
+                    await SendOnlyTcp(new FtpFileEndCommand { Md5 = cmd.Md5 }, wrap.Connection.FromConnection).ConfigureAwait(false);
                     fs.Stream.Flush();
                     Downloads.Remove(wrap.Client.Id, cmd.Md5);
                     File.Move(fs.CacheFullName, fs.FullName, true);
@@ -309,7 +309,7 @@ namespace client.service.ftp
             }
             catch (Exception ex)
             {
-                await SendOnlyTcp(new FtpFileErrorCommand { Md5 = cmd.Md5, Msg = ex.Message }, wrap.Connection).ConfigureAwait(false);
+                await SendOnlyTcp(new FtpFileErrorCommand { Md5 = cmd.Md5, Msg = ex.Message }, wrap.Connection.FromConnection).ConfigureAwait(false);
                 Downloads.Remove(wrap.Client.Id, cmd.Md5, true);
                 Logger.Instance.Error(ex);
             }

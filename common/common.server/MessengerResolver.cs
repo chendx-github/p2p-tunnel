@@ -19,9 +19,10 @@ namespace common.server
         private readonly IUdpServer udpserver;
         private readonly MessengerSender messengerSender;
         private readonly MiddlewareTransfer middlewareTransfer;
+        private readonly ISourceConnectionSelector sourceConnectionSelector;
 
 
-        public MessengerResolver(IUdpServer udpserver, ITcpServer tcpserver, MessengerSender messengerSender, MiddlewareTransfer middlewareTransfer)
+        public MessengerResolver(IUdpServer udpserver, ITcpServer tcpserver, MessengerSender messengerSender, MiddlewareTransfer middlewareTransfer, ISourceConnectionSelector sourceConnectionSelector)
         {
             this.tcpserver = tcpserver;
             this.udpserver = udpserver;
@@ -37,6 +38,7 @@ namespace common.server
                 connection.UpdateTime(DateTimeHelper.GetTimeStamp());
                 InputData(connection).Wait();
             });
+            this.sourceConnectionSelector = sourceConnectionSelector;   
         }
         public void LoadMessenger(Type type, object obj)
         {
@@ -80,8 +82,8 @@ namespace common.server
                 return;
             }
 
-
             requestWrap.FromArray(receive);
+            connection.FromConnection = sourceConnectionSelector.Select(connection);
             if (connection.EncodeEnabled)
             {
                 requestWrap.Memory = connection.Crypto.Decode(requestWrap.Memory);

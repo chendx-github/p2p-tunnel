@@ -37,7 +37,7 @@ namespace client.service.ftp
                 {
                     Connection = connection,
                 };
-                if (clientInfoCaching.Get(connection.ConnectId, out ClientInfo client))
+                if (clientInfoCaching.Get(connection.FromConnection.ConnectId, out ClientInfo client))
                 {
                     wrap.Client = client;
                     if (plugins.ContainsKey(cmd))

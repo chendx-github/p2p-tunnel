@@ -23,11 +23,11 @@ namespace server.service.messengers
             this.config = config;
         }
 
-        public async Task<byte[]> SendOnly(IConnection connection)
+        public async Task SendOnly(IConnection connection)
         {
             if (!config.Relay)
             {
-                return Helper.FalseArray;
+                return;
             }
 
             RelayParamsInfo model = new RelayParamsInfo();
@@ -42,18 +42,18 @@ namespace server.service.messengers
                     //是否在同一个组
                     if (source.GroupId == target.GroupId)
                     {
-                        var res = await messengerSender.SendOnly(new MessageRequestWrap
+                        await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
                             Content = model.Data,
                             MemoryPath = model.Path,
-                            RequestId = connection.ReceiveRequestWrap.RequestId
+                            RequestId = connection.ReceiveRequestWrap.RequestId,
+                            Delay = 1,
+                            DelayId = source.Id,
                         }).ConfigureAwait(false);
-                        return res ? Helper.TrueArray : Helper.FalseArray;
                     }
                 }
             }
-            return Helper.FalseArray;
         }
 
         public async Task<byte[]> SendReply(IConnection connection)

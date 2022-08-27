@@ -1,10 +1,12 @@
 ﻿using client.messengers.punchHole;
+using client.messengers.punchHole.tcp;
 using client.messengers.punchHole.udp;
 using client.messengers.register;
 using client.realize.messengers.crypto;
 using common.libs;
 using common.libs.extends;
 using common.server;
+using common.server.servers.iocp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,16 +23,17 @@ namespace client.realize.messengers.punchHole.udp
         private readonly IUdpServer udpServer;
         private readonly CryptoSwap cryptoSwap;
         private readonly Config config;
+        private readonly WheelTimer<object> wheelTimer;
 
-        public PunchHoleRUdpMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, RegisterStateInfo registerState, IUdpServer udpServer, CryptoSwap cryptoSwap, Config config)
+        public PunchHoleRUdpMessengerSender(PunchHoleMessengerSender punchHoleMessengerSender, RegisterStateInfo registerState, IUdpServer udpServer, CryptoSwap cryptoSwap, Config config, WheelTimer<object> wheelTimer)
         {
             this.punchHoleMessengerSender = punchHoleMessengerSender;
             this.registerState = registerState;
             this.udpServer = udpServer;
             this.cryptoSwap = cryptoSwap;
             this.config = config;
+            this.wheelTimer = wheelTimer;
         }
-
         private IConnection connection => registerState.TcpConnection;
         private ulong ConnectId => registerState.ConnectId;
 #if DEBUG
@@ -44,9 +47,12 @@ namespace client.realize.messengers.punchHole.udp
         public SimpleSubPushHandler<ConnectParams> OnSendHandler => new SimpleSubPushHandler<ConnectParams>();
         public async Task<ConnectResultModel> Send(ConnectParams param)
         {
+            var timeout = wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = SendStep1Timeout, State = param.Id }, 2000);
+
             TaskCompletionSource<ConnectResultModel> tcs = new TaskCompletionSource<ConnectResultModel>();
             connectCache.TryAdd(param.Id, new ConnectCacheModel
             {
+                Step1Timeout = timeout,
                 Tcs = tcs,
                 TryTimes = param.TryTimes
             });
@@ -60,6 +66,25 @@ namespace client.realize.messengers.punchHole.udp
             }).ConfigureAwait(false);
 
             return await tcs.Task.ConfigureAwait(false);
+        }
+        private void SendStep1Timeout(WheelTimerTimeout<object> timeout)
+        {
+            try
+            {
+                ulong toid = (ulong)timeout.Task.State;
+                timeout.Cancel();
+                if (connectCache.TryRemove(toid, out ConnectCacheModel cache))
+                {
+                    cache.Canceled = true;
+                    cache.Tcs.SetResult(new ConnectResultModel { State = false, Result = new ConnectFailModel { Type = ConnectFailType.ERROR, Msg = "udp打洞超时" } });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error(ex);
+            }
+
         }
 
         public SimpleSubPushHandler<OnStep1Params> OnStep1Handler { get; } = new SimpleSubPushHandler<OnStep1Params>();
@@ -96,6 +121,7 @@ namespace client.realize.messengers.punchHole.udp
                 {
                     return;
                 }
+                cache.Step1Timeout.Cancel();
 
                 if (arg.Data.IsDefault)
                 {

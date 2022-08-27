@@ -52,6 +52,7 @@ namespace common.tcpforward
         }
         private void Connect(TcpForwardInfo arg)
         {
+           
             IPEndPoint endpoint = NetworkHelper.EndpointFromArray(arg.TargetEndpoint);
             if (!config.LanConnectEnable && arg.ForwardType == TcpForwardTypes.PROXY && endpoint.IsLan())
             {

@@ -53,6 +53,7 @@ namespace client.messengers.punchHole
         public TaskCompletionSource<ConnectResultModel> Tcs { get; set; }
         public string TunnelName { get; set; }
 
+        public WheelTimerTimeout<object> Step1Timeout { get; set; }
         public WheelTimerTimeout<object> Step3Timeout { get; set; }
     }
     public class ConnectResultModel

@@ -29,6 +29,8 @@ namespace client.realize.messengers
             services.AddSingleton<Config>();
             services.AddTransient(typeof(IConfigDataProvider<>), typeof(ConfigDataFileProvider<>));
 
+            services.AddSingleton<ISourceConnectionSelector, SourceConnectionSelector>();
+
             //监听服务
             services.AddSingleton<ITcpServer, TcpServer>();
             services.AddSingleton<IUdpServer, UdpServer>();

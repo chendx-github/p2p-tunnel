@@ -32,6 +32,9 @@ namespace common.server.model
         /// </summary>
         public Memory<byte> Memory { get; set; } = Helper.EmptyArray;
 
+        public byte Delay { get; set; } = 0;
+        public ulong DelayId { get; set; } = 0;
+
         /// <summary>
         /// 转包
         /// </summary>
@@ -43,9 +46,14 @@ namespace common.server.model
 
             length = (type == ServerType.TCP ? 4 : 0)
                 + 1
+                + 1
                 + requestIdByte.Length
                 + 1 + MemoryPath.Length
                 + Content.Length;
+            if (Delay == 1)
+            {
+                length += 8;
+            }
 
             byte[] res = pool ? ArrayPool<byte>.Shared.Rent(length) : new byte[length];
 
@@ -60,6 +68,15 @@ namespace common.server.model
 
             res[index] = typeByte;
             index += 1;
+
+            res[index] = Delay;
+            index += 1;
+            if (Delay == 1)
+            {
+                byte[] delayidByte = DelayId.ToBytes();
+                Array.Copy(delayidByte, 0, res, index, delayidByte.Length);
+                index += delayidByte.Length;
+            }
 
             Array.Copy(requestIdByte, 0, res, index, requestIdByte.Length);
             index += requestIdByte.Length;
@@ -83,6 +100,15 @@ namespace common.server.model
         {
             var span = memory.Span;
             int index = 1;
+
+            Delay = span[index];
+            index += 1;
+
+            if (Delay == 1)
+            {
+                DelayId = span.Slice(index).ToUInt64();
+                index += 8;
+            }
 
             RequestId = span.Slice(index).ToUInt64();
             index += 8;
