@@ -136,7 +136,7 @@ namespace client.realize.messengers.punchHole.udp
                     for (int i = 0; i < cache.TryTimes; i++)
                     {
                         IPEndPoint ip = i >= ips.Count - 1 ? ips[^1] : ips[i];
-                        connection = udpServer.CreateConnection(ip);
+                        connection = await udpServer.CreateConnection(ip);
                         if (connection != null)
                         {
                             break;

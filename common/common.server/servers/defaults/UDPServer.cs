@@ -59,7 +59,7 @@ namespace common.server.servers.defaults
                     int hascode = remoteEP.GetHashCode();
                     if (!connections.TryGetValue(hascode, out IConnection connection))
                     {
-                        connection = CreateConnection(remoteEP);
+                        connection = CreateConnectionIntenal(remoteEP);
                         connections.TryAdd(hascode, connection);
                     }
 
@@ -101,7 +101,13 @@ namespace common.server.servers.defaults
             connections.Clear();
         }
 
-        public IConnection CreateConnection(IPEndPoint address)
+        public async Task<IConnection> CreateConnection(IPEndPoint address)
+        {
+            await Task.CompletedTask;
+            return new UdpConnection(UdpClient, address);
+        }
+
+        private IConnection CreateConnectionIntenal(IPEndPoint address)
         {
             return new UdpConnection(UdpClient, address);
         }

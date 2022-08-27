@@ -151,7 +151,7 @@ namespace client.realize.messengers.register
                         // registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort(new System.Collections.Generic.List<int> { registerState.LocalInfo.TcpPort });
                         registerState.LocalInfo.Mac = string.Empty;
                         //绑定udp
-                        UdpBind(serverAddress);
+                        await UdpBind(serverAddress);
                         if (registerState.UdpConnection == null)
                         {
                             success.ErrorMsg = "udp连接失败";
@@ -210,11 +210,11 @@ namespace client.realize.messengers.register
                 return success;
             });
         }
-        private void UdpBind(IPAddress serverAddress)
+        private async Task UdpBind(IPAddress serverAddress)
         {
             //UDP 开始监听
             udpServer.Start(registerState.LocalInfo.UdpPort, config.Client.BindIp);
-            registerState.UdpConnection = udpServer.CreateConnection(new IPEndPoint(serverAddress, config.Server.UdpPort));
+            registerState.UdpConnection = await udpServer.CreateConnection(new IPEndPoint(serverAddress, config.Server.UdpPort));
         }
         private void TcpBind(IPAddress serverAddress)
         {

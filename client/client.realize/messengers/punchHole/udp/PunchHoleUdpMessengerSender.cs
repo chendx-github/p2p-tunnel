@@ -95,7 +95,7 @@ namespace client.realize.messengers.punchHole.udp
             {
                 await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep21Info>
                 {
-                    Connection = udpServer.CreateConnection(new IPEndPoint(ip, arg.Data.Port)),
+                    Connection = await udpServer.CreateConnection(new IPEndPoint(ip, arg.Data.Port)),
                     TunnelName = arg.RawData.TunnelName,
                     ToId = arg.RawData.FromId,
                     Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
@@ -104,7 +104,7 @@ namespace client.realize.messengers.punchHole.udp
 
             await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep21Info>
             {
-                Connection = udpServer.CreateConnection(new IPEndPoint(arg.Data.Ip, arg.Data.Port)),
+                Connection = await udpServer.CreateConnection(new IPEndPoint(arg.Data.Ip, arg.Data.Port)),
                 TunnelName = arg.RawData.TunnelName,
                 ToId = arg.RawData.FromId,
                 Data = new PunchHoleStep21Info { Step = (byte)PunchHoleUdpSteps.STEP_2_1, PunchType = PunchHoleTypes.UDP }
@@ -132,7 +132,7 @@ namespace client.realize.messengers.punchHole.udp
                 {
                     await punchHoleMessengerSender.Send(new SendPunchHoleArg<PunchHoleStep3Info>
                     {
-                        Connection = udpServer.CreateConnection(ip),
+                        Connection = await udpServer.CreateConnection(ip),
                         TunnelName = arg.RawData.TunnelName,
                         Data = new PunchHoleStep3Info
                         {

@@ -107,7 +107,7 @@ namespace client.realize.messengers.register
 
         public async Task<int> GetGuessPort(ServerType serverType)
         {
-            var connection = GetConnection(serverType);
+            var connection = await GetConnection(serverType);
 
             MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
             {
@@ -123,7 +123,7 @@ namespace client.realize.messengers.register
             }
             return result.Data.Span.ToInt32();
         }
-        private IConnection GetConnection(ServerType serverType)
+        private async Task<IConnection> GetConnection(ServerType serverType)
         {
             IPAddress serverAddress = NetworkHelper.GetDomainIp(config.Server.Ip);
             if (serverType == ServerType.TCP)
@@ -137,7 +137,7 @@ namespace client.realize.messengers.register
             else
             {
                 IPEndPoint endpoint = new IPEndPoint(serverAddress, config.Server.UdpPort);
-                return udpServer.CreateConnection(endpoint);
+                return await udpServer.CreateConnection(endpoint);
             }
         }
 

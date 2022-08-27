@@ -3,6 +3,7 @@ using LiteNetLib;
 using System;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace common.server.servers.rudp
 {
@@ -82,34 +83,37 @@ namespace common.server.servers.rudp
             Release();
         }
 
-        public IConnection CreateConnection(IPEndPoint address)
+        public async Task<IConnection> CreateConnection(IPEndPoint address)
         {
-            maxNumberConnectings.WaitOne();
-            maxNumberConnectingNumberSpace.Increment();
-            try
+            return await Task.Run(async () =>
             {
-                var peer = server.Connect(address, string.Empty);
-                while (peer.ConnectionState == ConnectionState.Outgoing)
+                maxNumberConnectings.WaitOne();
+                maxNumberConnectingNumberSpace.Increment();
+                try
                 {
-                    Thread.Sleep(10);
+                    var peer = server.Connect(address, string.Empty);
+                    while (peer.ConnectionState == ConnectionState.Outgoing)
+                    {
+                        await Task.Delay(10);
+                    }
+                    if (peer.ConnectionState == ConnectionState.Connected)
+                    {
+                        return peer.Tag as RudpConnection;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                if (peer.ConnectionState == ConnectionState.Connected)
-                {
-                    return peer.Tag as RudpConnection;
-                }
-                else
+                catch (Exception)
                 {
                     return null;
                 }
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-            finally
-            {
-                Release();
-            }
+                finally
+                {
+                    Release();
+                }
+            });
         }
 
         public bool SendUnconnectedMessage(byte[] message, IPEndPoint address)

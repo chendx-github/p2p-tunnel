@@ -1,9 +1,10 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 
 namespace common.server
 {
     public interface IUdpServer : IServer
     {
-        public IConnection CreateConnection(IPEndPoint address);
+        public Task<IConnection> CreateConnection(IPEndPoint address);
     }
 }
