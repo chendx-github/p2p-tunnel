@@ -8,10 +8,18 @@ namespace common.server.model
 {
     public class MessageRequestWrap
     {
+        /// <summary>
+        /// 用来读取数据，发送数据用下一层的FromConnection，来源连接，在中继时，数据来自服务器，但是真实来源是别的客户端，所以不能直接用这个来发送回复的数据
+        /// </summary>
         public IConnection Connection { get; set; }
+        /// <summary>
+        /// 超时时间，发送待回复时设置
+        /// </summary>
         public int Timeout { get; set; } = 15000;
 
-
+        /// <summary>
+        /// 目标路径
+        /// </summary>
         public string Path
         {
             set
@@ -19,21 +27,29 @@ namespace common.server.model
                 MemoryPath = value.ToLower().ToBytes();
             }
         }
+        /// <summary>
+        /// 目标路径
+        /// </summary>
         public Memory<byte> MemoryPath { get; set; } = Memory<byte>.Empty;
 
+        /// <summary>
+        /// 每条数据都有个id
+        /// </summary>
         public ulong RequestId { get; set; } = 0;
 
         /// <summary>
-        /// 发送数据
+        /// 服务器给客户端发送数据时，可以写1，表示是中继数据，
         /// </summary>
-        public Memory<byte> Content { get; set; } = Helper.EmptyArray;
+        public byte Delay { get; set; } = 0;
         /// <summary>
-        /// 接收数据
+        /// 中继数据时，写明是谁发的中继数据，以便目标客户端回复给来源客户端
+        /// </summary>
+        public ulong DelayId { get; set; } = 0;
+
+        /// <summary>
+        /// 数据荷载
         /// </summary>
         public Memory<byte> Memory { get; set; } = Helper.EmptyArray;
-
-        public byte Delay { get; set; } = 0;
-        public ulong DelayId { get; set; } = 0;
 
         /// <summary>
         /// 转包
@@ -49,7 +65,7 @@ namespace common.server.model
                 + 1
                 + requestIdByte.Length
                 + 1 + MemoryPath.Length
-                + Content.Length;
+                + Memory.Length;
             if (Delay == 1)
             {
                 length += 8;
@@ -87,8 +103,8 @@ namespace common.server.model
             MemoryPath.CopyTo(res.AsMemory(index, MemoryPath.Length));
             index += MemoryPath.Length;
 
-            Content.CopyTo(res.AsMemory(index, Content.Length));
-            index += Content.Length;
+            Memory.CopyTo(res.AsMemory(index, Memory.Length));
+            index += Memory.Length;
 
             return res;
         }
@@ -130,7 +146,7 @@ namespace common.server.model
         public void Reset()
         {
             MemoryPath = Memory<byte>.Empty;
-            Content = Helper.EmptyArray;
+            Memory = Helper.EmptyArray;
             Memory = Helper.EmptyArray;
         }
     }
@@ -139,7 +155,7 @@ namespace common.server.model
         public IConnection Connection { get; set; }
         public MessageResponeCodes Code { get; set; } = MessageResponeCodes.OK;
         public ulong RequestId { get; set; } = 0;
-        public ReadOnlyMemory<byte> Content { get; set; } = Helper.EmptyArray;
+        public ReadOnlyMemory<byte> Memory { get; set; } = Helper.EmptyArray;
 
         /// <summary>
         /// 转包
@@ -151,7 +167,7 @@ namespace common.server.model
                 + 1
                 + 1
                 + 8
-                + Content.Length;
+                + Memory.Length;
 
             byte[] res = pool ? ArrayPool<byte>.Shared.Rent(length) : new byte[length];
 
@@ -173,8 +189,8 @@ namespace common.server.model
             Array.Copy(requestIdByte, 0, res, index, requestIdByte.Length);
             index += requestIdByte.Length;
 
-            Content.CopyTo(res.AsMemory(index, Content.Length));
-            index += Content.Length;
+            Memory.CopyTo(res.AsMemory(index, Memory.Length));
+            index += Memory.Length;
 
             return (res, length);
         }
@@ -193,7 +209,7 @@ namespace common.server.model
             RequestId = span.Slice(index).ToUInt64();
             index += 8;
 
-            Content = memory.Slice(index, memory.Length - index);
+            Memory = memory.Slice(index, memory.Length - index);
         }
 
         public void Return(byte[] array)
@@ -203,8 +219,8 @@ namespace common.server.model
 
         public void Reset()
         {
-            Content = Helper.EmptyArray;
-            Content = Helper.EmptyArray;
+            Memory = Helper.EmptyArray;
+            Memory = Helper.EmptyArray;
         }
     }
 

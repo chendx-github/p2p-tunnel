@@ -6,16 +6,44 @@ using System.Net;
 
 namespace common.server.model
 {
+    /// <summary>
+    /// 打洞数据交换
+    /// </summary>
     public class PunchHoleParamsInfo
     {
         public PunchHoleParamsInfo() { }
+        /// <summary>
+        /// 数据交换分两种，一种是a让服务器把a的公网数据发给b，另一种是，a把一些数据通过服务器原样交给b
+        /// </summary>
         public PunchForwardTypes PunchForwardType { get; set; } = PunchForwardTypes.NOTIFY;
+        /// <summary>
+        /// 打洞步骤，这个数据是第几步
+        /// </summary>
         public byte PunchStep { get; set; } = 0;
+        /// <summary>
+        /// 打洞类别，tcp udp 或者其它
+        /// </summary>
         public byte PunchType { get; set; } = 0;
+        /// <summary>
+        /// 猜测的端口
+        /// </summary>
         public int GuessPort { get; set; } = 0;
+        /// <summary>
+        /// 来自谁
+        /// </summary>
         public ulong FromId { get; set; } = 0;
+        /// <summary>
+        /// 给谁
+        /// </summary>
         public ulong ToId { get; set; } = 0;
+        /// <summary>
+        /// 通道名，可能会有多个通道
+        /// </summary>
         public string TunnelName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 携带的数
+        /// </summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public ReadOnlyMemory<byte> Data { get; set; } = Helper.EmptyArray;
         public byte[] ToBytes()
@@ -192,6 +220,5 @@ namespace common.server.model
             index += 2;
         }
     }
-
 
 }

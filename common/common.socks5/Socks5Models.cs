@@ -7,14 +7,29 @@ namespace common.socks5
 {
     public class Socks5Info
     {
-
+        /// <summary>
+        /// socks5步骤，执行到哪一步了
+        /// </summary>
         public Socks5EnumStep Socks5Step { get; set; } = Socks5EnumStep.Request;
+        /// <summary>
+        /// 版本
+        /// </summary>
         public byte Version { get; set; } = 0;
+        /// <summary>
+        /// 请求id
+        /// </summary>
         public ulong Id { get; set; } = 0;
+        /// <summary>
+        /// 来源地址，数据从目标端回来的时候回给谁
+        /// </summary>
         public IPEndPoint SourceEP { get; set; }
 
+        /// <summary>
+        /// 携带的数据
+        /// </summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
+
         [System.Text.Json.Serialization.JsonIgnore]
         public byte[] Response { get; set; } = new byte[1];
         public byte[] ToBytes()

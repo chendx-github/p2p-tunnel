@@ -164,7 +164,7 @@ namespace server.service.messengers.register
             var resp = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
-                Content = Helper.EmptyArray,
+                Memory = Helper.EmptyArray,
                 Path = "heart/alive",
                 Timeout = 2000,
             });

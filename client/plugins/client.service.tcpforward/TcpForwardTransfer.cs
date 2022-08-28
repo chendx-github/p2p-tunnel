@@ -577,7 +577,7 @@ namespace client.service.tcpforward
         {
             Task.Run(async () =>
             {
-                foreach (var item in serverForwardConfigInfo.Webs.Where(c => c.Listening == true))
+                foreach (var item in serverForwardConfigInfo.Webs)
                 {
                     await SendRegister(item, TcpForwardAliveTypes.WEB).ConfigureAwait(false);
                 }

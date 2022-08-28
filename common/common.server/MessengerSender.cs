@@ -65,9 +65,9 @@ namespace common.server
 
                 if (msg.Connection.Relay)
                 {
-                    msg.Content = new RelayParamsInfo
+                    msg.Memory = new RelayParamsInfo
                     {
-                        Data = msg.Content,
+                        Data = msg.Memory,
                         Path = msg.MemoryPath,
                         ToId = msg.Connection.ConnectId
                     }.ToBytes();
@@ -75,7 +75,7 @@ namespace common.server
                 }
                 if (msg.Connection.EncodeEnabled)
                 {
-                    msg.Content = msg.Connection.Crypto.Encode(msg.Content);
+                    msg.Memory = msg.Connection.Crypto.Encode(msg.Memory);
                 }
 
                 byte[] bytes = msg.ToArray(msg.Connection.ServerType, out int length, true);
@@ -106,7 +106,7 @@ namespace common.server
 
                 if (msg.Connection.EncodeEnabled)
                 {
-                    msg.Content = msg.Connection.Crypto.Encode(msg.Content);
+                    msg.Memory = msg.Connection.Crypto.Encode(msg.Memory);
                 }
 
                 (byte[] bytes, int length) = msg.ToArray(msg.Connection.ServerType, true);
@@ -132,7 +132,7 @@ namespace common.server
             if (sends.TryRemove(wrap.RequestId, out WheelTimerTimeout<TimeoutState> timeout))
             {
                 timeout.Cancel();
-                timeout.Task.State.Tcs.SetResult(new MessageResponeInfo { Code = wrap.Code, Data = wrap.Content });
+                timeout.Task.State.Tcs.SetResult(new MessageResponeInfo { Code = wrap.Code, Data = wrap.Memory });
             }
         }
 

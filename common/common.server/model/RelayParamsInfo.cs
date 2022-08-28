@@ -5,16 +5,25 @@ using System;
 namespace common.server.model
 {
     /// <summary>
-    /// 中继
+    /// 中继数据包
     /// </summary>
     public class RelayParamsInfo
     {
         public RelayParamsInfo() { }
 
+        /// <summary>
+        /// 给谁
+        /// </summary>
         public ulong ToId { get; set; } = 0;
 
+        /// <summary>
+        /// 给目标端哪个路径
+        /// </summary>
         public Memory<byte> Path { get; set; }
 
+        /// <summary>
+        /// 数据
+        /// </summary>
         public Memory<byte> Data { get; set; } = Helper.EmptyArray;
 
         public byte[] ToBytes()

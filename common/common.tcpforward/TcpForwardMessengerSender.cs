@@ -20,7 +20,7 @@ namespace common.tcpforward
             {
                 Path = "TcpForward/Request",
                 Connection = arg.Connection,
-                Content = arg.ToBytes()
+                Memory = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
@@ -36,7 +36,7 @@ namespace common.tcpforward
             {
                 Path = "TcpForward/Response",
                 Connection = arg.Connection.FromConnection,
-                Content = arg.ToBytes()
+                Memory = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
@@ -51,7 +51,7 @@ namespace common.tcpforward
             {
                 Path = "TcpForward/GetPorts",
                 Connection = Connection,
-                Content = Helper.EmptyArray
+                Memory = Helper.EmptyArray
             }).ConfigureAwait(false);
         }
 
@@ -61,7 +61,7 @@ namespace common.tcpforward
             {
                 Path = "TcpForward/UnRegister",
                 Connection = Connection,
-                Content = data.ToBytes()
+                Memory = data.ToBytes()
             }).ConfigureAwait(false);
         }
         public async Task<MessageResponeInfo> Register(IConnection Connection, TcpForwardRegisterParamsInfo data)
@@ -70,7 +70,7 @@ namespace common.tcpforward
             {
                 Path = "TcpForward/Register",
                 Connection = Connection,
-                Content = data.ToBytes(),
+                Memory = data.ToBytes(),
             }).ConfigureAwait(false);
         }
     }

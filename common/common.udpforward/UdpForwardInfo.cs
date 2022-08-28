@@ -7,14 +7,27 @@ using System.Net;
 
 namespace common.udpforward
 {
+    /// <summary>
+    /// udp转发数据
+    /// </summary>
     public class UdpForwardInfo
     {
         public UdpForwardInfo() { }
 
+        
         public int SourcePort { get; set; } = 0;
 
+        /// <summary>
+        /// 来源地址，是谁发的数据，目标端回复的时候知道回复给谁
+        /// </summary>
         public IPEndPoint SourceEndpoint { get; set; }
+        /// <summary>
+        /// 目标地址，发给谁
+        /// </summary>
         public Memory<byte> TargetEndpoint { get; set; }
+        /// <summary>
+        /// 发送的数据
+        /// </summary>
         public Memory<byte> Buffer { get; set; } = Helper.EmptyArray;
 
         public IConnection Connection { get; set; }

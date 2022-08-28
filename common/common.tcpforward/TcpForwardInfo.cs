@@ -15,15 +15,37 @@ namespace common.tcpforward
     public class TcpForwardInfo
     {
         public TcpForwardInfo() { }
+        /// <summary>
+        /// 监听的端口
+        /// </summary>
         public int SourcePort { get; set; }
 
+        /// <summary>
+        /// 是否是转发数据阶段，连接阶段需要带上TargetEndpoint，而转发阶段不需要待
+        /// </summary>
         public bool IsForward { get; set; }
+        /// <summary>
+        /// 短链接还是长连接
+        /// </summary>
         public TcpForwardAliveTypes AliveType { get; set; }
+        /// <summary>
+        /// 转发类型，是转发还是代理
+        /// </summary>
         public TcpForwardTypes ForwardType { get; set; }
+        /// <summary>
+        /// 请求id
+        /// </summary>
         public ulong RequestId { get; set; }
 
+        /// <summary>
+        /// 目标地址
+        /// </summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Memory<byte> TargetEndpoint { get; set; }
+
+        /// <summary>
+        /// 转发的数据
+        /// </summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public Memory<byte> Buffer { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]

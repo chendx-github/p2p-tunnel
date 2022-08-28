@@ -18,7 +18,7 @@ namespace common.socks5
             {
                 Path = "socks5/request",
                 Connection = connection,
-                Content = data.ToBytes()
+                Memory = data.ToBytes()
             }).Result;
         }
         public void Response(Socks5Info data, IConnection connection)
@@ -27,7 +27,7 @@ namespace common.socks5
             {
                 Path = "socks5/response",
                 Connection = connection.FromConnection,
-                Content = data.ToBytes()
+                Memory = data.ToBytes()
             }).ConfigureAwait(false);
         }
         public void ResponseClose(ulong id, IConnection connection)

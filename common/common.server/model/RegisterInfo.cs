@@ -12,15 +12,37 @@ namespace common.server.model
     {
         public RegisterParamsInfo() { }
 
+        /// <summary>
+        /// 本地ip，主要是loopback 和 LAN ip
+        /// </summary>
         public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
+        /// <summary>
+        /// 连接id，因为分两次注册，第二次带上第一次的注册后获得的id
+        /// </summary>
         public ulong Id { get; set; } = 0;
-
+        /// <summary>
+        /// 分组
+        /// </summary>
         public string GroupId { get; set; } = string.Empty;
+        /// <summary>
+        /// 名称
+        /// </summary>
         public string Name { get; set; } = string.Empty;
+        /// <summary>
+        /// mac地址，暂时没什么卵用
+        /// </summary>
         public string Mac { get; set; } = string.Empty;
+        /// <summary>
+        /// key，暂时没什么用
+        /// </summary>
         public string Key { get; set; } = string.Empty;
-
+        /// <summary>
+        /// 本机tcp端口
+        /// </summary>
         public int LocalTcpPort { get; set; } = 0;
+        /// <summary>
+        /// 本机udp端口
+        /// </summary>
         public int LocalUdpPort { get; set; } = 0;
 
         public byte[] ToBytes()
@@ -131,20 +153,38 @@ namespace common.server.model
         }
     }
 
+    /// <summary>
+    /// 客户端注册服务器返回的数据
+    /// </summary>
     public class RegisterResultInfo
     {
         public RegisterResultInfo() { }
 
         public RegisterResultInfoCodes Code { get; set; } = RegisterResultInfoCodes.OK;
+
+        /// <summary>
+        /// 服务器是否支持中继
+        /// </summary>
         public bool Relay { get; set; } = false;
 
         public int UdpPort { get; set; } = 0;
         public int TcpPort { get; set; } = 0;
 
+        /// <summary>
+        /// 服务器超时时间
+        /// </summary>
         public int TimeoutDelay { get; set; } = 0;
-
+        /// <summary>
+        /// 连接id
+        /// </summary>
         public ulong Id { get; set; } = 0;
+        /// <summary>
+        /// 连接ip
+        /// </summary>
         public IPAddress Ip { get; set; } = IPAddress.Any;
+        /// <summary>
+        /// 连接分组
+        /// </summary>
         public string GroupId { get; set; } = string.Empty;
 
         public byte[] ToBytes()

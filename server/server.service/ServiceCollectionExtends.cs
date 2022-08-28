@@ -88,7 +88,7 @@ namespace server.service
             MessengerResolver messengerResolver = services.GetService<MessengerResolver>();
             MessengerSender messengerSender = services.GetService<MessengerSender>();
 
-            clientRegisterCache.OnChanged.Sub((changeClient) =>
+            clientRegisterCache.OnChanged.Sub((Action<RegisterCacheInfo>)((changeClient) =>
             {
                 List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
                 {
@@ -109,12 +109,12 @@ namespace server.service
                         _ = messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = client.TcpConnection,
-                            Content = bytes,
+                            Memory = bytes,
                             Path = "clients/Execute"
                         }).ConfigureAwait(false);
                     }
                 }
-            });
+            }));
         }
     }
 }

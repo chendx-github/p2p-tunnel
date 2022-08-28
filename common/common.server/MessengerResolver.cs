@@ -76,7 +76,7 @@ namespace common.server
                 responseWrap.FromArray(receive);
                 if (connection.EncodeEnabled)
                 {
-                    responseWrap.Content = connection.Crypto.Decode(responseWrap.Content);
+                    responseWrap.Memory = connection.Crypto.Decode(responseWrap.Memory);
                 }
                 messengerSender.Response(responseWrap);
                 return;
@@ -116,7 +116,7 @@ namespace common.server
                             Connection = connection,
                             RequestId = requestWrap.RequestId,
                             Code = MessageResponeCodes.ERROR,
-                            Content = res.Item2
+                            Memory = res.Item2
                         }).ConfigureAwait(false);
                         return;
                     }
@@ -150,7 +150,7 @@ namespace common.server
                 await messengerSender.ReplyOnly(new MessageResponseWrap
                 {
                     Connection = connection,
-                    Content = resultObject,
+                    Memory = resultObject,
                     RequestId = requestWrap.RequestId
                 }).ConfigureAwait(false);
             }

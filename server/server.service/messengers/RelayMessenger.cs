@@ -45,7 +45,7 @@ namespace server.service.messengers
                         await messengerSender.SendOnly(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Content = model.Data,
+                            Memory = model.Data,
                             MemoryPath = model.Path,
                             RequestId = connection.ReceiveRequestWrap.RequestId,
                             Delay = 1,
@@ -78,7 +78,7 @@ namespace server.service.messengers
                         return (await messengerSender.SendReply(new MessageRequestWrap
                         {
                             Connection = connection.ServerType == ServerType.UDP ? target.UdpConnection : target.TcpConnection,
-                            Content = model.Data,
+                            Memory = model.Data,
                             MemoryPath = model.Path,
                             RequestId = connection.ReceiveRequestWrap.RequestId
                         }).ConfigureAwait(false)).Data.ToArray();

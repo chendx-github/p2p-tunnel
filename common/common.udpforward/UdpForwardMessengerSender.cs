@@ -21,7 +21,7 @@ namespace common.udpforward
             {
                 Path = "UdpForward/Request",
                 Connection = arg.Connection,
-                Content = arg.ToBytes()
+                Memory = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
@@ -37,7 +37,7 @@ namespace common.udpforward
             {
                 Path = "UdpForward/Response",
                 Connection = arg.Connection.FromConnection,
-                Content = arg.ToBytes()
+                Memory = arg.ToBytes()
             }).ConfigureAwait(false);
             await res;
         }
@@ -52,7 +52,7 @@ namespace common.udpforward
             {
                 Path = "UdpForward/GetPorts",
                 Connection = Connection,
-                Content = Helper.EmptyArray
+                Memory = Helper.EmptyArray
             }).ConfigureAwait(false);
         }
 
@@ -62,7 +62,7 @@ namespace common.udpforward
             {
                 Path = "UdpForward/UnRegister",
                 Connection = Connection,
-                Content = port.ToBytes()
+                Memory = port.ToBytes()
             }).ConfigureAwait(false);
         }
         public async Task<MessageResponeInfo> Register(IConnection Connection, UdpForwardRegisterParamsInfo param)
@@ -71,7 +71,7 @@ namespace common.udpforward
             {
                 Path = "UdpForward/Register",
                 Connection = Connection,
-                Content = param.ToBytes(),
+                Memory = param.ToBytes(),
             }).ConfigureAwait(false);
         }
     }

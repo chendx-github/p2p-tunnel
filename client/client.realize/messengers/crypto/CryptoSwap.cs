@@ -32,7 +32,7 @@ namespace client.realize.messengers.crypto
                     {
                         Connection = tcp ?? udp,
                         Path = "crypto/key",
-                        Content = Helper.EmptyArray
+                        Memory = Helper.EmptyArray
                     }).ConfigureAwait(false);
                     if (publicKeyResponse.Code != MessageResponeCodes.OK)
                     {
@@ -53,7 +53,7 @@ namespace client.realize.messengers.crypto
                     {
                         Connection = tcp,
                         Path = "crypto/set",
-                        Content = encodedData
+                        Memory = encodedData
                     }).ConfigureAwait(false);
                     if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).GetBool() == false)
                     {
@@ -66,7 +66,7 @@ namespace client.realize.messengers.crypto
                     {
                         Connection = udp,
                         Path = "crypto/set",
-                        Content = encodedData
+                        Memory = encodedData
                     }).ConfigureAwait(false);
                     if (setResponse.Code != MessageResponeCodes.OK || crypto.Decode(setResponse.Data.ToArray()).GetBool() == false)
                     {
@@ -89,7 +89,7 @@ namespace client.realize.messengers.crypto
             {
                 Connection = connection,
                 Path = "crypto/test",
-                Content = connection.Crypto.Encode(Encoding.UTF8.GetBytes("test"))
+                Memory = connection.Crypto.Encode(Encoding.UTF8.GetBytes("test"))
             }).ConfigureAwait(false);
 
             return resp.Code == MessageResponeCodes.OK;
