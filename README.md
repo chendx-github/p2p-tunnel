@@ -40,12 +40,5 @@
 - [x] 免费的打洞服务器
 - [x] 高效的打包解包，作死的全手写序列化
 
-## 使用说明
-- <a href="./public/md/1、注册及打洞.md">1、注册及打洞.md</a>
-- <a href="./public/md/2、TCP转发.md">2、TCP转发.md</a>
-- <a href="./public/md/3、HTTP1.1代理.md">3、HTTP1.1代理.md</a>
-- <a href="./public/md/4、UDP转发.md">4、UDP转发.md</a>
-- <a href="./public/md/5、socks5代理.md">5、socks5代理.md</a>
-- <a href="./public/md/6、部署服务端.md">6、部署服务端.md</a>
-- <a href="./public/md/7、服务端代理TCP转发.md">7、服务端代理TCP转发.md</a>
-- <a href="./public/md/8、服务端代理UDP转发.md">8、服务端代理UDP转发.md</a>
+## 观看使用介绍视频
+- <a href="https://www.bilibili.com/video/BV1Pa411R79U/">https://www.bilibili.com/video/BV1Pa411R79U/</a>

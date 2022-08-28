@@ -4,7 +4,7 @@
   "NumConnections": 1000, //支持连接数
   "BufferSize": 8192, //每个请求的 buffer size
   //是否允许被连接（包括tcp转发和http1.1代理)
-  "ConnectEnable": true, //是否开启tcp转发转发和http1.1代理
+  "ConnectEnable": false, //是否开启tcp转发转发和http1.1代理
   //http1.1代理时
   "LanConnectEnable": false, //是否允许访问此客户端内网地址
 
