@@ -39,7 +39,7 @@ namespace client.service.ui.api.service.clientServer.services
                     {
                         Content = bytes,
                         Path = "Test/Packet",
-                        Connection = client.TcpConnection,
+                        Connection = client.UdpConnection,
                         Timeout = 0
                     }).ConfigureAwait(false);
                 }

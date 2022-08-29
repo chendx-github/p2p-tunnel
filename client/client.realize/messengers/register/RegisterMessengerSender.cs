@@ -59,9 +59,9 @@ namespace client.realize.messengers.register
             {
                 return new RegisterResult { NetState = result, Data = res };
             }
-            MessageResponeInfo tcpResult = await messengerSender.SendReply(new MessageRequestWrap
+            result = await messengerSender.SendReply(new MessageRequestWrap
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.UdpConnection,
                 Path = "register/Execute",
                 Content = new RegisterParamsInfo
                 {
@@ -76,20 +76,20 @@ namespace client.realize.messengers.register
                 Timeout = param.Timeout,
             }).ConfigureAwait(false);
 
-            if (tcpResult.Code != MessageResponeCodes.OK)
+            if (result.Code != MessageResponeCodes.OK)
             {
-                return new RegisterResult { NetState = tcpResult };
+                return new RegisterResult { NetState = result };
             }
 
             RegisterResultInfo tcpres = new RegisterResultInfo();
-            tcpres.DeBytes(tcpResult.Data);
-            return new RegisterResult { NetState = tcpResult, Data = tcpres };
+            tcpres.DeBytes(result.Data);
+            return new RegisterResult { NetState = result, Data = tcpres };
         }
         public async Task<bool> Notify()
         {
             return await messengerSender.SendOnly(new MessageRequestWrap
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.UdpConnection,
                 Content = Helper.EmptyArray,
                 Path = "register/notify"
             }).ConfigureAwait(false);
@@ -99,7 +99,7 @@ namespace client.realize.messengers.register
         {
             await messengerSender.SendOnly(new MessageRequestWrap
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.UdpConnection,
                 Content = Helper.EmptyArray,
                 Path = "exit/execute"
             }).ConfigureAwait(false);

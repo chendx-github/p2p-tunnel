@@ -86,6 +86,10 @@ namespace common.server
                 {
                     msg.Connection.UpdateTime(DateTimeHelper.GetTimeStamp());
                 }
+                else
+                {
+                    msg.Connection.Disponse();
+                }
                 return res;
             }
             catch (Exception ex)
@@ -116,6 +120,10 @@ namespace common.server
                 if (res)
                 {
                     msg.Connection.UpdateTime(DateTimeHelper.GetTimeStamp());
+                }
+                else
+                {
+                    msg.Connection.Disponse();
                 }
             }
             catch (Exception ex)

@@ -217,6 +217,7 @@ namespace common.server
 
         public override void Disponse()
         {
+            Logger.Instance.Debug("rudp 释放");
             base.Disponse();
             if (NetPeer != null)
             {

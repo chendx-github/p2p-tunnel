@@ -91,7 +91,7 @@ namespace client.realize.messengers.clients
                 }
                 if (info.TcpConnecting == false && info.TcpConnected == false)
                 {
-                    tcp = await ConnectTcp(info).ConfigureAwait(false);
+                    //tcp = await ConnectTcp(info).ConfigureAwait(false);
                 }
 
                 if ((!udp || !tcp) && tryreverse < TryReverseMaxValue)

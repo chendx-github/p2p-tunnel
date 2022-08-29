@@ -83,7 +83,7 @@ namespace client.realize.messengers.punchHole
         {
             await Send(new SendPunchHoleArg<PunchHoleReverseInfo>
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.UdpConnection,
                 ToId = toid,
                 Data = new PunchHoleReverseInfo { TryReverse = tryreverse }
             }).ConfigureAwait(false);
@@ -93,7 +93,7 @@ namespace client.realize.messengers.punchHole
         {
             await Send(new SendPunchHoleArg<PunchHoleResetInfo>
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.UdpConnection,
                 ToId = toid,
                 Data = new PunchHoleResetInfo { }
             }).ConfigureAwait(false);

@@ -29,7 +29,7 @@ namespace client.service.ui.api.manager
                 {
                     Content = Helper.EmptyArray,
                     Path = "Counter/Info",
-                    Connection = registerState.TcpConnection,
+                    Connection = registerState.UdpConnection,
                     Timeout = 15000
                 }).ConfigureAwait(false);
                 if (resp.Code == MessageResponeCodes.OK)

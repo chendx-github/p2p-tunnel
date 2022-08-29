@@ -65,7 +65,7 @@ namespace client.realize.messengers.register
                         return;
                     }
                     Logger.Instance.DebugDebug($"tcp掉线");
-                    _ = Register(true).Result;
+                    //_ = Register(true).Result;
                 }
 
             });
@@ -245,7 +245,7 @@ namespace client.realize.messengers.register
             registerState.UdpConnection.EncodeEnable(crypto);
 
 #if DEBUG
-            await cryptoSwap.Test(registerState.TcpConnection);
+            await cryptoSwap.Test(registerState.UdpConnection);
 #endif
         }
         private async Task<RegisterResult> GetRegisterResult()
@@ -282,6 +282,7 @@ namespace client.realize.messengers.register
                     long time = DateTimeHelper.GetTimeStamp();
                     if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
                     {
+                        Logger.Instance.Debug("Heart2");
                         _ = heartMessengerSender.Heart(registerState.UdpConnection);
                     }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))

@@ -89,7 +89,7 @@ namespace server.service
 
             clientRegisterCache.OnChanged.Sub((changeClient) =>
             {
-                List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
+                List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => (c.TcpConnection != null && c.TcpConnection.Connected) || (c.UdpConnection != null && c.UdpConnection.Connected)).Select(c => new ClientsClientInfo
                 {
                     TcpConnection = c.TcpConnection,
                     UdpConnection = c.UdpConnection,
@@ -107,7 +107,7 @@ namespace server.service
                     {
                         _ = messengerSender.SendOnly(new MessageRequestWrap
                         {
-                            Connection = client.TcpConnection,
+                            Connection = client.UdpConnection,
                             Content = bytes,
                             Path = "clients/Execute"
                         }).ConfigureAwait(false);

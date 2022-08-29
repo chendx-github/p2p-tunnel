@@ -59,6 +59,11 @@ namespace server.service.messengers.register
                 connection.Disponse();
             }
         }
+
+        /// <summary>
+        /// 超时检测
+        /// </summary>
+        /// <param name="timeout"></param>
         private void TimeoutCallback(WheelTimerTimeout<IConnection> timeout)
         {
             if (cache.Count > 0)
@@ -69,6 +74,7 @@ namespace server.service.messengers.register
                     var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
                     if (offlines.Any())
                     {
+                        Logger.Instance.Debug($"检测到超时 {offlines.Count()} 个");
                         foreach (RegisterCacheInfo item in offlines)
                         {
                             Remove(item.Id);
@@ -115,9 +121,13 @@ namespace server.service.messengers.register
         {
             return cache.Values.FirstOrDefault(c => c.Name == name);
         }
-
+        /// <summary>
+        /// 移除并断开客户端
+        /// </summary>
+        /// <param name="id"></param>
         public void Remove(ulong id)
         {
+            Logger.Instance.Debug($"Remove id {id} ");
             if (cache.TryRemove(id, out RegisterCacheInfo client))
             {
                 if (client != null)
