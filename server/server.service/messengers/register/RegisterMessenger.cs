@@ -90,7 +90,7 @@ namespace server.service.messengers.register
 
             return new RegisterResultInfo
             {
-                Id = model.Id,
+                Id = client.Id,
                 Ip = client.UdpConnection?.Address.Address ?? System.Net.IPAddress.Any,
                 UdpPort = client.UdpConnection?.Address.Port ?? 0,
                 TcpPort = connection.Address.Port,

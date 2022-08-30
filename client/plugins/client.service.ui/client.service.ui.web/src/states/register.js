@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:39:45
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 20:50:56
+ * @LastEditTime: 2022-08-30 23:06:53
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\states\register.js
@@ -65,6 +65,11 @@ export const provideRegister = () => {
                 state.LocalInfo.TcpPort = json.LocalInfo.TcpPort;
                 state.LocalInfo.Mac = json.LocalInfo.Mac;
                 state.LocalInfo.LocalIp = json.LocalInfo.LocalIp;
+
+                state.LocalInfo.connected = state.LocalInfo.UdpConnected || state.LocalInfo.TcpConnected;
+
+                state.ClientConfig.UseUdp = json.ClientConfig.UseUdp;
+                state.ClientConfig.UseTcp = json.ClientConfig.UseTcp;
 
                 state.RemoteInfo.UdpPort = json.RemoteInfo.UdpPort;
                 state.RemoteInfo.TcpPort = json.RemoteInfo.TcpPort;

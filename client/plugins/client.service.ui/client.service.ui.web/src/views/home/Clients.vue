@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 21:01:26
+ * @LastEditTime: 2022-08-30 23:05:54
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\home\Clients.vue
@@ -17,14 +17,14 @@
                         <div class="item">
                             <dl v-loading="item.UdpConnecting || item.TcpConnecting">
                                 <dt @click="handleClientClick(item)">{{item.Name}}</dt>
-                                <dd v-if="item.Udp" :style="item.udpConnectTypeStyle" class="flex">
+                                <dd v-if="item.Udp && registerState.ClientConfig.UseUdp" :style="item.udpConnectTypeStyle" class="flex">
                                     <span class="label">Udp</span>
                                     <el-icon>
                                         <connection />
                                     </el-icon>
                                     <span>{{item.udpConnectTypeStr}}</span>
                                 </dd>
-                                <dd v-if="item.Tcp" :style="item.tcpConnectTypeStyle" class="flex">
+                                <dd v-if="item.Tcp  && registerState.ClientConfig.UseTcp" :style="item.tcpConnectTypeStyle" class="flex">
                                     <span class="label">Tcp</span>
                                     <el-icon>
                                         <connection />
@@ -125,7 +125,7 @@ export default {
         }
 
         return {
-            ...toRefs(state), handleSubmit, formDom, handleClientClick,
+            ...toRefs(state), registerState, handleSubmit, formDom, handleClientClick,
             ...toRefs(clientsState), handleConnect, handleConnectReverse, handleConnectReset, localIp
         }
 

@@ -32,6 +32,7 @@ namespace client.realize.messengers.register
         public async Task<RegisterResult> Register(RegisterParams param)
         {
             ulong id = 0;
+            RegisterResult regRes = null;
             if (config.Client.UseUdp)
             {
                 MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
@@ -40,7 +41,7 @@ namespace client.realize.messengers.register
                     Path = "register/Execute",
                     Memory = new RegisterParamsInfo
                     {
-                        Id = 0,
+                        Id = id,
                         Name = param.ClientName,
                         GroupId = param.GroupId,
                         LocalIps = param.LocalIps,
@@ -57,9 +58,10 @@ namespace client.realize.messengers.register
                 }
                 RegisterResultInfo res = new RegisterResultInfo();
                 res.DeBytes(result.Data);
+                regRes = new RegisterResult { NetState = result, Data = res };
                 if (res.Code != RegisterResultInfoCodes.OK)
                 {
-                    return new RegisterResult { NetState = result, Data = res };
+                    return regRes;
                 }
                 id = res.Id;
             }
@@ -89,7 +91,11 @@ namespace client.realize.messengers.register
 
                 RegisterResultInfo tcpres = new RegisterResultInfo();
                 tcpres.DeBytes(tcpResult.Data);
-                return new RegisterResult { NetState = tcpResult, Data = tcpres };
+                regRes = new RegisterResult { NetState = tcpResult, Data = tcpres };
+            }
+            if (regRes != null)
+            {
+                return regRes;
             }
 
             return new RegisterResult

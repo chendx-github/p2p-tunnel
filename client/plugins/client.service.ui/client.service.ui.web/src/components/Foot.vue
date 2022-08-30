@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-08-18 13:02:18
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 14:30:02
+ * @LastEditTime: 2022-08-30 22:39:08
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\components\Foot.vue
@@ -16,7 +16,7 @@
                     <router-link :to="{name:'Home'}">首页</router-link>
                 </el-col>
                 <el-col :span="8">
-                    <router-link :to="{name:'Register'}">注册服务 <i class="el-icon-circle-check" :class="{active:registerState.LocalInfo.TcpConnected}"></i></router-link>
+                    <router-link :to="{name:'Register'}">注册服务 <i class="el-icon-circle-check" :class="{active:registerState.LocalInfo.connected}"></i></router-link>
                 </el-col>
                 <el-col :span="8">
                     <el-dropdown size="small">

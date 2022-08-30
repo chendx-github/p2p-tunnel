@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-19 13:53:45
+ * @LastEditTime: 2022-08-30 21:51:16
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
@@ -139,7 +139,7 @@ export default {
             pac: '',
             form: {
                 ID: 0,
-                Port: 5412,
+                Port: 5413,
                 ForwardType: 2,
                 TunnelType: '8',
                 AliveType: 2,

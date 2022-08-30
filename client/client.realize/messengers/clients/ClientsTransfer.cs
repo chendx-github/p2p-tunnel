@@ -5,6 +5,7 @@ using client.messengers.punchHole.udp;
 using client.messengers.register;
 using client.realize.messengers.punchHole;
 using common.libs;
+using common.libs.extends;
 using common.server;
 using common.server.model;
 using System;
@@ -246,7 +247,7 @@ namespace client.realize.messengers.clients
                     clientInfoCaching.Add(client);
                     if (firstClients.Get() && config.Client.AutoPunchHole)
                     {
-                        if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort)
+                        if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort || registerState.LocalInfo.UdpPort == registerState.RemoteInfo.UdpPort)
                         {
                             ConnectClient(client);
                         }

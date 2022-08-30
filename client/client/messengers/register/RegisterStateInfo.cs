@@ -92,8 +92,8 @@ namespace client.messengers.register
         public void Online(ulong id, IPAddress ip, int udpPort, int tcpPort)
         {
             LocalInfo.IsConnecting = false;
-            LocalInfo.UdpConnected = true;
-            LocalInfo.TcpConnected = true;
+            LocalInfo.UdpConnected = udpPort > 0;
+            LocalInfo.TcpConnected = tcpPort > 0;
 
             RemoteInfo.Ip = ip;
             RemoteInfo.UdpPort = udpPort;

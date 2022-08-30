@@ -175,7 +175,7 @@ namespace client.service.ftp
                 State = save,
             }, 1000, true);
 
-            IConnection connection = SelectConnection(client);
+            IConnection connection = client.OnlineConnection;
             Task.Run(async () =>
             {
                 try
@@ -370,7 +370,7 @@ namespace client.service.ftp
 
         protected async Task<bool> SendOnlyTcp(IFtpCommandBase data, ClientInfo client)
         {
-            return await SendOnlyTcp(data, SelectConnection(client)).ConfigureAwait(false);
+            return await SendOnlyTcp(data, client.OnlineConnection).ConfigureAwait(false);
         }
         protected async Task<bool> SendOnlyTcp(IFtpCommandBase data, IConnection connection)
         {
@@ -391,7 +391,7 @@ namespace client.service.ftp
             {
                 Memory = data.ToBytes(),
                 Path = SocketPath,
-                Connection = SelectConnection(client)
+                Connection = client.OnlineConnection,
             }).ConfigureAwait(false);
         }
 
@@ -429,11 +429,6 @@ namespace client.service.ftp
                     Upload(saves.FirstOrDefault(c => c.State == UploadStates.Wait));
                 }
             }
-        }
-
-        private IConnection SelectConnection(ClientInfo client)
-        {
-            return client.TcpConnection ?? client.UdpConnection;
         }
     }
 

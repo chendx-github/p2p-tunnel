@@ -31,6 +31,8 @@ namespace client.messengers.clients
         public IConnection TcpConnection { get; set; } = null;
         [JsonIgnore]
         public IConnection UdpConnection { get; set; } = null;
+        [JsonIgnore]
+        public IConnection OnlineConnection => TcpConnection ?? UdpConnection;
 
         public void OfflineUdp()
         {
