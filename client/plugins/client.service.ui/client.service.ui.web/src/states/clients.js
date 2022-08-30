@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-21 14:57:33
  * @LastEditors: snltty
- * @LastEditTime: 2022-04-24 00:30:30
+ * @LastEditTime: 2022-08-30 20:49:06
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\states\clients.js
@@ -33,6 +33,16 @@ export const provideClients = () => {
 
                     c.tcpConnectTypeStr = connectTypeStrs[c.tcpConnectType];
                     c.tcpConnectTypeStyle = connectTypeColors[c.tcpConnectType];
+
+                    c.connectDisabled = false;
+                    if (c.Udp || c.Tcp) {
+                        c.connectDisabled = c.UdpConnected && c.TcpConnected;
+                    } else if (c.Udp) {
+                        c.connectDisabled = c.UdpConnected;
+                    } else if (c.Tcp) {
+                        c.connectDisabled = c.TcpConnected;
+                    }
+
                 });
                 state.clients = res;
             })

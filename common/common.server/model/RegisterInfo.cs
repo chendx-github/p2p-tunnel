@@ -13,7 +13,7 @@ namespace common.server.model
         public RegisterParamsInfo() { }
 
         /// <summary>
-        /// 本地ip，主要是loopback 和 LAN ip
+        /// 本地ip，loopback 、LAN ip
         /// </summary>
         public IPAddress[] LocalIps { get; set; } = Array.Empty<IPAddress>();
         /// <summary>

@@ -119,6 +119,11 @@ namespace client.realize.messengers.register
                 success.ErrorMsg = "注册操作中...";
                 return success;
             }
+            if (!config.Client.UseUdp && !config.Client.UseTcp)
+            {
+                success.ErrorMsg = "udp tcp至少要启用一种...";
+                return success;
+            }
 
             return await Task.Run(async () =>
             {
@@ -150,36 +155,43 @@ namespace client.realize.messengers.register
                         registerState.LocalInfo.UdpPort = registerState.LocalInfo.TcpPort = NetworkHelper.GetRandomPort();
                         // registerState.LocalInfo.UdpPort = NetworkHelper.GetRandomPort(new System.Collections.Generic.List<int> { registerState.LocalInfo.TcpPort });
                         registerState.LocalInfo.Mac = string.Empty;
-                        //绑定udp
-                        await UdpBind(serverAddress);
-                        if (registerState.UdpConnection == null)
+
+                        if (config.Client.UseUdp)
                         {
-                            success.ErrorMsg = "udp连接失败";
+                            //绑定udp
+                            await UdpBind(serverAddress);
+                            if (registerState.UdpConnection == null)
+                            {
+                                success.ErrorMsg = "udp连接失败";
+                                continue;
+                            }
                         }
-                        else
+                        if (config.Client.UseTcp)
                         {
                             //绑定tcp
                             TcpBind(serverAddress);
-
-                            //交换密钥
-                            if (config.Server.Encode)
-                            {
-                                await SwapCryptoTcp();
-                            }
-
-                            //注册
-                            RegisterResult result = await GetRegisterResult();
-                            //上线
-                            config.Client.GroupId = result.Data.GroupId;
-                            registerState.RemoteInfo.TimeoutDelay = result.Data.TimeoutDelay;
-                            registerState.RemoteInfo.Relay = result.Data.Relay;
-                            registerState.Online(result.Data.Id, result.Data.Ip, result.Data.UdpPort, result.Data.TcpPort);
-                            //上线通知
-                            await registerMessageHelper.Notify().ConfigureAwait(false);
-
-                            success.ErrorMsg = "注册成功~";
-                            success.Data = true;
                         }
+
+                        //交换密钥
+                        if (config.Server.Encode)
+                        {
+                            await SwapCryptoTcp();
+                        }
+
+                        //注册
+                        RegisterResult result = await GetRegisterResult();
+                        //上线
+                        config.Client.GroupId = result.Data.GroupId;
+                        registerState.RemoteInfo.TimeoutDelay = result.Data.TimeoutDelay;
+                        registerState.RemoteInfo.Relay = result.Data.Relay;
+                        registerState.Online(result.Data.Id, result.Data.Ip, result.Data.UdpPort, result.Data.TcpPort);
+                        //上线通知
+                        await registerMessageHelper.Notify().ConfigureAwait(false);
+
+                        success.ErrorMsg = "注册成功~";
+                        success.Data = true;
+                        Logger.Instance.Debug(success.ErrorMsg);
+                        break;
                     }
                     catch (Exception ex)
                     {
@@ -187,23 +199,14 @@ namespace client.realize.messengers.register
                         success.ErrorMsg = ex.Message;
                     }
 
-                    if (!success.Data)
+                    Logger.Instance.Error(success.ErrorMsg);
+                    registerState.LocalInfo.IsConnecting = false;
+                    if (config.Client.AutoReg || autoReg)
                     {
-                        Logger.Instance.Error(success.ErrorMsg);
-                        registerState.LocalInfo.IsConnecting = false;
-
-                        if (config.Client.AutoReg || autoReg)
-                        {
-                            interval = config.Client.AutoRegInterval;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        interval = config.Client.AutoRegInterval;
                     }
                     else
                     {
-                        Logger.Instance.Debug(success.ErrorMsg);
                         break;
                     }
                 }
@@ -241,11 +244,12 @@ namespace client.realize.messengers.register
             {
                 throw new Exception("注册交换密钥失败，如果客户端设置了密钥，则服务器必须设置相同的密钥，如果服务器未设置密钥，则客户端必须留空");
             }
-            registerState.TcpConnection.EncodeEnable(crypto);
-            registerState.UdpConnection.EncodeEnable(crypto);
+
+            registerState.TcpConnection?.EncodeEnable(crypto);
+            registerState.UdpConnection?.EncodeEnable(crypto);
 
 #if DEBUG
-            await cryptoSwap.Test(registerState.TcpConnection);
+            await cryptoSwap.Test(registerState.OnlineConnection);
 #endif
         }
         private async Task<RegisterResult> GetRegisterResult()
@@ -285,6 +289,15 @@ namespace client.realize.messengers.register
                         _ = heartMessengerSender.Heart(registerState.UdpConnection);
                     }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
+                    {
+                        Exit();
+                    }
+
+                    if (registerState.TcpOnline && registerState.TcpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                    {
+                        _ = heartMessengerSender.Heart(registerState.TcpConnection);
+                    }
+                    if (registerState.TcpOnline && registerState.TcpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
                     {
                         Exit();
                     }

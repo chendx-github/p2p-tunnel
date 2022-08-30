@@ -34,7 +34,7 @@ namespace client.realize.messengers.punchHole.udp
             this.config = config;
             this.wheelTimer = wheelTimer;
         }
-        private IConnection connection => registerState.TcpConnection;
+        private IConnection connection => registerState.UdpConnection;
         private ulong ConnectId => registerState.ConnectId;
 #if DEBUG
         private bool UseLocalPort = true;

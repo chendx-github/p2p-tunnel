@@ -66,7 +66,7 @@ namespace server.service.messengers.register
                 try
                 {
                     long time = DateTimeHelper.GetTimeStamp();
-                    var offlines = cache.Values.Where(c => c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay));
+                    var offlines = cache.Values.Where(c => (c.UdpConnection != null && c.UdpConnection.IsTimeout(time, config.TimeoutDelay)) || (c.TcpConnection != null && c.TcpConnection.IsTimeout(time, config.TimeoutDelay)));
                     if (offlines.Any())
                     {
                         foreach (RegisterCacheInfo item in offlines)

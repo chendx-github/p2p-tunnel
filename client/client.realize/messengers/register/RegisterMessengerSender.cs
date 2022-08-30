@@ -31,65 +31,81 @@ namespace client.realize.messengers.register
 
         public async Task<RegisterResult> Register(RegisterParams param)
         {
-            MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
+            ulong id = 0;
+            if (config.Client.UseUdp)
             {
-                Connection = registerState.UdpConnection,
-                Path = "register/Execute",
-                Memory = new RegisterParamsInfo
+                MessageResponeInfo result = await messengerSender.SendReply(new MessageRequestWrap
                 {
-                    Id = 0,
-                    Name = param.ClientName,
-                    GroupId = param.GroupId,
-                    LocalIps = param.LocalIps,
-                    Mac = param.Mac,
-                    LocalTcpPort = param.LocalTcpPort,
-                    LocalUdpPort = param.LocalUdpPort,
-                    Key = param.Key
-                }.ToBytes(),
-                Timeout = param.Timeout,
-            }).ConfigureAwait(false);
-            if (result.Code != MessageResponeCodes.OK)
-            {
-                return new RegisterResult { NetState = result };
-            }
-
-            RegisterResultInfo res = new RegisterResultInfo();
-            res.DeBytes(result.Data);
-            if (res.Code != RegisterResultInfoCodes.OK)
-            {
-                return new RegisterResult { NetState = result, Data = res };
-            }
-            MessageResponeInfo tcpResult = await messengerSender.SendReply(new MessageRequestWrap
-            {
-                Connection = registerState.TcpConnection,
-                Path = "register/Execute",
-                Memory = new RegisterParamsInfo
+                    Connection = registerState.UdpConnection,
+                    Path = "register/Execute",
+                    Memory = new RegisterParamsInfo
+                    {
+                        Id = 0,
+                        Name = param.ClientName,
+                        GroupId = param.GroupId,
+                        LocalIps = param.LocalIps,
+                        Mac = param.Mac,
+                        LocalTcpPort = param.LocalTcpPort,
+                        LocalUdpPort = param.LocalUdpPort,
+                        Key = param.Key
+                    }.ToBytes(),
+                    Timeout = param.Timeout,
+                }).ConfigureAwait(false);
+                if (result.Code != MessageResponeCodes.OK)
                 {
-                    Id = res.Id,
-                    Name = param.ClientName,
-                    GroupId = param.GroupId,
-                    Mac = param.Mac,
-                    LocalTcpPort = param.LocalTcpPort,
-                    LocalUdpPort = param.LocalUdpPort,
-                    Key = param.Key,
-                }.ToBytes(),
-                Timeout = param.Timeout,
-            }).ConfigureAwait(false);
-
-            if (tcpResult.Code != MessageResponeCodes.OK)
+                    return new RegisterResult { NetState = result };
+                }
+                RegisterResultInfo res = new RegisterResultInfo();
+                res.DeBytes(result.Data);
+                if (res.Code != RegisterResultInfoCodes.OK)
+                {
+                    return new RegisterResult { NetState = result, Data = res };
+                }
+                id = res.Id;
+            }
+            if (config.Client.UseTcp)
             {
-                return new RegisterResult { NetState = tcpResult };
+                MessageResponeInfo tcpResult = await messengerSender.SendReply(new MessageRequestWrap
+                {
+                    Connection = registerState.TcpConnection,
+                    Path = "register/Execute",
+                    Memory = new RegisterParamsInfo
+                    {
+                        Id = id,
+                        Name = param.ClientName,
+                        GroupId = param.GroupId,
+                        Mac = param.Mac,
+                        LocalTcpPort = param.LocalTcpPort,
+                        LocalUdpPort = param.LocalUdpPort,
+                        Key = param.Key,
+                    }.ToBytes(),
+                    Timeout = param.Timeout,
+                }).ConfigureAwait(false);
+
+                if (tcpResult.Code != MessageResponeCodes.OK)
+                {
+                    return new RegisterResult { NetState = tcpResult };
+                }
+
+                RegisterResultInfo tcpres = new RegisterResultInfo();
+                tcpres.DeBytes(tcpResult.Data);
+                return new RegisterResult { NetState = tcpResult, Data = tcpres };
             }
 
-            RegisterResultInfo tcpres = new RegisterResultInfo();
-            tcpres.DeBytes(tcpResult.Data);
-            return new RegisterResult { NetState = tcpResult, Data = tcpres };
+            return new RegisterResult
+            {
+                NetState = new MessageResponeInfo { Code = MessageResponeCodes.ERROR },
+                Data = new RegisterResultInfo
+                {
+                    Code = RegisterResultInfoCodes.UNKNOW,
+                }
+            };
         }
         public async Task<bool> Notify()
         {
             return await messengerSender.SendOnly(new MessageRequestWrap
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.OnlineConnection,
                 Memory = Helper.EmptyArray,
                 Path = "register/notify"
             }).ConfigureAwait(false);
@@ -99,7 +115,7 @@ namespace client.realize.messengers.register
         {
             await messengerSender.SendOnly(new MessageRequestWrap
             {
-                Connection = registerState.TcpConnection,
+                Connection = registerState.OnlineConnection,
                 Memory = Helper.EmptyArray,
                 Path = "exit/execute"
             }).ConfigureAwait(false);

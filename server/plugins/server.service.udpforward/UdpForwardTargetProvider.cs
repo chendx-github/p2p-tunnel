@@ -27,7 +27,7 @@ namespace server.service.udpforward
             {
                 if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
                 {
-                    cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.UdpConnection;
+                    cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.OnLineConnection;
                 }
                 info.Connection = cacheInfo.Connection;
                 info.TargetEndpoint = cacheInfo.Endpoint;

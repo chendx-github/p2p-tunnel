@@ -88,15 +88,16 @@ namespace server.service
             MessengerResolver messengerResolver = services.GetService<MessengerResolver>();
             MessengerSender messengerSender = services.GetService<MessengerSender>();
 
-            clientRegisterCache.OnChanged.Sub((Action<RegisterCacheInfo>)((changeClient) =>
+            clientRegisterCache.OnChanged.Sub((changeClient) =>
             {
-                List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => c.TcpConnection != null && c.TcpConnection.Connected).Select(c => new ClientsClientInfo
+                List<ClientsClientInfo> clients = clientRegisterCache.GetBySameGroup(changeClient.GroupId).Where(c => c.OnLineConnection != null && c.OnLineConnection.Connected).Select(c => new ClientsClientInfo
                 {
-                    TcpConnection = c.TcpConnection,
-                    UdpConnection = c.UdpConnection,
+                    Connection = c.OnLineConnection,
                     Id = c.Id,
                     Name = c.Name,
-                    Mac = c.Mac
+                    Mac = c.Mac,
+                    Tcp = c.TcpConnection != null,
+                    Udp = c.UdpConnection != null
                 }).ToList();
                 if (clients.Any())
                 {
@@ -108,13 +109,13 @@ namespace server.service
                     {
                         _ = messengerSender.SendOnly(new MessageRequestWrap
                         {
-                            Connection = client.TcpConnection,
+                            Connection = client.Connection,
                             Memory = bytes,
                             Path = "clients/Execute"
                         }).ConfigureAwait(false);
                     }
                 }
-            }));
+            });
         }
     }
 }

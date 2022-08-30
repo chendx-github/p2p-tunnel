@@ -51,7 +51,7 @@ namespace client.service.udpforward
                     UdpForwardTunnelTypes.UDP_FIRST => registerStateInfo.UdpConnection ?? registerStateInfo.TcpConnection,
                     UdpForwardTunnelTypes.TCP => registerStateInfo.TcpConnection,
                     UdpForwardTunnelTypes.UDP => registerStateInfo.UdpConnection,
-                    _ => registerStateInfo.TcpConnection,
+                    _ => registerStateInfo.OnlineConnection,
                 };
             }
 

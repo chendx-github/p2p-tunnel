@@ -24,7 +24,7 @@ namespace client.realize.messengers.punchHole.udp
             this.udpServer = udpServer;
         }
 
-        private IConnection connection => registerState.TcpConnection;
+        private IConnection connection => registerState.UdpConnection;
         private ulong ConnectId => registerState.ConnectId;
         public int RouteLevel => registerState.LocalInfo.RouteLevel;
 

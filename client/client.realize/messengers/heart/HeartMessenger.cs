@@ -12,8 +12,9 @@ namespace client.realize.messengers.heart
         {
         }
 
-        public void Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
+            return Helper.TrueArray;
         }
 
         public byte[] Alive(IConnection connection)

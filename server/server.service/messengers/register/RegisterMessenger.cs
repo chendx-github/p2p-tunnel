@@ -64,7 +64,7 @@ namespace server.service.messengers.register
                 Id = client.Id,
                 Ip = connection.Address.Address,
                 UdpPort = connection.Address.Port,
-                TcpPort = 0,
+                TcpPort = client.TcpConnection?.Address.Port ?? 0,
                 GroupId = client.GroupId,
                 Relay = config.Relay,
                 TimeoutDelay = config.TimeoutDelay
@@ -91,8 +91,8 @@ namespace server.service.messengers.register
             return new RegisterResultInfo
             {
                 Id = model.Id,
-                Ip = client.UdpConnection.Address.Address,
-                UdpPort = client.UdpConnection.Address.Port,
+                Ip = client.UdpConnection?.Address.Address ?? System.Net.IPAddress.Any,
+                UdpPort = client.UdpConnection?.Address.Port ?? 0,
                 TcpPort = connection.Address.Port,
                 GroupId = client.GroupId,
                 Relay = config.Relay,
@@ -117,7 +117,7 @@ namespace server.service.messengers.register
                 client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name).FirstOrDefault();
                 if (client != null)
                 {
-                    bool alive = await Alive(client.TcpConnection);
+                    bool alive = await Alive(client.OnLineConnection);
                     if (!alive)
                     {
                         clientRegisterCache.Remove(client.Id);

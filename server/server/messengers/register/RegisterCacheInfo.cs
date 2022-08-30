@@ -15,10 +15,16 @@ namespace server.messengers.register
         [JsonIgnore]
         public IConnection UdpConnection { get; private set; }
 
+        [JsonIgnore]
+        public IConnection OnLineConnection => TcpConnection ?? UdpConnection;
+
         public ulong Id { get; set; }
         public string Name { get; set; }
         public string GroupId { get; set; }
 
+        /// <summary>
+        /// loopback 、LAN ip
+        /// </summary>
         [JsonIgnore]
         public IPAddress[] LocalIps { get; set; }
         [JsonIgnore]

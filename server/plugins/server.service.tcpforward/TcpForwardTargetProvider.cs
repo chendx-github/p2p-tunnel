@@ -18,7 +18,7 @@ namespace server.service.tcpforward
                 tcpForwardTargetCaching.ClearConnection(client.Name);
             });
         }
-        public void Get(string host,TcpForwardInfo info)
+        public void Get(string host, TcpForwardInfo info)
         {
             GetTarget(tcpForwardTargetCaching.Get(host), info);
         }
@@ -33,7 +33,7 @@ namespace server.service.tcpforward
             {
                 if (cacheInfo.Connection == null || !cacheInfo.Connection.Connected)
                 {
-                    cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.TcpConnection;
+                    cacheInfo.Connection = clientRegisterCaching.GetByName(cacheInfo.Name)?.OnLineConnection;
                 }
                 info.Connection = cacheInfo.Connection;
                 info.TargetEndpoint = cacheInfo.Endpoint;

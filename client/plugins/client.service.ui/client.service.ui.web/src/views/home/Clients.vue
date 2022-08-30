@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-19 13:44:02
+ * @LastEditTime: 2022-08-30 21:01:26
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\home\Clients.vue
@@ -17,15 +17,14 @@
                         <div class="item">
                             <dl v-loading="item.UdpConnecting || item.TcpConnecting">
                                 <dt @click="handleClientClick(item)">{{item.Name}}</dt>
-                                <dd class="flex"><span class="label">Mac</span><span>{{item.Mac}}</span></dd>
-                                <dd :style="item.udpConnectTypeStyle" class="flex">
+                                <dd v-if="item.Udp" :style="item.udpConnectTypeStyle" class="flex">
                                     <span class="label">Udp</span>
                                     <el-icon>
                                         <connection />
                                     </el-icon>
                                     <span>{{item.udpConnectTypeStr}}</span>
                                 </dd>
-                                <dd :style="item.tcpConnectTypeStyle" class="flex">
+                                <dd v-if="item.Tcp" :style="item.tcpConnectTypeStyle" class="flex">
                                     <span class="label">Tcp</span>
                                     <el-icon>
                                         <connection />
@@ -33,8 +32,8 @@
                                     <span>{{item.tcpConnectTypeStr}}</span>
                                 </dd>
                                 <dd class="t-r">
-                                    <el-button plain text bg :disabled="item.UdpConnected && item.TcpConnected" size="small" @click="handleConnect(item)">连它</el-button>
-                                    <el-button plain text bg :disabled="item.UdpConnected && item.TcpConnected" size="small" @click="handleConnectReverse(item)">连我</el-button>
+                                    <el-button plain text bg :disabled="item.connectDisabled" size="small" @click="handleConnect(item)">连它</el-button>
+                                    <el-button plain text bg :disabled="item.connectDisabled" size="small" @click="handleConnectReverse(item)">连我</el-button>
                                     <el-button plain text bg :loading="item.UdpConnecting || item.TcpConnecting" size="small" @click="handleConnectReset(item)">重启</el-button>
                                 </dd>
                             </dl>

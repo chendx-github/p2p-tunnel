@@ -232,7 +232,7 @@ namespace client.service.udpforward
 
         public async Task<int[]> GetServerPorts()
         {
-            var resp = await udpForwardMessengerSender.GetPorts(registerStateInfo.TcpConnection);
+            var resp = await udpForwardMessengerSender.GetPorts(registerStateInfo.OnlineConnection);
             if (resp.Code == MessageResponeCodes.OK)
             {
                 return resp.Data.DeBytes2IntArray();
@@ -242,7 +242,7 @@ namespace client.service.udpforward
         }
         public async Task<string> AddServerForward(ServerForwardItemInfo forward)
         {
-            var resp = await udpForwardMessengerSender.Register(registerStateInfo.TcpConnection, new UdpForwardRegisterParamsInfo
+            var resp = await udpForwardMessengerSender.Register(registerStateInfo.OnlineConnection, new UdpForwardRegisterParamsInfo
             {
                 SourcePort = forward.ServerPort,
                 TargetIp = forward.LocalIp,
@@ -273,7 +273,7 @@ namespace client.service.udpforward
             {
                 return "未找到操作对象";
             }
-            var resp = await udpForwardMessengerSender.Register(registerStateInfo.TcpConnection, new UdpForwardRegisterParamsInfo
+            var resp = await udpForwardMessengerSender.Register(registerStateInfo.OnlineConnection, new UdpForwardRegisterParamsInfo
             {
                 SourcePort = forwardInfo.ServerPort,
                 TargetIp = forwardInfo.LocalIp,
@@ -296,7 +296,7 @@ namespace client.service.udpforward
             {
                 return "未找到操作对象";
             }
-            var resp = await udpForwardMessengerSender.UnRegister(registerStateInfo.TcpConnection, (ushort)port).ConfigureAwait(false);
+            var resp = await udpForwardMessengerSender.UnRegister(registerStateInfo.OnlineConnection, (ushort)port).ConfigureAwait(false);
             if (resp.Code != MessageResponeCodes.OK)
             {
                 return resp.Code.GetDesc((byte)resp.Code);
@@ -312,7 +312,7 @@ namespace client.service.udpforward
             {
                 return "未找到删除对象";
             }
-            var resp = await udpForwardMessengerSender.UnRegister(registerStateInfo.TcpConnection, (ushort)port).ConfigureAwait(false);
+            var resp = await udpForwardMessengerSender.UnRegister(registerStateInfo.OnlineConnection, (ushort)port).ConfigureAwait(false);
             if (resp.Code != MessageResponeCodes.OK)
             {
                 return resp.Code.GetDesc((byte)resp.Code);
@@ -345,7 +345,7 @@ namespace client.service.udpforward
         }
         private async Task SendRegister(ServerForwardItemInfo item)
         {
-            var resp = await udpForwardMessengerSender.Register(registerStateInfo.TcpConnection, new UdpForwardRegisterParamsInfo
+            var resp = await udpForwardMessengerSender.Register(registerStateInfo.OnlineConnection, new UdpForwardRegisterParamsInfo
             {
                 SourcePort = item.ServerPort,
                 TargetIp = item.LocalIp,

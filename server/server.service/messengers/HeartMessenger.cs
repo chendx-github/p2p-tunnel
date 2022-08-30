@@ -9,8 +9,9 @@ namespace server.service.messengers
         {
         }
 
-        public void Execute(IConnection connection)
+        public byte[] Execute(IConnection connection)
         {
+            return Helper.TrueArray;
         }
         public byte[] Alive(IConnection connection)
         {

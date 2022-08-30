@@ -23,13 +23,13 @@ namespace client.service.ui.api.manager
 
         public async Task<CounterResultInfo> Info(ClientServiceParamsInfo arg)
         {
-            if (registerState.TcpConnection != null)
+            if (registerState.OnlineConnection != null)
             {
                 var resp = await messengerSender.SendReply(new MessageRequestWrap
                 {
                     Memory = Helper.EmptyArray,
                     Path = "Counter/Info",
-                    Connection = registerState.TcpConnection,
+                    Connection = registerState.OnlineConnection,
                     Timeout = 15000
                 }).ConfigureAwait(false);
                 if (resp.Code == MessageResponeCodes.OK)

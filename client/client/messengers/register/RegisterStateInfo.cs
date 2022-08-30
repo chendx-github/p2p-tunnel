@@ -19,6 +19,10 @@ namespace client.messengers.register
         /// </summary>
         public IConnection UdpConnection { get; set; }
         public bool UdpOnline => UdpConnection != null && UdpConnection.Connected;
+
+        public IConnection OnlineConnection => TcpConnection ?? UdpConnection;
+
+
         /// <summary>
         /// 远程信息
         /// </summary>
@@ -44,8 +48,10 @@ namespace client.messengers.register
 
                 if (connectid > 0)
                 {
-                    UdpConnection.ConnectId = connectid;
-                    TcpConnection.ConnectId = connectid;
+                    if (UdpConnection != null)
+                        UdpConnection.ConnectId = connectid;
+                    if (TcpConnection != null)
+                        TcpConnection.ConnectId = connectid;
                 }
             }
         }

@@ -90,6 +90,11 @@ namespace client
         public string EncodePassword { get; set; } = string.Empty;
 
         public bool AutoPunchHole { get; set; } = true;
+        public bool UseUdp { get; set; } = true;
+        public bool UseTcp { get; set; } = true;
+
+
+        
 
         [JsonIgnore]
         public IPAddress BindIp

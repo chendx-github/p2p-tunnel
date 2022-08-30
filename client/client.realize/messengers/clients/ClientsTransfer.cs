@@ -3,11 +3,8 @@ using client.messengers.punchHole;
 using client.messengers.punchHole.tcp;
 using client.messengers.punchHole.udp;
 using client.messengers.register;
-using client.realize.messengers.heart;
 using client.realize.messengers.punchHole;
-using client.realize.messengers.register;
 using common.libs;
-using common.libs.extends;
 using common.server;
 using common.server.model;
 using System;
@@ -109,11 +106,11 @@ namespace client.realize.messengers.clients
             Task.Run(async () =>
             {
                 bool udp = false, tcp = false;
-                if (info.UdpConnecting == false && info.UdpConnected == false)
+                if (config.Client.UseUdp && info.Udp && info.UdpConnecting == false && info.UdpConnected == false)
                 {
                     udp = await ConnectUdp(info).ConfigureAwait(false);
                 }
-                if (info.TcpConnecting == false && info.TcpConnected == false)
+                if (config.Client.UseTcp && info.Tcp && info.TcpConnecting == false && info.TcpConnected == false)
                 {
                     tcp = await ConnectTcp(info).ConfigureAwait(false);
                 }
@@ -171,7 +168,7 @@ namespace client.realize.messengers.clients
                 IConnection connection = registerState.UdpConnection.Clone();
                 connection.Relay = registerState.RemoteInfo.Relay;
                 clientInfoCaching.Online(info.Id, connection, ClientConnectTypes.Relay);
-                _ =punchHoleMessengerSender.SendRelay(info.Id, ServerType.UDP);
+                _ = punchHoleMessengerSender.SendRelay(info.Id, ServerType.UDP);
                 return true;
             }
             else
@@ -219,7 +216,7 @@ namespace client.realize.messengers.clients
         {
             try
             {
-                if (!registerState.LocalInfo.TcpConnected || clients.Clients == null)
+                if (registerState.OnlineConnection == null || clients.Clients == null)
                 {
                     return;
                 }
@@ -242,7 +239,9 @@ namespace client.realize.messengers.clients
                     {
                         Id = item.Id,
                         Name = item.Name,
-                        Mac = item.Mac
+                        Mac = item.Mac,
+                        Tcp = item.Tcp,
+                        Udp = item.Udp
                     };
                     clientInfoCaching.Add(client);
                     if (firstClients.Get() && config.Client.AutoPunchHole)

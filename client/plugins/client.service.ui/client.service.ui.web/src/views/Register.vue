@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:30:19
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-25 20:39:34
+ * @LastEditTime: 2022-08-30 20:53:46
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\Register.vue
@@ -150,6 +150,24 @@
                                 </el-col>
                             </el-row>
                         </el-form-item>
+                        <el-form-item label="" label-width="0">
+                            <el-row>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="使用udp" prop="UseUdp" label-width="60">
+                                        <el-tooltip class="box-item" effect="dark" content="是否使用udp" placement="top-start">
+                                            <el-switch v-model="model.UseUdp" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="使用tcp" prop="UseTcp" label-width="60">
+                                        <el-tooltip class="box-item" effect="dark" content="是否使用tcp" placement="top-start">
+                                            <el-switch v-model="model.UseTcp" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
                     </el-collapse-item>
                 </el-collapse>
                 <!-- </el-form-item> -->
@@ -214,7 +232,9 @@ export default {
                 ClientEncodePassword: "",
                 ServerEncode: false,
                 ServerEncodePassword: "",
-                AutoPunchHole: false
+                AutoPunchHole: false,
+                UseUdp: false,
+                UseTcp: false,
             },
             rules: {
                 ClientName: [{ required: true, message: '必填', trigger: 'blur' }],
@@ -274,6 +294,8 @@ export default {
             state.model.ClientEncode = registerState.ClientConfig.Encode = json.ClientConfig.Encode;
             state.model.ClientEncodePassword = registerState.ClientConfig.ClientEncodePassword = json.ClientConfig.EncodePassword;
             state.model.AutoPunchHole = registerState.ClientConfig.AutoPunchHole = json.ClientConfig.AutoPunchHole;
+            state.model.UseUdp = registerState.ClientConfig.UseUdp = json.ClientConfig.UseUdp;
+            state.model.UseTcp = registerState.ClientConfig.UseTcp = json.ClientConfig.UseTcp;
 
             state.model.ServerIp = registerState.ServerConfig.Ip = json.ServerConfig.Ip;
             state.model.ServerUdpPort = registerState.ServerConfig.UdpPort = json.ServerConfig.UdpPort;
@@ -303,7 +325,9 @@ export default {
                         UseMac: state.model.UseMac,
                         Encode: state.model.ClientEncode,
                         EncodePassword: state.model.ClientEncodePassword,
-                        AutoPunchHole: state.model.AutoPunchHole
+                        AutoPunchHole: state.model.AutoPunchHole,
+                        UseUdp: state.model.UseUdp,
+                        UseTcp: state.model.UseTcp,
                     },
                     ServerConfig: {
                         Ip: state.model.ServerIp,

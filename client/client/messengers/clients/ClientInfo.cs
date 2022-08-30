@@ -21,7 +21,8 @@ namespace client.messengers.clients
         public string Mac { get; set; } = string.Empty;
         public IPAddress Ip { get; set; } = IPAddress.Any;
         public ulong Id { get; set; } = 0;
-
+        public bool Udp { get; set; } = false;
+        public bool Tcp { get; set; } = false;
 
         public ClientConnectTypes UdpConnectType { get; set; } = ClientConnectTypes.P2P;
         public ClientConnectTypes TcpConnectType { get; set; } = ClientConnectTypes.P2P;
