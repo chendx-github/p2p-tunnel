@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 21:50:16
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 20:44:24
+ * @LastEditTime: 2022-08-31 23:13:05
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\router\index.js
@@ -25,6 +25,12 @@ const routes = [
         component: () => import('../views/service/Index.vue'),
         redirect: { name: 'ServiceConfigure' },
         children: [
+            {
+                path: '/vea.html',
+                name: 'Vea',
+                component: () => import('../views/service/vea/Index.vue'),
+                meta: { name: '组网', service: 'VeaClientService' }
+            },
             {
                 path: '/service-tcp-forward.html',
                 name: 'ServiceTcpForward',

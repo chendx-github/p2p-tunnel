@@ -67,6 +67,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client.service.app", "clien
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "client.realize", "client\client.realize\client.realize.csproj", "{B281838A-3805-48EA-8368-5A1AFD59F95E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client.service.vea", "client\plugins\client.service.vea\client.service.vea.csproj", "{DD690846-BCD7-464A-A330-C3B3D11B304B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -287,6 +289,14 @@ Global
 		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|x64.ActiveCfg = Release|Any CPU
 		{B281838A-3805-48EA-8368-5A1AFD59F95E}.Release|x64.Build.0 = Release|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Debug|x64.Build.0 = Debug|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Release|x64.ActiveCfg = Release|Any CPU
+		{DD690846-BCD7-464A-A330-C3B3D11B304B}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -321,6 +331,7 @@ Global
 		{259ECEB0-8218-4C64-82CE-E947B70F602E} = {B678CEEF-2268-4906-9610-9B12CB9C4D7B}
 		{64E4925A-CA3D-4CB8-8377-6F319F89962F} = {ED711009-8175-4193-BFDA-FD88C4B1E4AD}
 		{B281838A-3805-48EA-8368-5A1AFD59F95E} = {ED711009-8175-4193-BFDA-FD88C4B1E4AD}
+		{DD690846-BCD7-464A-A330-C3B3D11B304B} = {689218D7-FC93-47D5-A95B-66780B9D4870}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DE8935B2-54F1-4FBD-98BB-8119E42B52A6}

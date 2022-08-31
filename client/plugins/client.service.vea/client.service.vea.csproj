@@ -28,7 +28,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\..\..\common\common.libs\common.libs.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="tun2socks.exe">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="wintun.dll">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

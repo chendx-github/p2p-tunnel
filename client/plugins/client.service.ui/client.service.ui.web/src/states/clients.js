@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-21 14:57:33
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 20:49:06
+ * @LastEditTime: 2022-08-31 23:08:18
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\states\clients.js
@@ -43,6 +43,7 @@ export const provideClients = () => {
                         c.connectDisabled = c.TcpConnected;
                     }
 
+                    c.online = c.UdpConnected || c.TcpConnected;
                 });
                 state.clients = res;
             })

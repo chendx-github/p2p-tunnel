@@ -1,0 +1,223 @@
+<!--
+ * @Author: snltty
+ * @Date: 2022-05-14 19:17:29
+ * @LastEditors: snltty
+ * @LastEditTime: 2022-08-31 23:10:05
+ * @version: v1.0.0
+ * @Descripttion: 功能说明
+ * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
+-->
+<template>
+    <div class="socks5-wrap">
+        <div class="inner">
+            <h3 class="title t-c">{{$route.meta.name}}</h3>
+            <el-alert class="alert" type="warning" show-icon :closable="false" title="虚拟网卡组网，可将在线客户端组合成一个网络，然后通过客户端ip直接访问，暂时仅windows" description="" />
+            <div class="form">
+                <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="80px">
+                    <el-form-item label="" label-width="0">
+                        <div class="w-100">
+                            <el-row :gutter="10">
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="代理端口" prop="SocksPort">
+                                        <el-tooltip class="box-item" effect="dark" content="代理端口，无所谓，填写一个未被占用的端口即可" placement="top-start">
+                                            <el-input v-model="state.form.SocksPort"></el-input>
+                                        </el-tooltip>
+
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="通信通道" prop="TunnelType">
+                                        <el-select v-model="state.form.TunnelType" placeholder="选择类型">
+                                            <el-option v-for="(item,index) in shareData.tunnelTypes" :key="index" :label="item" :value="index">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="目标端" prop="TargetName">
+                                        <el-tooltip class="box-item" effect="dark" content="当遇到不存在的ip时，目标端应该选择谁，为空服务器，不为空则为某个客户端" placement="top-start">
+                                            <el-select v-model="state.form.TargetName" placeholder="选择目标">
+                                                <el-option v-for="(item,index) in targets" :key="index" :label="item.label" :value="item.Name">
+                                                </el-option>
+                                            </el-select>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="" label-width="0">
+                        <div class="w-100">
+                            <el-row :gutter="10">
+                                <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label-width="0" prop="Enable">
+                                        <el-tooltip class="box-item" effect="dark" content="不开启，则只修改配置信息，不安装虚拟网卡" placement="top-start">
+                                            <el-checkbox v-model="state.form.Enable" label="开启网卡" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label-width="0" prop="ProxyAll">
+                                        <el-tooltip class="box-item" effect="dark" content="是否由虚拟网卡代理所有，这种方式可以利用目标端上网，不代理所有，则只能通过目标ip访问其内网服务" placement="top-start">
+                                            <el-checkbox v-model="state.form.ProxyAll" label="代理所有" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-form-item label="本机IP" prop="IP">
+                                        <el-tooltip class="box-item" effect="dark" content="当前客户端的虚拟网卡ip，各个客户端之间设置不一样的ip，相同网段即可" placement="top-start">
+                                            <el-input v-model="state.form.IP"></el-input>
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label-width="0">
+                        <div class="w-100 t-c">
+                            <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </div>
+        <div class="inner">
+            <h3 class="title t-c">网内客户端列表</h3>
+            <div>
+                <el-table border :data="showClients" style="width: 100%">
+                    <el-table-column prop="Name" label="客户端">
+                        <template #default="scope">
+                            <strong v-if="scope.row.online" style="color:green">{{scope.row.Name}}</strong>
+                            <span v-else>{{scope.row.Name}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="veaIp" label="虚拟ip" />
+                </el-table>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { computed, reactive, ref } from '@vue/reactivity'
+import { getConfig, setConfig, getClients } from '../../../apis/vea'
+import { onMounted, onUnmounted } from '@vue/runtime-core'
+import { ElMessage } from 'element-plus'
+import { injectClients } from '../../../states/clients'
+import { injectShareData } from '../../../states/shareData'
+export default {
+    setup () {
+
+        const clientsState = injectClients();
+        const shareData = injectShareData();
+        const targets = computed(() => {
+            return [{ Name: '', label: '服务器' }].concat(clientsState.clients.map(c => {
+                return { Name: c.Name, label: c.Name }
+            }));
+        });
+        const state = reactive({
+            loading: false,
+            form: {
+                SocksPort: 5415,
+                Enable: false,
+                TunnelType: '8',
+                TargetName: '',
+                IP: '',
+                ProxyAll: false
+            },
+            rules: {
+                SocksPort: [
+                    { required: true, message: '必填', trigger: 'blur' },
+                    {
+                        type: 'number', min: 1, max: 65535, message: '数字 1-65535', trigger: 'blur', transform (value) {
+                            return Number(value)
+                        }
+                    }
+                ],
+                IP: [
+                    { required: true, message: '必填', trigger: 'blur' }
+                ]
+            },
+            veaClients: {}
+        });
+        const formDom = ref(null);
+        const showClients = computed(() => {
+            return clientsState.clients.map(c => {
+                c.veaIp = state.veaClients[c.Id] || '';
+            });
+        });
+
+        const loadConfig = () => {
+            getConfig().then((res) => {
+                state.form.SocksPort = res.SocksPort;
+                state.form.Enable = res.Enable;
+                state.form.TunnelType = res.TunnelType.toString();
+                state.form.TargetName = res.TargetName;
+                state.form.IP = res.IP;
+                state.form.ProxyAll = res.ProxyAll;
+            });
+        }
+
+        const timer = setInterval(() => {
+            if (websocketState.connected) {
+                getClients().then((res) => {
+                    state.veaClients = res;
+                })
+            } else {
+                state.veaClients = {};
+            }
+        }, 1000);
+
+        onMounted(() => {
+            loadConfig();
+        });
+        onUnmounted(() => {
+            clearInterval(timer);
+        });
+
+        const handleSubmit = () => {
+            formDom.value.validate((valid) => {
+                if (!valid) {
+                    return false;
+                }
+                state.loading = true;
+
+                const json = JSON.parse(JSON.stringify(state.form));
+                json.SocksPort = Number(json.SocksPort);
+                json.TunnelType = Number(json.TunnelType);
+                set(json).then(() => {
+                    state.loading = false;
+                    if (json.IsPac) {
+                        savePac();
+                    }
+                    ElMessage.success('操作成功！');
+                }).catch((e) => {
+                    state.loading = false;
+                });
+            })
+        }
+
+        return {
+            targets, shareData, state, showClients, formDom, handleSubmit
+        }
+    }
+}
+</script>
+
+<style lang="stylus" scoped>
+.socks5-wrap
+    padding: 2rem;
+
+.inner
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 0.4rem;
+    margin-bottom: 1rem;
+
+.alert
+    margin-bottom: 1rem;
+
+@media screen and (max-width: 768px)
+    .el-col
+        margin-top: 0.6rem;
+</style>

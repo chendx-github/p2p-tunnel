@@ -1,11 +1,10 @@
 ﻿using common.libs;
-using common.socks5;
 using System;
 using System.IO;
 
 namespace client.service.socks5
 {
-    public class Socks5Transfer
+    internal class Socks5Transfer
     {
         private readonly common.socks5.Config config;
         private readonly ui.api.Config uiconfig;
