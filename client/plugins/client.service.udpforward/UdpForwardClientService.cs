@@ -22,7 +22,7 @@ namespace client.service.udpforward
             string errmsg = udpForwardTransfer.AddP2PListen(fmodel);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
         public void RemoveListen(ClientServiceParamsInfo arg)
@@ -47,7 +47,7 @@ namespace client.service.udpforward
             string errmsg = udpForwardTransfer.StartP2P(model.Port);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
         public void Stop(ClientServiceParamsInfo arg)

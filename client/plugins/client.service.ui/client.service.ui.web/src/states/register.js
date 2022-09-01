@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 22:39:45
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 23:06:53
+ * @LastEditTime: 2022-09-01 17:12:27
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\states\register.js

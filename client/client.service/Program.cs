@@ -9,6 +9,7 @@ using client.service.udpforward;
 using client.service.ui.api.manager;
 using client.service.ui.api.service;
 using client.service.ui.api.service.clientServer;
+using client.service.vea;
 using common.libs;
 using common.server.middleware;
 using common.socks5;
@@ -55,6 +56,7 @@ namespace client.service
                 typeof(Socks5ClientService).Assembly,
                 typeof(Socks5Messenger).Assembly,
                 typeof(PunchHoleMessenger).Assembly,
+                typeof(VeaMessenger).Assembly,
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 
             serviceCollection
@@ -66,6 +68,7 @@ namespace client.service
                 .AddSocks5() //socks5代理
                 .AddFtpPlugin() //文件服务
                 .AddLoggerPlugin() //日志
+                .AddVirtualEthernetAdapterPlugin()
             ;
 
             serviceProvider = serviceCollection.BuildServiceProvider();
@@ -78,6 +81,7 @@ namespace client.service
                 .UseSocks5()//socks5代理
                 .UseFtpPlugin() //文件服务
                 .UseLoggerPlugin() //日志
+                .UseVirtualEthernetAdapterPlugin()
                ;
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));

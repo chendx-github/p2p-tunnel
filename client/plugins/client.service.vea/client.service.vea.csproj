@@ -28,7 +28,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="appsettings.json">
+	  <Content Include="vea-appsettings.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

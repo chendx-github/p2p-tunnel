@@ -54,7 +54,7 @@ namespace client.service.ui.api.service.clientServer.services
             }
             else
             {
-                arg.SetCode(-1, "请选择目标客户端");
+                arg.SetCode(ClientServiceResponseCodes.Error, "请选择目标客户端");
             }
             return new TestPacketResponseInfo { };
         }

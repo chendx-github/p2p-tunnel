@@ -22,7 +22,7 @@ namespace client.service.ui.api.service.clientServer.services
             var result = await registerTransfer.Register().ConfigureAwait(false);
             if (!result.Data)
             {
-                arg.SetCode(-1, result.ErrorMsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, result.ErrorMsg);
             }
             return result.Data;
         }

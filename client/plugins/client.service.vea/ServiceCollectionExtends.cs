@@ -8,8 +8,10 @@ namespace client.service.tcpforward
     {
         public static ServiceCollection AddVirtualEthernetAdapterPlugin(this ServiceCollection services)
         {
-            services.AddSingleton<Config>();
+            services.AddSingleton<vea.Config>();
             services.AddSingleton<VirtualEthernetAdapterTransfer>();
+            services.AddSingleton<VeaMessengerSender>();
+            
             return services;
         }
         public static ServiceProvider UseVirtualEthernetAdapterPlugin(this ServiceProvider services)

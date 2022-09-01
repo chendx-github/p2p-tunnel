@@ -110,7 +110,7 @@ namespace client.service.ui.api.service.clientServer
                     Content = "not exists this path",
                     RequestId = model.RequestId,
                     Path = model.Path,
-                    Code = -1
+                    Code = ClientServiceResponseCodes.Error
                 };
             }
 
@@ -143,7 +143,7 @@ namespace client.service.ui.api.service.clientServer
                 }
                 return new ClientServiceResponseInfo
                 {
-                    Content = param.Code == 0 ? resultObject : param.ErrorMessage,
+                    Content = param.Code != ClientServiceResponseCodes.Error ? resultObject : param.ErrorMessage,
                     RequestId = param.RequestId,
                     Path = param.Path,
                     Code = param.Code
@@ -157,7 +157,7 @@ namespace client.service.ui.api.service.clientServer
                     Content = ex.Message,
                     RequestId = model.RequestId,
                     Path = model.Path,
-                    Code = -1
+                    Code = ClientServiceResponseCodes.Error
                 };
             }
         }

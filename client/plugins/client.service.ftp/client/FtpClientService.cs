@@ -35,7 +35,7 @@ namespace client.service.ftp.client
             }
             catch (Exception ex)
             {
-                arg.SetCode(-1, ex.Message);
+                arg.SetCode(ClientServiceResponseCodes.Error, ex.Message);
                 return null;
             }
         }
@@ -100,7 +100,7 @@ namespace client.service.ftp.client
             }
             catch (Exception ex)
             {
-                arg.SetCode(-1, ex.Message);
+                arg.SetCode(ClientServiceResponseCodes.Error, ex.Message);
             }
             return new FileInfoWrap();
         }

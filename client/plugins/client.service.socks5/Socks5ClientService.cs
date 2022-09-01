@@ -38,7 +38,7 @@ namespace client.service.socks5
                 }
                 catch (Exception ex)
                 {
-                    arg.SetCode(-1, ex.Message);
+                    arg.SetCode(ClientServiceResponseCodes.Error, ex.Message);
                 }
             }
 
@@ -70,7 +70,7 @@ namespace client.service.socks5
             string msg = socks5Transfer.UpdatePac(model);
             if (!string.IsNullOrWhiteSpace(msg))
             {
-                arg.SetCode(-1, msg);
+                arg.SetCode(ClientServiceResponseCodes.Error, msg);
             }
         }
     }

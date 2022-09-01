@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-31 23:10:05
+ * @LastEditTime: 2022-09-01 17:13:44
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
@@ -100,11 +100,12 @@
 
 <script>
 import { computed, reactive, ref } from '@vue/reactivity'
-import { getConfig, setConfig, getClients } from '../../../apis/vea'
+import { getConfig, setConfig, getUpdate } from '../../../apis/vea'
 import { onMounted, onUnmounted } from '@vue/runtime-core'
 import { ElMessage } from 'element-plus'
 import { injectClients } from '../../../states/clients'
 import { injectShareData } from '../../../states/shareData'
+import { websocketState } from '../../../apis/request'
 export default {
     setup () {
 
@@ -142,9 +143,10 @@ export default {
         });
         const formDom = ref(null);
         const showClients = computed(() => {
-            return clientsState.clients.map(c => {
+            clientsState.clients.forEach(c => {
                 c.veaIp = state.veaClients[c.Id] || '';
             });
+            return clientsState.clients;
         });
 
         const loadConfig = () => {
@@ -158,21 +160,31 @@ export default {
             });
         }
 
-        const timer = setInterval(() => {
+        let timer = 0;
+        const loadVeaClients = () => {
             if (websocketState.connected) {
-                getClients().then((res) => {
-                    state.veaClients = res;
-                })
+
+                let ids = clientsState.clients.filter(c => !c.veaIp).map(c => c.Id);
+                if (ids.length > 0) {
+                    getUpdate(ids).then((res) => {
+                        let assign = Object.assign(state.veaClients, res);
+                        state.veaClients = assign;
+                        timer = setTimeout(loadVeaClients, 1000);
+                    });
+                } else {
+                    timer = setTimeout(loadVeaClients, 1000);
+                }
             } else {
                 state.veaClients = {};
+                timer = setTimeout(loadVeaClients, 1000);
             }
-        }, 1000);
-
+        }
         onMounted(() => {
             loadConfig();
+            loadVeaClients();
         });
         onUnmounted(() => {
-            clearInterval(timer);
+            clearTimeout(timer);
         });
 
         const handleSubmit = () => {
@@ -185,7 +197,7 @@ export default {
                 const json = JSON.parse(JSON.stringify(state.form));
                 json.SocksPort = Number(json.SocksPort);
                 json.TunnelType = Number(json.TunnelType);
-                set(json).then(() => {
+                setConfig(json).then(() => {
                     state.loading = false;
                     if (json.IsPac) {
                         savePac();

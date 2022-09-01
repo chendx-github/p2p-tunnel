@@ -40,12 +40,12 @@ namespace client.service.ui.api.manager
                 }
                 else
                 {
-                    arg.SetCode(-1, resp.Code.GetDesc((byte)resp.Code));
+                    arg.SetCode(ClientServiceResponseCodes.Error, resp.Code.GetDesc((byte)resp.Code));
                 }
             }
             else
             {
-                arg.SetCode(-1, "未注册");
+                arg.SetCode(ClientServiceResponseCodes.Error, "未注册");
             }
             return null;
         }

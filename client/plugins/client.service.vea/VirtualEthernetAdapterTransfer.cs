@@ -8,7 +8,7 @@ namespace client.service.vea
     public class VirtualEthernetAdapterTransfer
     {
         Process Tun2SocksProcess;
-        const string veaName = "wintun";
+        const string veaName = "p2p-tunnel";
 
         private readonly Config config;
         public VirtualEthernetAdapterTransfer(Config config)
@@ -40,7 +40,7 @@ namespace client.service.vea
         }
         private void Windows()
         {
-            Tun2SocksProcess = Process.Start($"tun2socks -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent");
+            Tun2SocksProcess = Process.Start($"tun2socks.exe",$" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent");
 
             Process proc = new Process();
             proc.StartInfo.CreateNoWindow = true;

@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2021-08-19 23:04:50
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-27 00:26:26
+ * @LastEditTime: 2022-09-01 11:38:22
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\apis\request.js
@@ -72,7 +72,7 @@ export const onWebsocketMsg = (msg) => {
     if (callback) {
         if (json.Code == 0) {
             callback.resolve(json.Content);
-        } else if (json.Code == -1) {
+        } else if (json.Code == 255) {
             callback.reject(json.Content);
             if (!callback.errHandle) {
                 ElMessage.error(`${callback.path}:${json.Content}`);

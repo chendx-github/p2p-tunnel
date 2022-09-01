@@ -23,7 +23,7 @@ namespace client.service.tcpforward
             string errmsg = tcpForwardTransfer.AddP2PListen(fmodel);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
         public void RemoveListen(ClientServiceParamsInfo arg)
@@ -40,7 +40,7 @@ namespace client.service.tcpforward
             string errmsg = tcpForwardTransfer.AddP2PForward(fmodel);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
         public void RemoveForward(ClientServiceParamsInfo arg)
@@ -75,7 +75,7 @@ namespace client.service.tcpforward
             string errmsg = tcpForwardTransfer.StartP2P(model.ID);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
         public void Stop(ClientServiceParamsInfo arg)
@@ -84,7 +84,7 @@ namespace client.service.tcpforward
             string errmsg = tcpForwardTransfer.StopP2P(model.ID);
             if (!string.IsNullOrWhiteSpace(errmsg))
             {
-                arg.SetCode(-1, errmsg);
+                arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
             }
         }
 
