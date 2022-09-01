@@ -8,27 +8,40 @@ using System.Net.Sockets;
 
 namespace common.socks5
 {
-    public class Socks5ClientListener
+    public interface ISocks5ClientListener
+    {
+        IPEndPoint DistEndpoint { get; }
+        byte Version { get; }
+        Func<Socks5Info, bool> OnData { get; set; }
+        Action<Socks5Info> OnClose { get; set; }
+        void Start(int port, int bufferSize);
+        void Response(Socks5Info info);
+        void Close(ulong id);
+        void Stop();
+    }
+
+    public class Socks5ClientListener : ISocks5ClientListener
     {
         private Socket socket;
         private UdpClient udpClient;
+        private int bufferSize = 8 * 1024;
         public IPEndPoint DistEndpoint { get; private set; }
         public byte Version { get; private set; } = 5;
+
 
         private readonly ConcurrentDictionary<ulong, AsyncUserToken> connections = new();
         private readonly NumberSpace numberSpace = new NumberSpace(0);
 
         public Func<Socks5Info, bool> OnData { get; set; }
-        public Action<ulong> OnClose { get; set; }
+        public Action<Socks5Info> OnClose { get; set; }
 
-        private readonly Config config;
-        public Socks5ClientListener(Config config)
+        public Socks5ClientListener()
         {
-            this.config = config;
         }
 
-        public void Start(int port)
+        public void Start(int port, int bufferSize)
         {
+            this.bufferSize = bufferSize;
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
             DistEndpoint = new IPEndPoint(IPAddress.Loopback, port);
 
@@ -105,8 +118,8 @@ namespace common.socks5
                 UserToken = token,
                 SocketFlags = SocketFlags.None,
             };
-            token.PoolBuffer = ArrayPool<byte>.Shared.Rent(config.BufferSize);
-            readEventArgs.SetBuffer(token.PoolBuffer, 0, config.BufferSize);
+            token.PoolBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            readEventArgs.SetBuffer(token.PoolBuffer, 0, bufferSize);
             readEventArgs.Completed += IO_Completed;
             if (!socket.ReceiveAsync(readEventArgs))
             {
@@ -244,7 +257,7 @@ namespace common.socks5
                 {
                     if (OnClose != null && token.Disposabled == false)
                     {
-                        OnClose(token.DataWrap.Id);
+                        OnClose(token.DataWrap);
                     }
                     token.Clear();
                 }

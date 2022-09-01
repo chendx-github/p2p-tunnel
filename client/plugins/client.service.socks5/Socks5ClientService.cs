@@ -8,11 +8,11 @@ namespace client.service.socks5
     public class Socks5ClientService : IClientService
     {
         private readonly common.socks5.Config config;
-        private readonly Socks5ClientListener socks5ClientListener;
+        private readonly ISocks5ClientListener socks5ClientListener;
         private readonly Socks5Transfer socks5Transfer;
         private readonly ISocks5ClientHandler socks5ClientHandler;
 
-        public Socks5ClientService(common.socks5.Config config, Socks5ClientListener socks5ClientListener, Socks5Transfer socks5Transfer, ISocks5ClientHandler socks5ClientHandler)
+        public Socks5ClientService(common.socks5.Config config, ISocks5ClientListener socks5ClientListener, Socks5Transfer socks5Transfer, ISocks5ClientHandler socks5ClientHandler)
         {
             this.config = config;
             this.socks5ClientListener = socks5ClientListener;
@@ -34,7 +34,7 @@ namespace client.service.socks5
             {
                 try
                 {
-                    socks5ClientListener.Start(conf.ListenPort);
+                    socks5ClientListener.Start(conf.ListenPort,config.BufferSize);
                 }
                 catch (Exception ex)
                 {

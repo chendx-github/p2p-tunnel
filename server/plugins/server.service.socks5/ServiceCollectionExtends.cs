@@ -8,9 +8,9 @@ namespace server.service.socks5
     {
         public static ServiceCollection AddSocks5(this ServiceCollection services)
         {
-            services.AddSingleton<common.socks5.Config>();
+            services.AddSingleton<Config>();
 
-            services.AddSingleton<Socks5ClientListener>();
+            services.AddSingleton<ISocks5ClientListener,Socks5ClientListener>();
             services.AddSingleton<Socks5MessengerSender>();
 
             services.AddSingleton<ISocks5ServerHandler, Socks5ServerHandler>();

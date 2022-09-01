@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-09-01 17:13:44
+ * @LastEditTime: 2022-09-01 23:40:01
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
@@ -17,7 +17,7 @@
                     <el-form-item label="" label-width="0">
                         <div class="w-100">
                             <el-row :gutter="10">
-                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label="代理端口" prop="SocksPort">
                                         <el-tooltip class="box-item" effect="dark" content="代理端口，无所谓，填写一个未被占用的端口即可" placement="top-start">
                                             <el-input v-model="state.form.SocksPort"></el-input>
@@ -25,7 +25,12 @@
 
                                     </el-form-item>
                                 </el-col>
-                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label="buffersize" prop="BufferSize">
+                                        <el-input v-model="state.form.BufferSize"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label="通信通道" prop="TunnelType">
                                         <el-select v-model="state.form.TunnelType" placeholder="选择类型">
                                             <el-option v-for="(item,index) in shareData.tunnelTypes" :key="index" :label="item" :value="index">
@@ -33,7 +38,7 @@
                                         </el-select>
                                     </el-form-item>
                                 </el-col>
-                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label="目标端" prop="TargetName">
                                         <el-tooltip class="box-item" effect="dark" content="当遇到不存在的ip时，目标端应该选择谁，为空服务器，不为空则为某个客户端" placement="top-start">
                                             <el-select v-model="state.form.TargetName" placeholder="选择目标">
@@ -66,7 +71,7 @@
                                 <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
                                     <el-form-item label="本机IP" prop="IP">
                                         <el-tooltip class="box-item" effect="dark" content="当前客户端的虚拟网卡ip，各个客户端之间设置不一样的ip，相同网段即可" placement="top-start">
-                                            <el-input v-model="state.form.IP"></el-input>
+                                            <el-input :readonly="registerState.LocalInfo.connected" v-model="state.form.IP"></el-input>
                                         </el-tooltip>
                                     </el-form-item>
                                 </el-col>
@@ -105,11 +110,13 @@ import { onMounted, onUnmounted } from '@vue/runtime-core'
 import { ElMessage } from 'element-plus'
 import { injectClients } from '../../../states/clients'
 import { injectShareData } from '../../../states/shareData'
+import { injectRegister } from '../../../states/register'
 import { websocketState } from '../../../apis/request'
 export default {
     setup () {
 
         const clientsState = injectClients();
+        const registerState = injectRegister();
         const shareData = injectShareData();
         const targets = computed(() => {
             return [{ Name: '', label: '服务器' }].concat(clientsState.clients.map(c => {
@@ -124,7 +131,8 @@ export default {
                 TunnelType: '8',
                 TargetName: '',
                 IP: '',
-                ProxyAll: false
+                ProxyAll: false,
+                BufferSize: 8 * 1024
             },
             rules: {
                 SocksPort: [
@@ -163,22 +171,16 @@ export default {
         let timer = 0;
         const loadVeaClients = () => {
             if (websocketState.connected) {
-
-                let ids = clientsState.clients.filter(c => !c.veaIp).map(c => c.Id);
-                if (ids.length > 0) {
-                    getUpdate(ids).then((res) => {
-                        let assign = Object.assign(state.veaClients, res);
-                        state.veaClients = assign;
-                        timer = setTimeout(loadVeaClients, 1000);
-                    });
-                } else {
+                getUpdate().then((res) => {
+                    state.veaClients = res;
                     timer = setTimeout(loadVeaClients, 1000);
-                }
+                });
             } else {
                 state.veaClients = {};
                 timer = setTimeout(loadVeaClients, 1000);
             }
         }
+
         onMounted(() => {
             loadConfig();
             loadVeaClients();
@@ -197,6 +199,7 @@ export default {
                 const json = JSON.parse(JSON.stringify(state.form));
                 json.SocksPort = Number(json.SocksPort);
                 json.TunnelType = Number(json.TunnelType);
+                json.BufferSize = Number(json.BufferSize);
                 setConfig(json).then(() => {
                     state.loading = false;
                     if (json.IsPac) {
@@ -210,7 +213,7 @@ export default {
         }
 
         return {
-            targets, shareData, state, showClients, formDom, handleSubmit
+            targets, shareData, registerState, state, showClients, formDom, handleSubmit
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using client.messengers.clients;
+using System.Collections.Concurrent;
 
 namespace client.service.vea
 {
@@ -50,26 +51,9 @@ namespace client.service.vea
             config.SaveConfig().Wait();
         }
 
-
-        public async Task<Dictionary<ulong, IPAddress>> Update(ClientServiceParamsInfo arg)
+        public ConcurrentDictionary<ulong, IPAddress> Update(ClientServiceParamsInfo arg)
         {
-            var ids = arg.Content.DeJson<ulong[]>();
-
-            Dictionary<ulong, IPAddress> res = new Dictionary<ulong, IPAddress>();
-            if (ids.Any())
-            {
-                var clients = clientInfoCaching.All().Where(c => ids.Contains(c.Id));
-                if (clients.Any())
-                {
-                    foreach (var item in clients)
-                    {
-                        var ip = await veaMessengerSender.IP(item.OnlineConnection);
-                        res.Add(item.Id, ip);
-                    }
-                }
-            }
-
-            return res;
+            return virtualEthernetAdapterTransfer.IPList;
         }
     }
 }

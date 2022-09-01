@@ -23,7 +23,7 @@ namespace client.service.vea
             var resp = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
-                Path = "heart/ip",
+                Path = "vea/ip",
                 Memory = Helper.EmptyArray,
                 Timeout = 1000
             }).ConfigureAwait(false);

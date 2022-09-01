@@ -50,6 +50,7 @@ namespace client.realize.messengers.clients
             punchHoleTcp.OnStep3Handler.Sub((e) => clientInfoCaching.Online(e.Data.FromId, e.Connection, ClientConnectTypes.P2P));
             punchHoleTcp.OnStep4Handler.Sub((e) => clientInfoCaching.Online(e.Data.FromId, e.Connection, ClientConnectTypes.P2P));
 
+            //中继连线
             punchHoleMessengerSender.OnDelay.Sub((param) =>
             {
                 if (clientInfoCaching.Get(param.Raw.Data.FromId, out ClientInfo client))

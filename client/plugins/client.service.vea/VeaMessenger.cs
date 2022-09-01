@@ -1,11 +1,7 @@
-﻿using common.libs;
-using common.server;
+﻿using common.server;
 
 namespace client.service.vea
 {
-    /// <summary>
-    /// 心跳包
-    /// </summary>
     public class VeaMessenger : IMessenger
     {
         private readonly Config config;
@@ -16,7 +12,7 @@ namespace client.service.vea
 
         public byte[] IP(IConnection connection)
         {
-            return config.Enable ? config.IP.GetAddressBytes() : Helper.EmptyArray;
+            return config.IP.GetAddressBytes();
         }
     }
 }

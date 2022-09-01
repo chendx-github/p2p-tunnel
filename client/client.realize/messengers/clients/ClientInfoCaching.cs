@@ -13,6 +13,7 @@ namespace client.realize.messengers.clients
         private readonly static ConcurrentDictionary<ulong, ClientInfo> clients = new ConcurrentDictionary<ulong, ClientInfo>();
 
         public SimpleSubPushHandler<ClientInfo> OnOffline { get; } = new SimpleSubPushHandler<ClientInfo>();
+        public SimpleSubPushHandler<ClientInfo> OnOnline { get; } = new SimpleSubPushHandler<ClientInfo>();
 
         public bool Add(ClientInfo client)
         {
@@ -76,6 +77,7 @@ namespace client.realize.messengers.clients
             {
                 connection.ConnectId = id;
                 client.Online(connection, connectType);
+                OnOnline.Push(client);
             }
         }
 

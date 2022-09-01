@@ -22,6 +22,7 @@ namespace client.service.vea
             IP = config.IP;
             SocksPort = config.SocksPort;
             TunnelType = config.TunnelType;
+            BufferSize = config.BufferSize;
         }
 
 
@@ -30,6 +31,7 @@ namespace client.service.vea
         public string TargetName { get; set; } = string.Empty;
         public IPAddress IP { get; set; } = IPAddress.Parse("192.168.54.1");
         public int SocksPort { get; set; } = 5415;
+        public int BufferSize { get; set; } = 8 * 1024;
         public TunnelTypes TunnelType { get; set; } = TunnelTypes.TCP_FIRST;
 
         public async Task<Config> ReadConfig()
@@ -46,6 +48,8 @@ namespace client.service.vea
             config.IP = IP;
             config.SocksPort = SocksPort;
             config.TunnelType = TunnelType;
+            config.BufferSize = BufferSize;
+            
 
             await configDataProvider.Save(config).ConfigureAwait(false);
         }

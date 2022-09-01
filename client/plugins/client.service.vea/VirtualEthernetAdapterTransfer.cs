@@ -1,5 +1,9 @@
-﻿using System;
+﻿using client.messengers.clients;
+using common.socks5;
+using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -9,11 +13,35 @@ namespace client.service.vea
     {
         Process Tun2SocksProcess;
         const string veaName = "p2p-tunnel";
+        private readonly ConcurrentDictionary<ulong, IPAddress> ips = new ConcurrentDictionary<ulong, IPAddress>();
+        private readonly ConcurrentDictionary<IPAddress, ClientInfo> ips2 = new ConcurrentDictionary<IPAddress, ClientInfo>();
+        public ConcurrentDictionary<ulong, IPAddress> IPList => ips;
+        public ConcurrentDictionary<IPAddress, ClientInfo> IPList2 => ips2;
 
         private readonly Config config;
-        public VirtualEthernetAdapterTransfer(Config config)
+        private readonly IVeaSocks5ClientListener socks5ClientListener;
+
+        public VirtualEthernetAdapterTransfer(Config config, IClientInfoCaching clientInfoCaching, VeaMessengerSender veaMessengerSender, IVeaSocks5ClientListener socks5ClientListener)
         {
             this.config = config;
+            this.socks5ClientListener = socks5ClientListener;
+
+            clientInfoCaching.OnOnline.Sub((client) =>
+            {
+                Task.Run(async () =>
+                {
+                    IPAddress ip = await veaMessengerSender.IP(client.OnlineConnection);
+                    ips.AddOrUpdate(client.Id, ip, (a, b) => ip);
+                    ips2.AddOrUpdate(ip, client, (a, b) => client);
+                });
+            });
+            clientInfoCaching.OnOffline.Sub((client) =>
+            {
+                if (ips.TryRemove(client.Id, out IPAddress ip))
+                {
+                    ips2.TryRemove(ip, out _);
+                }
+            });
         }
 
         public void Run()
@@ -25,9 +53,11 @@ namespace client.service.vea
                 Tun2SocksProcess = null;
             }
 
+            socks5ClientListener.Stop();
             if (config.Enable)
             {
                 RunTun2Socks();
+                socks5ClientListener.Start(config.SocksPort, config.BufferSize);
             }
         }
 
@@ -40,7 +70,17 @@ namespace client.service.vea
         }
         private void Windows()
         {
-            Tun2SocksProcess = Process.Start($"tun2socks.exe",$" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent");
+            Tun2SocksProcess = new Process();
+            Tun2SocksProcess.StartInfo.CreateNoWindow = true;
+            Tun2SocksProcess.StartInfo.FileName = "tun2socks.exe";
+            Tun2SocksProcess.StartInfo.UseShellExecute = false;
+            Tun2SocksProcess.StartInfo.RedirectStandardError = true;
+            Tun2SocksProcess.StartInfo.RedirectStandardInput = true;
+            Tun2SocksProcess.StartInfo.RedirectStandardOutput = true;
+            Tun2SocksProcess.StartInfo.Arguments = $" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent";
+            //设置启动动作,确保以管理员身份运行 
+            Tun2SocksProcess.StartInfo.Verb = "runas";
+            Tun2SocksProcess.Start();
 
             Process proc = new Process();
             proc.StartInfo.CreateNoWindow = true;

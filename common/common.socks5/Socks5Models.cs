@@ -7,6 +7,8 @@ namespace common.socks5
 {
     public class Socks5Info
     {
+        public object Tag { get; set; }
+
         /// <summary>
         /// socks5步骤，执行到哪一步了
         /// </summary>

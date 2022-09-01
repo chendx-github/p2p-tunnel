@@ -5,27 +5,34 @@ using common.server;
 using common.socks5;
 using System;
 using System.Collections.Generic;
+using System.Net;
 
-namespace client.service.socks5
+namespace client.service.vea
 {
-    public class Socks5ClientHandler : ISocks5ClientHandler
+    public interface IVeaSocks5ClientHandler : ISocks5ClientHandler
+    {
+    }
+
+    public class VeaSocks5ClientHandler : IVeaSocks5ClientHandler
     {
         private readonly Socks5MessengerSender socks5MessengerSender;
-        private readonly ISocks5ClientListener socks5ClientListener;
+        private readonly Socks5ClientListener socks5ClientListener;
         private readonly RegisterStateInfo registerStateInfo;
-        private readonly common.socks5.Config config;
-        private IConnection connection;
-        private IClientInfoCaching clientInfoCaching;
+        private readonly Config config;
+        private readonly IClientInfoCaching clientInfoCaching;
+        private readonly VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer;
+
         private readonly Dictionary<Socks5EnumStep, Func<Socks5Info, bool>> handles = new Dictionary<Socks5EnumStep, Func<Socks5Info, bool>>();
         private readonly Dictionary<Socks5EnumStep, Action<Socks5Info>> buildHandles = new Dictionary<Socks5EnumStep, Action<Socks5Info>>();
 
-        public Socks5ClientHandler(Socks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, common.socks5.Config config, IClientInfoCaching clientInfoCaching, ISocks5ClientListener socks5ClientListener)
+        public VeaSocks5ClientHandler(Socks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, Config config, IClientInfoCaching clientInfoCaching, Socks5ClientListener socks5ClientListener, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer)
         {
             this.socks5MessengerSender = socks5MessengerSender;
             this.registerStateInfo = registerStateInfo;
             this.config = config;
             this.clientInfoCaching = clientInfoCaching;
             this.socks5ClientListener = socks5ClientListener;
+            this.virtualEthernetAdapterTransfer = virtualEthernetAdapterTransfer;
 
             socks5ClientListener.OnData = OnData;
             socks5ClientListener.OnClose = OnClose;
@@ -78,8 +85,10 @@ namespace client.service.socks5
         }
         private void OnClose(Socks5Info info)
         {
-            GetConnection();
-            socks5MessengerSender.RequestClose(info.Id, connection);
+            if(info.Tag is TagInfo target)
+            {
+                socks5MessengerSender.RequestClose(info.Id, target.Connection);
+            }
         }
 
         private void RequestResponseData(Socks5Info info)
@@ -161,48 +170,59 @@ namespace client.service.socks5
         }
         private bool HandleAuth(Socks5Info data)
         {
-            GetConnection();
-            return socks5MessengerSender.Request(data, connection);
+            return true;
+            //TagInfo target = data.Tag as TagInfo;
+            //GetConnection(target);
+            //IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
+            //return socks5MessengerSender.Request(data, target.Connection);
         }
         private bool HandleCommand(Socks5Info data)
         {
-            GetConnection();
-            return socks5MessengerSender.Request(data, connection);
+            if (!(data.Tag is TagInfo target))
+            {
+                target = new TagInfo();
+                data.Tag = target;
+            }
+            target.TargetIp = Socks5Parser.GetRemoteEndPoint(data.Data).Address;
+            target.Connection = GetConnection(target.TargetIp);
+            return socks5MessengerSender.Request(data, target.Connection);
         }
         private bool HndleForward(Socks5Info data)
         {
-            GetConnection();
-            return socks5MessengerSender.Request(data, connection);
+            TagInfo target = data.Tag as TagInfo;
+            return socks5MessengerSender.Request(data, target.Connection);
         }
         private bool HndleForwardUdp(Socks5Info data)
         {
-            GetConnection();
+            IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
+            IConnection connection = GetConnection(remoteEndPoint.Address);
             return socks5MessengerSender.Request(data, connection);
         }
 
         public void Flush()
         {
-            connection = null;
-            GetConnection();
         }
 
-        private void GetConnection()
+        private IConnection GetConnection(IPAddress target)
         {
-            if (connection == null)
+            if (virtualEthernetAdapterTransfer.IPList2.TryGetValue(target, out ClientInfo client))
             {
-                if (string.IsNullOrWhiteSpace(config.TargetName))
+                return SelectConnection(client.TcpConnection, client.UdpConnection);
+            }
+
+            if (config.TargetName.Length == 0)
+            {
+                return SelectConnection(registerStateInfo.TcpConnection, registerStateInfo.UdpConnection);
+            }
+            else
+            {
+                client = clientInfoCaching.GetByName(config.TargetName);
+                if (client != null)
                 {
-                    connection = SelectConnection(registerStateInfo.TcpConnection, registerStateInfo.UdpConnection);
-                }
-                else
-                {
-                    var client = clientInfoCaching.GetByName(config.TargetName);
-                    if (client != null)
-                    {
-                        connection = SelectConnection(client.TcpConnection, client.UdpConnection);
-                    }
+                    return SelectConnection(client.TcpConnection, client.UdpConnection);
                 }
             }
+            return null;
         }
         private IConnection SelectConnection(IConnection tcpconnection, IConnection udpconnection)
         {
@@ -216,6 +236,12 @@ namespace client.service.socks5
             };
         }
 
-
+        class TagInfo
+        {
+            public IConnection Connection { get; set; }
+            public IPAddress TargetIp { get; set; }
+        }
     }
+
+
 }

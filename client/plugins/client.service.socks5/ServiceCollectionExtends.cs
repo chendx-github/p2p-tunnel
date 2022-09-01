@@ -11,7 +11,7 @@ namespace client.service.socks5
 
             services.AddSingleton<Socks5Transfer>();
             services.AddSingleton<common.socks5.Config>();
-            services.AddSingleton<Socks5ClientListener>();
+            services.AddSingleton<ISocks5ClientListener,Socks5ClientListener>();
             services.AddSingleton<Socks5MessengerSender>();
 
             services.AddSingleton<ISocks5ServerHandler, Socks5ServerHandler>();
@@ -29,7 +29,7 @@ namespace client.service.socks5
             Logger.Instance.Debug($"socks5已加载");
             if (config.ListenEnable)
             {
-                services.GetService<Socks5ClientListener>().Start(config.ListenPort);
+                services.GetService<ISocks5ClientListener>().Start(config.ListenPort, config.BufferSize);
                 if (config.IsPac)
                 {
                     socks5Transfer.UpdatePac(new PacSetParamsInfo { IsCustom = config.IsCustomPac });

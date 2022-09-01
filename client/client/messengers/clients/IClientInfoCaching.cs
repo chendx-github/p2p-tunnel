@@ -11,6 +11,7 @@ namespace client.messengers.clients
     public interface IClientInfoCaching
     {
         public SimpleSubPushHandler<ClientInfo> OnOffline { get; }
+        public SimpleSubPushHandler<ClientInfo> OnOnline { get; }
         public bool Add(ClientInfo client);
         public bool Get(ulong id, out ClientInfo client);
         public ClientInfo GetByName(string name);

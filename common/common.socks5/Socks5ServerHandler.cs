@@ -171,7 +171,7 @@ namespace common.socks5
             Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
             if (!config.ConnectEnable)
             {
-                ConnectReponse(data, Socks5EnumResponseCommand.Unknow, connection);
+                ConnectReponse(data, Socks5EnumResponseCommand.ConnectNotAllow, connection);
             }
             else
             {
