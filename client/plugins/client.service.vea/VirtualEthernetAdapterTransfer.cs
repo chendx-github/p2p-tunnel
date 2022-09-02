@@ -1,4 +1,5 @@
 ﻿using client.messengers.clients;
+using common.libs;
 using common.socks5;
 using System;
 using System.Collections.Concurrent;
@@ -78,75 +79,39 @@ namespace client.service.vea
         }
         private void Windows()
         {
-            Tun2SocksProcess = new Process();
-            Tun2SocksProcess.StartInfo.CreateNoWindow = true;
-            Tun2SocksProcess.StartInfo.FileName = "tun2socks.exe";
-            Tun2SocksProcess.StartInfo.UseShellExecute = false;
-            Tun2SocksProcess.StartInfo.RedirectStandardError = true;
-            Tun2SocksProcess.StartInfo.RedirectStandardInput = true;
-            Tun2SocksProcess.StartInfo.RedirectStandardOutput = true;
-            Tun2SocksProcess.StartInfo.Arguments = $" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent";
-            //设置启动动作,确保以管理员身份运行 
-            Tun2SocksProcess.StartInfo.Verb = "runas";
-            Tun2SocksProcess.Start();
+            Tun2SocksProcess = Command.Execute("tun2socks.exe", $" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent");
 
-            int index = 0;
-            while (true)
+            for (int i = 0; i < 60; i++)
             {
-                Process proc = new Process();
-                proc.StartInfo.CreateNoWindow = true;
-                proc.StartInfo.FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "bash";
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.RedirectStandardInput = true;
-                proc.StartInfo.RedirectStandardOutput = true;
-                //proc.StartInfo.Arguments = cmd;
-                //设置启动动作,确保以管理员身份运行 
-                proc.StartInfo.Verb = "runas";
-                proc.Start();
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                //分配ip
+                Command.Execute("cmd.exe", string.Empty, new string[] { $"netsh interface ip set address name=\"{veaName}\" source=static addr={config.IP} mask=255.255.255.0 gateway=none"});
+                //网卡编号
+                int num = GetWindowsInterfaceNum();
+                if (num > 0)
                 {
-                    proc.StandardInput.WriteLine($"netsh interface ip set address name=\"{veaName}\" source=static addr={config.IP} mask=255.255.255.0 gateway=none");
-                    if (config.ProxyAll)
+                    if (config.ProxyAll) //代理所有
                     {
-                        proc.StandardInput.WriteLine($"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5");
+                        Command.Execute("cmd.exe", string.Empty, new string[] { $"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5 if {num}" });
                     }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    proc.StandardInput.WriteLine($"sudo ifconfig {veaName} {config.IP} {config.IP} up");
-                }
-
-                proc.StandardInput.AutoFlush = true;
-                proc.StandardInput.WriteLine("exit");
-                string output = proc.StandardOutput.ReadToEnd();
-                proc.StandardError.ReadToEnd();
-                proc.WaitForExit();
-                proc.Close();
-                proc.Dispose();
-
-
-                string[] outputs = output.Split("\r\n");
-                for (int i = 0; i < outputs.Length; i++)
-                {
-                    if (outputs[i].EndsWith("gateway=none"))
-                    {
-                        if (string.IsNullOrWhiteSpace(outputs[i+1]))
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            System.Threading.Thread.Sleep(100);
-                        }
-                    }
-                }
-                if(++index > 100)
-                {
                     break;
                 }
+                else
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
             }
+        }
+        private int GetWindowsInterfaceNum()
+        {
+            string output = Command.Execute("cmd.exe", string.Empty, new string[] { "route print" });
+            foreach (var item in output.Split("\r\n"))
+            {
+                if (item.Contains("WireGuard Tunnel"))
+                {
+                    return int.Parse(item.Substring(0, item.IndexOf('.')).Trim());
+                }
+            }
+            return 0;
         }
     }
 }
