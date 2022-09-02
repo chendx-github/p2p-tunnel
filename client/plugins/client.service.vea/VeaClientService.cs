@@ -14,15 +14,11 @@ namespace client.service.vea
     {
         private readonly Config config;
         private readonly VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer;
-        private readonly VeaMessengerSender veaMessengerSender;
-        private readonly IClientInfoCaching clientInfoCaching;
 
-        public VeaClientService(Config config, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer, VeaMessengerSender veaMessengerSender, IClientInfoCaching clientInfoCaching)
+        public VeaClientService(Config config, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer)
         {
             this.config = config;
             this.virtualEthernetAdapterTransfer = virtualEthernetAdapterTransfer;
-            this.veaMessengerSender = veaMessengerSender;
-            this.clientInfoCaching = clientInfoCaching;
         }
 
         public Config Get(ClientServiceParamsInfo arg)

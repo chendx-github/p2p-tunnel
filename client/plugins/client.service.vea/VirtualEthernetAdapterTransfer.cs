@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace client.service.vea
@@ -49,13 +50,19 @@ namespace client.service.vea
 
         public void Run()
         {
-            KillWindows();
-
-            socks5ClientListener.Stop();
+            Stop();
             if (config.Enable)
             {
                 RunTun2Socks();
                 socks5ClientListener.Start(config.SocksPort, config.BufferSize);
+            }
+        }
+        public void Stop()
+        {
+            socks5ClientListener.Stop();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                KillWindows();
             }
         }
 
@@ -63,7 +70,16 @@ namespace client.service.vea
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Windows();
+                WindowsIdentity id = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(id);
+                if (principal.IsInRole(WindowsBuiltInRole.Administrator))
+                {
+                    RunWindows();
+                }
+                else
+                {
+                    throw new Exception($"需要管理员权限");
+                }
             }
         }
 
@@ -77,14 +93,13 @@ namespace client.service.vea
                 Tun2SocksProcess = null;
             }
         }
-        private void Windows()
+        private void RunWindows()
         {
             Tun2SocksProcess = Command.Execute("tun2socks.exe", $" -device {veaName} -proxy socks5://127.0.0.1:{config.SocksPort} -loglevel silent");
-
             for (int i = 0; i < 60; i++)
             {
                 //分配ip
-                Command.Execute("cmd.exe", string.Empty, new string[] { $"netsh interface ip set address name=\"{veaName}\" source=static addr={config.IP} mask=255.255.255.0 gateway=none"});
+                Command.Execute("cmd.exe", string.Empty, new string[] { $"netsh interface ip set address name=\"{veaName}\" source=static addr={config.IP} mask=255.255.255.0 gateway=none" });
                 //网卡编号
                 int num = GetWindowsInterfaceNum();
                 if (num > 0)
