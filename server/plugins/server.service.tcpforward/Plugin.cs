@@ -1,25 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using common.tcpforward;
 using common.libs;
+using common.server;
+using System.Reflection;
 
 namespace server.service.tcpforward
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddTcpForwardPlugin(this ServiceCollection services)
-        {
-            services.AddSingleton<common.tcpforward.Config>();//启动器
-            services.AddSingleton<ITcpForwardServer, TcpForwardServerPre>(); //监听服务
-            services.AddSingleton<TcpForwardMessengerSender>(); //消息发送
-            services.AddSingleton<TcpForwardTransfer>();//启动器
-
-            services.AddSingleton<ITcpForwardTargetProvider, TcpForwardTargetProvider>(); //目标提供器
-            services.AddSingleton<ITcpForwardTargetCaching<TcpForwardTargetCacheInfo>, TcpForwardTargetCaching>(); //转发缓存器
-            services.AddSingleton<TcpForwardResolver>();
-
-            return services;
-        }
-        public static ServiceProvider UseTcpForwardPlugin(this ServiceProvider services)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
             services.GetService<TcpForwardTransfer>();
             services.GetService<TcpForwardResolver>();
@@ -44,8 +33,18 @@ namespace server.service.tcpforward
                 Logger.Instance.Info($"tcp转发和http1.1代理未允许未允许本地连接");
             }
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+        }
 
-            return services;
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<common.tcpforward.Config>();//启动器
+            services.AddSingleton<ITcpForwardServer, TcpForwardServerPre>(); //监听服务
+            services.AddSingleton<TcpForwardMessengerSender>(); //消息发送
+            services.AddSingleton<TcpForwardTransfer>();//启动器
+
+            services.AddSingleton<ITcpForwardTargetProvider, TcpForwardTargetProvider>(); //目标提供器
+            services.AddSingleton<ITcpForwardTargetCaching<TcpForwardTargetCacheInfo>, TcpForwardTargetCaching>(); //转发缓存器
+            services.AddSingleton<TcpForwardResolver>();
         }
     }
 }

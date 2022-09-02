@@ -1,16 +1,56 @@
 ﻿using client.service.ui.api.clientServer;
+using client.service.ui.api.service.clientServer;
+using client.service.ui.api.service.webServer;
 using common.libs;
+using common.server;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using System.Reflection;
 
-namespace client.service.ui.api.service.clientServer
+namespace client.service.ui.api.service
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddClientServer(this ServiceCollection services, Assembly[] assemblys)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
+        {
+            LoadWebAfter(services, assemblys);
+            LoadApiAfter(services, assemblys);
+        }
+
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<Config>();
+            LoadWebBefore(services, assemblys);
+            LoadApiBefore(services, assemblys);
+        }
+
+        private void LoadWebBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<IWebServer, WebServer>();
+            services.AddSingleton<IWebServerFileReader, WebServerFileReader>();
+        }
+        private void LoadWebAfter(ServiceProvider services, Assembly[] assemblys)
+        {
+            var config = services.GetService<Config>();
+
+            if (config.EnableWeb)
+            {
+                services.GetService<IWebServer>().Start();
+                Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+                Logger.Instance.Debug("管理UI，web已启用");
+                Logger.Instance.Info($"管理UI web1 :http://{config.Web.BindIp}:{config.Web.Port}");
+                Logger.Instance.Info($"管理UI web2 :https://snltty.gitee.io/p2p-tunnel");
+                Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            }
+            else
+            {
+                Logger.Instance.Debug("管理UI，web未启用");
+            }
+        }
+
+        private void LoadApiBefore(ServiceCollection services, Assembly[] assemblys)
         {
             services.AddSingleton<IClientServer, ClientServer>();
 
@@ -24,10 +64,8 @@ namespace client.service.ui.api.service.clientServer
             {
                 services.AddSingleton(item);
             }
-            return services;
         }
-
-        public static ServiceProvider UseClientServer(this ServiceProvider services, Assembly[] assemblys)
+        private void LoadApiAfter(ServiceProvider services, Assembly[] assemblys)
         {
             IClientServer clientServer = services.GetService<IClientServer>();
 
@@ -63,7 +101,7 @@ namespace client.service.ui.api.service.clientServer
                 Logger.Instance.Info($"管理UI，api未启用");
             }
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
-            return services;
         }
+
     }
 }

@@ -12,6 +12,7 @@ using common.socks5;
 using server.service.socks5;
 using server.service.udpforward;
 using System.Threading;
+using common.server;
 
 namespace server.service
 {
@@ -20,28 +21,28 @@ namespace server.service
         static void Main(string[] args)
         {
             ThreadPool.SetMinThreads(150, 150);
-
-            Config config = File.ReadAllText("appsettings.json").DeJson<Config>();
-
+            Logger.Instance.Info("正在启动...");
             LoggerConsole();
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton((e) => config);
-
-
             //加载插件程序集，当单文件发布或者动态加载dll外部插件时需要，否则如果本程序集没有显式的使用它的相关内容的话，会加载不出来
+            //可以改为从dll文件加载
             Assembly[] assemblys = new Assembly[] {
                 typeof(CounterMessenger).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
                 typeof(UdpForwardMessenger).Assembly,
                 typeof(Socks5Messenger).Assembly,
+                typeof(Socks5ClientHandler).Assembly,
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 
-            serviceCollection.AddMiddleware(assemblys).AddMessenger(assemblys).AddTcpServer().AddUdpServer().AddTcpForwardPlugin().AddUdpForwardPlugin().AddSocks5();
+            ServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddMiddleware(assemblys);
+            IPlugin[] plugins = PluginLoader.LoadBefore(serviceCollection, assemblys);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            serviceProvider.UseMiddleware(assemblys).UseMessenger(assemblys).UseTcpServer().UseUdpServer().UseTcpForwardPlugin().UseUdpForwardPlugin().UseSocks5();
+            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            serviceProvider.UseMiddleware(assemblys);
+            PluginLoader.LoadAfter(plugins, serviceProvider, assemblys);
 
+            var config = serviceProvider.GetService<Config>();
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Info("没什么报红的，就说明运行成功了");
             Logger.Instance.Info($"UDP端口:{config.Udp}");

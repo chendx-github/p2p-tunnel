@@ -1,10 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Media;
 using Android.OS;
-using Android.Util;
-using AndroidX.Core.App;
 
 namespace client.service.app
 {

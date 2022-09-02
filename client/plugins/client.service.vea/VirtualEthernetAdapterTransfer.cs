@@ -42,16 +42,13 @@ namespace client.service.vea
                     ips2.TryRemove(ip, out _);
                 }
             });
+
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => KillWindows();
         }
 
         public void Run()
         {
-            if (Tun2SocksProcess != null)
-            {
-                Tun2SocksProcess.Close();
-                Tun2SocksProcess.Dispose();
-                Tun2SocksProcess = null;
-            }
+            KillWindows();
 
             socks5ClientListener.Stop();
             if (config.Enable)
@@ -68,6 +65,17 @@ namespace client.service.vea
                 Windows();
             }
         }
+
+        private void KillWindows()
+        {
+            if (Tun2SocksProcess != null)
+            {
+                Tun2SocksProcess.Kill();
+                Tun2SocksProcess.Close();
+                Tun2SocksProcess.Dispose();
+                Tun2SocksProcess = null;
+            }
+        }
         private void Windows()
         {
             Tun2SocksProcess = new Process();
@@ -82,38 +90,63 @@ namespace client.service.vea
             Tun2SocksProcess.StartInfo.Verb = "runas";
             Tun2SocksProcess.Start();
 
-            Process proc = new Process();
-            proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "bash";
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardError = true;
-            proc.StartInfo.RedirectStandardInput = true;
-            proc.StartInfo.RedirectStandardOutput = true;
-            //proc.StartInfo.Arguments = cmd;
-            //设置启动动作,确保以管理员身份运行 
-            proc.StartInfo.Verb = "runas";
-            proc.Start();
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            int index = 0;
+            while (true)
             {
-                proc.StandardInput.WriteLine($"netsh interface ip set address name=\"{veaName}\" source=static addr=${config.IP} mask=255.255.255.0 gateway=none");
-                if (config.ProxyAll)
+                Process proc = new Process();
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "bash";
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardInput = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                //proc.StartInfo.Arguments = cmd;
+                //设置启动动作,确保以管理员身份运行 
+                proc.StartInfo.Verb = "runas";
+                proc.Start();
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    proc.StandardInput.WriteLine($"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5");
+                    proc.StandardInput.WriteLine($"netsh interface ip set address name=\"{veaName}\" source=static addr={config.IP} mask=255.255.255.0 gateway=none");
+                    if (config.ProxyAll)
+                    {
+                        proc.StandardInput.WriteLine($"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5");
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    proc.StandardInput.WriteLine($"sudo ifconfig {veaName} {config.IP} {config.IP} up");
+                }
+
+                proc.StandardInput.AutoFlush = true;
+                proc.StandardInput.WriteLine("exit");
+                string output = proc.StandardOutput.ReadToEnd();
+                proc.StandardError.ReadToEnd();
+                proc.WaitForExit();
+                proc.Close();
+                proc.Dispose();
+
+
+                string[] outputs = output.Split("\r\n");
+                for (int i = 0; i < outputs.Length; i++)
+                {
+                    if (outputs[i].EndsWith("gateway=none"))
+                    {
+                        if (string.IsNullOrWhiteSpace(outputs[i+1]))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+                    }
+                }
+                if(++index > 100)
+                {
+                    break;
                 }
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                proc.StandardInput.WriteLine($"sudo ifconfig {veaName} {config.IP} {config.IP} up");
-            }
-
-            proc.StandardInput.AutoFlush = true;
-            proc.StandardInput.WriteLine("exit");
-            proc.StandardOutput.ReadToEnd();
-            proc.StandardError.ReadToEnd();
-            proc.WaitForExit();
-            proc.Close();
-            proc.Dispose();
         }
     }
 }

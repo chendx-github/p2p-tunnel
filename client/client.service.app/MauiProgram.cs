@@ -11,6 +11,7 @@ using client.service.ui.api.service.clientServer;
 using client.service.ui.api.service.webServer;
 using common.libs;
 using common.libs.database;
+using common.server;
 using common.server.middleware;
 using common.socks5;
 using System.Reflection;
@@ -29,13 +30,11 @@ namespace client.service.app
 
             MauiApp app = builder.Build();
 
-           
-
             return app;
         }
     }
 
-   public class Startup
+    public class Startup
     {
         static ServiceProvider serviceProvider = null;
         public static void Start()
@@ -48,6 +47,7 @@ namespace client.service.app
 
 
             //加载插件程序集，当单文件发布或者动态加载dll外部插件时需要，否则如果本程序集没有显式的使用它的相关内容的话，会加载不出来
+            //可以改为从dll文件加载
             Assembly[] assemblys = new Assembly[] {
                 typeof(LoggerClientService).Assembly,
                 typeof(TcpForwardMessenger).Assembly,
@@ -57,33 +57,19 @@ namespace client.service.app
                 typeof(Socks5ClientService).Assembly,
                 typeof(Socks5Messenger).Assembly,
                 typeof(PunchHoleMessenger).Assembly,
-
             }.Concat(AppDomain.CurrentDomain.GetAssemblies()).ToArray();
 
 
-            serviceCollection
-                .AddMiddleware(assemblys)
-                .AddServerPlugin(assemblys)//基础的功能
-                .AddUI(assemblys)//客户端管理
-                .AddTcpForwardPlugin()  //客户端tcp转发
-                .AddUdpForwardPlugin()  //客户端udp转发
-                .AddSocks5() //socks5代理
-                .AddLoggerPlugin() //日志
-            ;
+            serviceCollection.AddMiddleware(assemblys);
+            IPlugin[] plugins = PluginLoader.LoadBefore(serviceCollection, assemblys);
 
+            //覆盖几个实现，由于平台实现不一样
             serviceCollection.AddTransient(typeof(IConfigDataProvider<>), typeof(ConfigDataFileProvider<>));
             serviceCollection.AddSingleton<IWebServerFileReader, WebServerFileReader>();
 
             serviceProvider = serviceCollection.BuildServiceProvider();
-
-            serviceProvider
-                .UseMiddleware(assemblys)
-            .UseServerPlugin(assemblys)//基础的功能
-            .UseUI(assemblys)//客户端管理
-            .UseTcpForwardPlugin()//客户端tcp转发
-            .UseUdpForwardPlugin()//客户端tcp转发
-            .UseSocks5()//socks5代理
-            .UseLoggerPlugin(); //日志
+            serviceProvider.UseMiddleware(assemblys);
+            PluginLoader.LoadAfter(plugins, serviceProvider, assemblys);
 
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");

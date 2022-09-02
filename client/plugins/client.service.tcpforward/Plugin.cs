@@ -1,26 +1,14 @@
 ﻿using common.libs;
+using common.server;
 using common.tcpforward;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace client.service.tcpforward
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddTcpForwardPlugin(this ServiceCollection services)
-        {
-            services.AddSingleton<common.tcpforward.Config>();
-
-            services.AddSingleton<ITcpForwardServer, TcpForwardServerPre>();
-            services.AddSingleton<ITcpForwardTargetProvider, TcpForwardTargetProvider>();
-            services.AddSingleton<ITcpForwardTargetCaching<TcpForwardTargetCacheInfo>, TcpForwardTargetCaching>();
-
-            services.AddSingleton<TcpForwardTransfer>();
-            services.AddSingleton<TcpForwardResolver>();
-            services.AddSingleton<TcpForwardMessengerSender>();
-
-            return services;
-        }
-        public static ServiceProvider UseTcpForwardPlugin(this ServiceProvider services)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
             services.GetService<TcpForwardTransfer>();
             services.GetService<TcpForwardResolver>();
@@ -47,8 +35,19 @@ namespace client.service.tcpforward
                 Logger.Instance.Info($"http1.1代理未允许本地连接");
             }
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+        }
 
-            return services;
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<common.tcpforward.Config>();
+
+            services.AddSingleton<ITcpForwardServer, TcpForwardServerPre>();
+            services.AddSingleton<ITcpForwardTargetProvider, TcpForwardTargetProvider>();
+            services.AddSingleton<ITcpForwardTargetCaching<TcpForwardTargetCacheInfo>, TcpForwardTargetCaching>();
+
+            services.AddSingleton<TcpForwardTransfer>();
+            services.AddSingleton<TcpForwardResolver>();
+            services.AddSingleton<TcpForwardMessengerSender>();
         }
     }
 }

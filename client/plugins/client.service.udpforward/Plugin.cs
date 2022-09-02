@@ -1,26 +1,14 @@
 ﻿using common.libs;
+using common.server;
 using common.udpforward;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace client.service.udpforward
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddUdpForwardPlugin(this ServiceCollection services)
-        {
-            services.AddSingleton<common.udpforward.Config>();
-
-            services.AddSingleton<IUdpForwardServer, UdpForwardServer>();
-            services.AddSingleton<IUdpForwardTargetProvider, UdpForwardTargetProvider>();
-            services.AddSingleton<IUdpForwardTargetCaching<UdpForwardTargetCacheInfo>, UdpForwardTargetCaching>();
-
-            services.AddSingleton<UdpForwardTransfer>();
-            services.AddSingleton<UdpForwardResolver>();
-            services.AddSingleton<UdpForwardMessengerSender>();
-
-            return services;
-        }
-        public static ServiceProvider UseUdpForwardPlugin(this ServiceProvider services)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
             services.GetService<UdpForwardTransfer>();
             services.GetService<UdpForwardResolver>();
@@ -39,8 +27,19 @@ namespace client.service.udpforward
                 Logger.Instance.Info($"udp转发未允许连接");
             }
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+        }
 
-            return services;
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<common.udpforward.Config>();
+
+            services.AddSingleton<IUdpForwardServer, UdpForwardServer>();
+            services.AddSingleton<IUdpForwardTargetProvider, UdpForwardTargetProvider>();
+            services.AddSingleton<IUdpForwardTargetCaching<UdpForwardTargetCacheInfo>, UdpForwardTargetCaching>();
+
+            services.AddSingleton<UdpForwardTransfer>();
+            services.AddSingleton<UdpForwardResolver>();
+            services.AddSingleton<UdpForwardMessengerSender>();
         }
     }
 }

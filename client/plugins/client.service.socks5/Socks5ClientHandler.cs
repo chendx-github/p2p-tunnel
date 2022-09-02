@@ -10,16 +10,16 @@ namespace client.service.socks5
 {
     public class Socks5ClientHandler : ISocks5ClientHandler
     {
-        private readonly Socks5MessengerSender socks5MessengerSender;
+        private readonly ISocks5MessengerSender socks5MessengerSender;
         private readonly ISocks5ClientListener socks5ClientListener;
         private readonly RegisterStateInfo registerStateInfo;
         private readonly common.socks5.Config config;
         private IConnection connection;
         private IClientInfoCaching clientInfoCaching;
-        private readonly Dictionary<Socks5EnumStep, Func<Socks5Info, bool>> handles = new Dictionary<Socks5EnumStep, Func<Socks5Info, bool>>();
-        private readonly Dictionary<Socks5EnumStep, Action<Socks5Info>> buildHandles = new Dictionary<Socks5EnumStep, Action<Socks5Info>>();
+        protected Dictionary<Socks5EnumStep, Func<Socks5Info, bool>> handles = new Dictionary<Socks5EnumStep, Func<Socks5Info, bool>>();
+        protected Dictionary<Socks5EnumStep, Action<Socks5Info>> buildHandles = new Dictionary<Socks5EnumStep, Action<Socks5Info>>();
 
-        public Socks5ClientHandler(Socks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, common.socks5.Config config, IClientInfoCaching clientInfoCaching, ISocks5ClientListener socks5ClientListener)
+        public Socks5ClientHandler(ISocks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, common.socks5.Config config, IClientInfoCaching clientInfoCaching, ISocks5ClientListener socks5ClientListener)
         {
             this.socks5MessengerSender = socks5MessengerSender;
             this.registerStateInfo = registerStateInfo;
@@ -63,7 +63,7 @@ namespace client.service.socks5
             }
         }
 
-        private bool OnData(Socks5Info info)
+        protected bool OnData(Socks5Info info)
         {
             if (handles.TryGetValue(info.Socks5Step, out Func<Socks5Info, bool> func))
             {
@@ -76,13 +76,13 @@ namespace client.service.socks5
             }
             return false;
         }
-        private void OnClose(Socks5Info info)
+        protected virtual void OnClose(Socks5Info info)
         {
             GetConnection();
             socks5MessengerSender.RequestClose(info.Id, connection);
         }
 
-        private void RequestResponseData(Socks5Info info)
+        protected void RequestResponseData(Socks5Info info)
         {
             Socks5EnumAuthType type = (Socks5EnumAuthType)info.Data.Span[0];
             if (type == Socks5EnumAuthType.NotSupported)
@@ -102,7 +102,7 @@ namespace client.service.socks5
                 info.Data = new byte[] { socks5ClientListener.Version, (byte)type };
             }
         }
-        private void AuthResponseData(Socks5Info info)
+        protected void AuthResponseData(Socks5Info info)
         {
             Socks5EnumAuthState type = (Socks5EnumAuthState)info.Data.Span[0];
             if (type != Socks5EnumAuthState.Success)
@@ -118,7 +118,7 @@ namespace client.service.socks5
                 info.Data = new byte[] { info.Version, (byte)type };
             }
         }
-        private void CommandResponseData(Socks5Info info)
+        protected void CommandResponseData(Socks5Info info)
         {
             Socks5EnumResponseCommand type = (Socks5EnumResponseCommand)info.Data.Span[0];
             if (type != Socks5EnumResponseCommand.ConnecSuccess)
@@ -134,17 +134,17 @@ namespace client.service.socks5
                 info.Data = Socks5Parser.MakeConnectResponse(socks5ClientListener.DistEndpoint, (byte)type);
             }
         }
-        private void ForwardResponseData(Socks5Info info)
+        protected void ForwardResponseData(Socks5Info info)
         {
             info.Socks5Step = Socks5EnumStep.Forward;
         }
-        private void ForwardUdpResponseData(Socks5Info info)
+        protected void ForwardUdpResponseData(Socks5Info info)
         {
             info.Data = Socks5Parser.MakeUdpResponse(socks5ClientListener.DistEndpoint, info.Data);
         }
 
 
-        private bool HandleRequest(Socks5Info data)
+        protected virtual bool HandleRequest(Socks5Info data)
         {
             #region 省略掉验证部分
             data.Response[0] = (byte)Socks5EnumAuthType.NoAuth;
@@ -159,28 +159,29 @@ namespace client.service.socks5
             //return socks5MessengerSender.Request(data, connection);
             #endregion
         }
-        private bool HandleAuth(Socks5Info data)
+        protected virtual bool HandleAuth(Socks5Info data)
+        {
+            return true;
+            //GetConnection();
+            // return socks5MessengerSender.Request(data, connection);
+        }
+        protected virtual bool HandleCommand(Socks5Info data)
         {
             GetConnection();
             return socks5MessengerSender.Request(data, connection);
         }
-        private bool HandleCommand(Socks5Info data)
+        protected virtual bool HndleForward(Socks5Info data)
         {
             GetConnection();
             return socks5MessengerSender.Request(data, connection);
         }
-        private bool HndleForward(Socks5Info data)
-        {
-            GetConnection();
-            return socks5MessengerSender.Request(data, connection);
-        }
-        private bool HndleForwardUdp(Socks5Info data)
+        protected virtual bool HndleForwardUdp(Socks5Info data)
         {
             GetConnection();
             return socks5MessengerSender.Request(data, connection);
         }
 
-        public void Flush()
+        public virtual void Flush()
         {
             connection = null;
             GetConnection();

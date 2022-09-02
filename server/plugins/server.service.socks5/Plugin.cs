@@ -1,25 +1,14 @@
 ﻿using common.libs;
+using common.server;
 using common.socks5;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace server.service.socks5
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddSocks5(this ServiceCollection services)
-        {
-            services.AddSingleton<Config>();
-
-            services.AddSingleton<ISocks5ClientListener,Socks5ClientListener>();
-            services.AddSingleton<Socks5MessengerSender>();
-
-            services.AddSingleton<ISocks5ServerHandler, Socks5ServerHandler>();
-            services.AddSingleton<ISocks5ClientHandler, Socks5ClientHandler>();
-
-            return services;
-        }
-
-        public static ServiceProvider UseSocks5(this ServiceProvider services)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
             Logger.Instance.Info("socks5已加载");
@@ -41,8 +30,17 @@ namespace server.service.socks5
                 Logger.Instance.Info($"socks5未允许本地连接");
             }
             Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+        }
 
-            return services;
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<Config>();
+
+            services.AddSingleton<ISocks5ClientListener, Socks5ClientListener>();
+            services.AddSingleton<ISocks5MessengerSender, Socks5MessengerSender>();
+
+            services.AddSingleton<ISocks5ServerHandler, Socks5ServerHandler>();
+            services.AddSingleton<ISocks5ClientHandler, Socks5ClientHandler>();
         }
     }
 

@@ -4,9 +4,11 @@ using common.server.model;
 
 namespace common.socks5
 {
-    public class Socks5MessengerSender
+    public class Socks5MessengerSender : ISocks5MessengerSender
     {
         private readonly MessengerSender messengerSender;
+        protected virtual string Target { get; } = "socks5";
+
         public Socks5MessengerSender(MessengerSender messengerSender)
         {
             this.messengerSender = messengerSender;
@@ -16,7 +18,7 @@ namespace common.socks5
         {
             return messengerSender.SendOnly(new MessageRequestWrap
             {
-                Path = "socks5/request",
+                Path = $"{Target}/request",
                 Connection = connection,
                 Memory = data.ToBytes()
             }).Result;
@@ -25,7 +27,7 @@ namespace common.socks5
         {
             _ = messengerSender.SendOnly(new MessageRequestWrap
             {
-                Path = "socks5/response",
+                Path = $"{Target}/response",
                 Connection = connection.FromConnection,
                 Memory = data.ToBytes()
             }).ConfigureAwait(false);

@@ -1,10 +1,8 @@
 ﻿using client.messengers.clients;
 using client.messengers.register;
-using common.libs;
+using client.service.socks5;
 using common.server;
 using common.socks5;
-using System;
-using System.Collections.Generic;
 using System.Net;
 
 namespace client.service.vea
@@ -13,193 +11,59 @@ namespace client.service.vea
     {
     }
 
-    public class VeaSocks5ClientHandler : IVeaSocks5ClientHandler
+    public class VeaSocks5ClientHandler : Socks5ClientHandler, IVeaSocks5ClientHandler
     {
-        private readonly Socks5MessengerSender socks5MessengerSender;
-        private readonly Socks5ClientListener socks5ClientListener;
-        private readonly RegisterStateInfo registerStateInfo;
+        private readonly IVeaSocks5MessengerSender socks5MessengerSender;
         private readonly Config config;
         private readonly IClientInfoCaching clientInfoCaching;
         private readonly VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer;
 
-        private readonly Dictionary<Socks5EnumStep, Func<Socks5Info, bool>> handles = new Dictionary<Socks5EnumStep, Func<Socks5Info, bool>>();
-        private readonly Dictionary<Socks5EnumStep, Action<Socks5Info>> buildHandles = new Dictionary<Socks5EnumStep, Action<Socks5Info>>();
-
-        public VeaSocks5ClientHandler(Socks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, Config config, IClientInfoCaching clientInfoCaching, Socks5ClientListener socks5ClientListener, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer)
+        public VeaSocks5ClientHandler(IVeaSocks5MessengerSender socks5MessengerSender, RegisterStateInfo registerStateInfo, common.socks5.Config socks5Config, Config config, IClientInfoCaching clientInfoCaching, IVeaSocks5ClientListener socks5ClientListener, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer)
+            : base(socks5MessengerSender, registerStateInfo, socks5Config, clientInfoCaching, socks5ClientListener)
         {
             this.socks5MessengerSender = socks5MessengerSender;
-            this.registerStateInfo = registerStateInfo;
             this.config = config;
             this.clientInfoCaching = clientInfoCaching;
-            this.socks5ClientListener = socks5ClientListener;
             this.virtualEthernetAdapterTransfer = virtualEthernetAdapterTransfer;
-
-            socks5ClientListener.OnData = OnData;
-            socks5ClientListener.OnClose = OnClose;
-
-            handles = new Dictionary<Socks5EnumStep, Func<Socks5Info, bool>>
-            {
-                { Socks5EnumStep.Request,HandleRequest},
-                { Socks5EnumStep.Auth,HandleAuth},
-                { Socks5EnumStep.Command,HandleCommand},
-                { Socks5EnumStep.Forward,HndleForward},
-                { Socks5EnumStep.ForwardUdp,HndleForwardUdp},
-            };
-            buildHandles = new Dictionary<Socks5EnumStep, Action<Socks5Info>> {
-                {Socks5EnumStep.Request, RequestResponseData},
-                {Socks5EnumStep.Auth, AuthResponseData},
-                {Socks5EnumStep.Command, CommandResponseData},
-                {Socks5EnumStep.Forward, ForwardResponseData},
-                {Socks5EnumStep.ForwardUdp, ForwardUdpResponseData},
-            };
         }
-        public void InputData(IConnection connection)
+        protected override void OnClose(Socks5Info info)
         {
-            Socks5Info info = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
-            if (info.Data.Length == 0)
-            {
-                socks5ClientListener.Close(info.Id);
-            }
-            else
-            {
-                if (buildHandles.TryGetValue(info.Socks5Step, out Action<Socks5Info> func))
-                {
-                    func(info);
-                    socks5ClientListener.Response(info);
-                }
-            }
-        }
-
-        private bool OnData(Socks5Info info)
-        {
-            if (handles.TryGetValue(info.Socks5Step, out Func<Socks5Info, bool> func))
-            {
-                if (info.Socks5Step == Socks5EnumStep.Auth)
-                {
-                    info.Version = info.Data.Span[0];
-                }
-
-                return func(info);
-            }
-            return false;
-        }
-        private void OnClose(Socks5Info info)
-        {
-            if(info.Tag is TagInfo target)
+            if (info.Tag is TagInfo target)
             {
                 socks5MessengerSender.RequestClose(info.Id, target.Connection);
             }
         }
-
-        private void RequestResponseData(Socks5Info info)
-        {
-            Socks5EnumAuthType type = (Socks5EnumAuthType)info.Data.Span[0];
-            if (type == Socks5EnumAuthType.NotSupported)
-            {
-                info.Data = Helper.EmptyArray;
-            }
-            else
-            {
-                if (type == Socks5EnumAuthType.NoAuth)
-                {
-                    info.Socks5Step = Socks5EnumStep.Command;
-                }
-                else
-                {
-                    info.Socks5Step = Socks5EnumStep.Auth;
-                }
-                info.Data = new byte[] { socks5ClientListener.Version, (byte)type };
-            }
-        }
-        private void AuthResponseData(Socks5Info info)
-        {
-            Socks5EnumAuthState type = (Socks5EnumAuthState)info.Data.Span[0];
-            if (type != Socks5EnumAuthState.Success)
-            {
-                info.Data = Helper.EmptyArray;
-            }
-            else
-            {
-                if (type == Socks5EnumAuthState.Success)
-                {
-                    info.Socks5Step = Socks5EnumStep.Command;
-                }
-                info.Data = new byte[] { info.Version, (byte)type };
-            }
-        }
-        private void CommandResponseData(Socks5Info info)
-        {
-            Socks5EnumResponseCommand type = (Socks5EnumResponseCommand)info.Data.Span[0];
-            if (type != Socks5EnumResponseCommand.ConnecSuccess)
-            {
-                info.Data = Helper.EmptyArray;
-            }
-            else
-            {
-                if (type == Socks5EnumResponseCommand.ConnecSuccess)
-                {
-                    info.Socks5Step = Socks5EnumStep.Forward;
-                }
-                info.Data = Socks5Parser.MakeConnectResponse(socks5ClientListener.DistEndpoint, (byte)type);
-            }
-        }
-        private void ForwardResponseData(Socks5Info info)
-        {
-            info.Socks5Step = Socks5EnumStep.Forward;
-        }
-        private void ForwardUdpResponseData(Socks5Info info)
-        {
-            info.Data = Socks5Parser.MakeUdpResponse(socks5ClientListener.DistEndpoint, info.Data);
-        }
-
-
-        private bool HandleRequest(Socks5Info data)
-        {
-            #region 省略掉验证部分
-            data.Response[0] = (byte)Socks5EnumAuthType.NoAuth;
-            data.Data = data.Response;
-            RequestResponseData(data);
-            socks5ClientListener.Response(data);
-            return true;
-            #endregion
-
-            #region 去往目标端验证
-            //GetConnection();
-            //return socks5MessengerSender.Request(data, connection);
-            #endregion
-        }
-        private bool HandleAuth(Socks5Info data)
-        {
-            return true;
-            //TagInfo target = data.Tag as TagInfo;
-            //GetConnection(target);
-            //IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
-            //return socks5MessengerSender.Request(data, target.Connection);
-        }
-        private bool HandleCommand(Socks5Info data)
+        protected override bool HandleCommand(Socks5Info data)
         {
             if (!(data.Tag is TagInfo target))
             {
                 target = new TagInfo();
                 data.Tag = target;
             }
-            target.TargetIp = Socks5Parser.GetRemoteEndPoint(data.Data).Address;
+            var targetEp = Socks5Parser.GetRemoteEndPoint(data.Data);
+            target.TargetIp = targetEp.Address;
+            if (targetEp.Port == 0)
+            {
+                data.Response[0] = (byte)Socks5EnumResponseCommand.DistReject;
+                data.Data = data.Response;
+                CommandResponseData(data);
+                return true;
+            }
             target.Connection = GetConnection(target.TargetIp);
             return socks5MessengerSender.Request(data, target.Connection);
         }
-        private bool HndleForward(Socks5Info data)
+        protected override bool HndleForward(Socks5Info data)
         {
             TagInfo target = data.Tag as TagInfo;
             return socks5MessengerSender.Request(data, target.Connection);
         }
-        private bool HndleForwardUdp(Socks5Info data)
+        protected override bool HndleForwardUdp(Socks5Info data)
         {
             IPEndPoint remoteEndPoint = Socks5Parser.GetRemoteEndPoint(data.Data);
             IConnection connection = GetConnection(remoteEndPoint.Address);
             return socks5MessengerSender.Request(data, connection);
         }
-
-        public void Flush()
+        public override void Flush()
         {
         }
 
@@ -210,17 +74,10 @@ namespace client.service.vea
                 return SelectConnection(client.TcpConnection, client.UdpConnection);
             }
 
-            if (config.TargetName.Length == 0)
+            client = clientInfoCaching.GetByName(config.TargetName);
+            if (client != null)
             {
-                return SelectConnection(registerStateInfo.TcpConnection, registerStateInfo.UdpConnection);
-            }
-            else
-            {
-                client = clientInfoCaching.GetByName(config.TargetName);
-                if (client != null)
-                {
-                    return SelectConnection(client.TcpConnection, client.UdpConnection);
-                }
+                return SelectConnection(client.TcpConnection, client.UdpConnection);
             }
             return null;
         }
@@ -242,6 +99,4 @@ namespace client.service.vea
             public IPAddress TargetIp { get; set; }
         }
     }
-
-
 }

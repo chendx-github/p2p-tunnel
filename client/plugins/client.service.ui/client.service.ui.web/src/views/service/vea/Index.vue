@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-09-01 23:40:01
+ * @LastEditTime: 2022-09-02 17:24:11
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
@@ -11,7 +11,7 @@
     <div class="socks5-wrap">
         <div class="inner">
             <h3 class="title t-c">{{$route.meta.name}}</h3>
-            <el-alert class="alert" type="warning" show-icon :closable="false" title="虚拟网卡组网，可将在线客户端组合成一个网络，然后通过客户端ip直接访问，暂时仅windows" description="" />
+            <el-alert class="alert" type="warning" show-icon :closable="false" title="虚拟网卡组网，可将在线客户端组合成一个网络，然后通过客户端ip直接访问，暂时仅windows" description="需要管理员运行，否则无法添加虚拟网卡" />
             <div class="form">
                 <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="80px">
                     <el-form-item label="" label-width="0">
@@ -87,7 +87,7 @@
             </div>
         </div>
         <div class="inner">
-            <h3 class="title t-c">网内客户端列表</h3>
+            <h3 class="title t-c">组网列表</h3>
             <div>
                 <el-table border :data="showClients" style="width: 100%">
                     <el-table-column prop="Name" label="客户端">
@@ -119,9 +119,9 @@ export default {
         const registerState = injectRegister();
         const shareData = injectShareData();
         const targets = computed(() => {
-            return [{ Name: '', label: '服务器' }].concat(clientsState.clients.map(c => {
+            return clientsState.clients.map(c => {
                 return { Name: c.Name, label: c.Name }
-            }));
+            });
         });
         const state = reactive({
             loading: false,

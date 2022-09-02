@@ -1,18 +1,13 @@
 ﻿using common.libs;
+using common.server;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace client.service.logger
 {
-    public static class ServiceCollectionExtends
+    public class Plugin : IPlugin
     {
-        public static ServiceCollection AddLoggerPlugin(this ServiceCollection services)
-        {
-            services.AddSingleton<Config>();
-
-            return services;
-        }
-
-        public static ServiceProvider UseLoggerPlugin(this ServiceProvider services)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
             LoggerClientService plugin = services.GetService<LoggerClientService>();
             Config config = services.GetService<Config>();
@@ -29,7 +24,11 @@ namespace client.service.logger
             });
 
             Logger.Instance.Debug("日志收集插件已加载");
-            return services;
+        }
+
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
+        {
+            services.AddSingleton<Config>();
         }
     }
 

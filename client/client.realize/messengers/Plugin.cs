@@ -22,9 +22,24 @@ using common.server.servers.iocp;
 
 namespace client.realize.messengers
 {
-    public static class ServiceCollectionExtends
+    public class Plugin:IPlugin
     {
-        public static ServiceCollection AddServerPlugin(this ServiceCollection services, Assembly[] assemblys)
+        public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
+        {
+            services.GetService<IClientsTransfer>();
+            services.GetService<MessengerSender>();
+            MessengerResolver serverPluginHelper = services.GetService<MessengerResolver>();
+
+            //加载所有的消息处理器
+            foreach (Type item in ReflectionHelper.GetInterfaceSchieves(assemblys, typeof(IMessenger)))
+            {
+                serverPluginHelper.LoadMessenger(item, services.GetService(item));
+            }
+            //加载所有的打洞消息处理器
+            services.GetService<PunchHoleMessengerSender>().LoadPlugins(assemblys);
+        }
+
+        public void LoadBefore(ServiceCollection services, Assembly[] assemblys)
         {
             services.AddSingleton<Config>();
             services.AddTransient(typeof(IConfigDataProvider<>), typeof(ConfigDataFileProvider<>));
@@ -76,25 +91,6 @@ namespace client.realize.messengers
             {
                 services.AddSingleton(item);
             }
-
-            return services;
-        }
-
-        public static ServiceProvider UseServerPlugin(this ServiceProvider services, Assembly[] assemblys)
-        {
-            services.GetService<IClientsTransfer>();
-            services.GetService<MessengerSender>();
-            MessengerResolver serverPluginHelper = services.GetService<MessengerResolver>();
-
-            //加载所有的消息处理器
-            foreach (Type item in ReflectionHelper.GetInterfaceSchieves(assemblys, typeof(IMessenger)))
-            {
-                serverPluginHelper.LoadMessenger(item, services.GetService(item));
-            }
-            //加载所有的打洞消息处理器
-            services.GetService<PunchHoleMessengerSender>().LoadPlugins(assemblys);
-
-            return services;
         }
     }
 }

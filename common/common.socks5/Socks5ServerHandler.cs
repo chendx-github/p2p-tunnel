@@ -18,12 +18,12 @@ namespace common.socks5
         private ConcurrentDictionary<ConnectionKeyUdp, UdpToken> udpConnections = new(new ConnectionKeyUdpComparer());
         private readonly Dictionary<Socks5EnumStep, Action<IConnection>> handles = new Dictionary<Socks5EnumStep, Action<IConnection>>();
 
-        private readonly Socks5MessengerSender socks5MessengerSender;
+        private readonly ISocks5MessengerSender socks5MessengerSender;
         private readonly Config config;
         private readonly WheelTimer<object> wheelTimer;
 
         Semaphore maxNumberAcceptedClients;
-        public Socks5ServerHandler(Socks5MessengerSender socks5MessengerSender, Config config, WheelTimer<object> wheelTimer)
+        public Socks5ServerHandler(ISocks5MessengerSender socks5MessengerSender, Config config, WheelTimer<object> wheelTimer)
         {
             this.socks5MessengerSender = socks5MessengerSender;
             this.config = config;
