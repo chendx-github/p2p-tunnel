@@ -200,15 +200,18 @@ namespace common.server
             {
                 try
                 {
-                    int index = 0;
-                    while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
+                    lock (this)
                     {
-                        System.Threading.Thread.Sleep(1);
-                        index++;
+                        int index = 0;
+                        while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
+                        {
+                            System.Threading.Thread.Sleep(1);
+                            index++;
+                        }
+                        NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
+                        SendBytes += data.Length;
+                        return new ValueTask<bool>(true);
                     }
-                    NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
-                    SendBytes += data.Length;
-                    return new ValueTask<bool>(true);
                 }
                 catch (Exception ex)
                 {

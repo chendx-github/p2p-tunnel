@@ -1,9 +1,7 @@
-﻿using Android.Util;
-using common.libs;
+﻿using common.libs;
 using common.libs.extends;
 using System.Net.Sockets;
 using System.Net;
-using common.server.servers.pipeLine;
 
 namespace client.service.app
 {
@@ -26,7 +24,8 @@ namespace client.service.app
         {
             Task.Factory.StartNew(() =>
             {
-                Dictionary<LoggerTypes, Color> colors = new Dictionary<LoggerTypes, Color> {
+                Dictionary<LoggerTypes, Color> colors = new()
+                {
                     {LoggerTypes.WARNING,Color.FromRgb(241 ,157, 52) },
                     {LoggerTypes.INFO,Color.FromRgb(0,0,0) },
                     {LoggerTypes.DEBUG,Color.FromRgb(0,0,255) },
@@ -52,13 +51,13 @@ namespace client.service.app
 
                             MainThread.BeginInvokeOnMainThread(() =>
                             {
-                                Label label = new Label
+                                Label label = new()
                                 {
                                     FormattedText = new FormattedString { },
                                     TextColor = color
                                 };
                                 label.FormattedText.Spans.Add(new Span { Text = $"[{logger.Type}]", FontAttributes = FontAttributes.Bold });
-                                label.FormattedText.Spans.Add(new Span { Text = $"{logger.Time.ToString("yyyy-MM-dd HH:mm:ss")}:", FontAttributes = FontAttributes.Italic });
+                                label.FormattedText.Spans.Add(new Span { Text = $"{logger.Time:yyyy-MM-dd HH:mm:ss}:", FontAttributes = FontAttributes.Italic });
                                 label.FormattedText.Spans.Add(new Span { Text = logger.Content });
                                 loggerBox.Children.Add(label);
                                 if (loggerBox.Children.Count > 100)

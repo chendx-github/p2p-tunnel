@@ -1,6 +1,4 @@
-﻿using Android.OS;
-using Android.Util;
-using client.messengers.register;
+﻿using client.messengers.register;
 using client.realize.messengers.punchHole;
 using client.service.logger;
 using client.service.socks5;
@@ -14,7 +12,6 @@ using common.libs.database;
 using common.libs.extends;
 using common.server;
 using common.server.middleware;
-using common.server.servers.pipeLine;
 using common.socks5;
 using System.Net.Sockets;
 using System.Net;
