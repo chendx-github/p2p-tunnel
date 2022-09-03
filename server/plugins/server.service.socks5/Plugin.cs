@@ -10,7 +10,7 @@ namespace server.service.socks5
     {
         public void LoadAfter(ServiceProvider services, Assembly[] assemblys)
         {
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Info("socks5已加载");
             Config config = services.GetService<Config>();
             if (config.ConnectEnable)
@@ -29,7 +29,7 @@ namespace server.service.socks5
             {
                 Logger.Instance.Info($"socks5未允许本地连接");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
         public void LoadBefore(ServiceCollection services, Assembly[] assemblys)

@@ -38,11 +38,11 @@ namespace client.service.ui.api.service
             if (config.EnableWeb)
             {
                 services.GetService<IWebServer>().Start();
-                Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+                Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
                 Logger.Instance.Debug("管理UI，web已启用");
                 Logger.Instance.Info($"管理UI web1 :http://{config.Web.BindIp}:{config.Web.Port}");
                 Logger.Instance.Info($"管理UI web2 :https://snltty.gitee.io/p2p-tunnel");
-                Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+                Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             }
             else
             {
@@ -71,7 +71,7 @@ namespace client.service.ui.api.service
 
             var config = services.GetService<Config>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             if (config.EnableWeb)
             {
                 clientServer.Websocket();
@@ -100,7 +100,7 @@ namespace client.service.ui.api.service
             {
                 Logger.Instance.Info($"管理UI，api未启用");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
     }

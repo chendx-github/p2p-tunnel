@@ -19,14 +19,14 @@ namespace common.socks5
         private readonly Dictionary<Socks5EnumStep, Action<IConnection>> handles = new Dictionary<Socks5EnumStep, Action<IConnection>>();
 
         private readonly ISocks5MessengerSender socks5MessengerSender;
-        private readonly Config config;
+        protected Config Config { get; }
         private readonly WheelTimer<object> wheelTimer;
 
         Semaphore maxNumberAcceptedClients;
         public Socks5ServerHandler(ISocks5MessengerSender socks5MessengerSender, Config config, WheelTimer<object> wheelTimer)
         {
             this.socks5MessengerSender = socks5MessengerSender;
-            this.config = config;
+            this.Config = config;
             maxNumberAcceptedClients = new Semaphore(config.NumConnections, config.NumConnections);
 
             this.wheelTimer = wheelTimer;
@@ -53,7 +53,7 @@ namespace common.socks5
         private void HandleRequest(IConnection connection)
         {
             Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
-            if (!config.ConnectEnable)
+            if (!Config.ConnectEnable)
             {
                 data.Response[0] = (byte)Socks5EnumAuthType.NotSupported;
             }
@@ -67,7 +67,7 @@ namespace common.socks5
         private void HandleAuth(IConnection connection)
         {
             Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
-            if (!config.ConnectEnable)
+            if (!Config.ConnectEnable)
             {
                 data.Response[0] = (byte)Socks5EnumAuthState.UnKnow;
             }
@@ -80,7 +80,7 @@ namespace common.socks5
         }
         private void HndleForward(IConnection connection)
         {
-            if (config.ConnectEnable)
+            if (Config.ConnectEnable)
             {
                 Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
                 ConnectionKey key = new ConnectionKey(connection.ConnectId, data.Id);
@@ -99,7 +99,7 @@ namespace common.socks5
         }
         private void HndleForwardUdp(IConnection connection)
         {
-            if (config.ConnectEnable)
+            if (Config.ConnectEnable)
             {
                 Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
 
@@ -169,7 +169,7 @@ namespace common.socks5
         private void HandleCommand(IConnection connection)
         {
             Socks5Info data = Socks5Info.Debytes(connection.ReceiveRequestWrap.Memory);
-            if (!config.ConnectEnable)
+            if (!Config.ConnectEnable)
             {
                 ConnectReponse(data, Socks5EnumResponseCommand.ConnectNotAllow, connection);
             }
@@ -183,7 +183,7 @@ namespace common.socks5
                     {
                         ConnectReponse(data, Socks5EnumResponseCommand.AddressNotAllow, connection);
                     }
-                    else if (!config.LanConnectEnable && remoteEndPoint.IsLan())
+                    else if (!Config.LanConnectEnable && remoteEndPoint.IsLan())
                     {
                         ConnectReponse(data, Socks5EnumResponseCommand.AddressNotAllow, connection);
                     }
@@ -319,8 +319,8 @@ namespace common.socks5
                     UserToken = token,
                     SocketFlags = SocketFlags.None,
                 };
-                token.PoolBuffer = ArrayPool<byte>.Shared.Rent(config.BufferSize);
-                readEventArgs.SetBuffer(token.PoolBuffer, 0, config.BufferSize);
+                token.PoolBuffer = ArrayPool<byte>.Shared.Rent(Config.BufferSize);
+                readEventArgs.SetBuffer(token.PoolBuffer, 0, Config.BufferSize);
                 readEventArgs.Completed += Target_IO_Completed;
                 if (!token.TargetSocket.ReceiveAsync(readEventArgs))
                 {
@@ -335,7 +335,7 @@ namespace common.socks5
         }
         private void TargetProcessReceive(SocketAsyncEventArgs e)
         {
-           
+
             try
             {
                 AsyncServerUserToken token = (AsyncServerUserToken)e.UserToken;
@@ -349,7 +349,7 @@ namespace common.socks5
 
                     if (token.TargetSocket.Available > 0)
                     {
-                        var arr = ArrayPool<byte>.Shared.Rent(config.BufferSize);
+                        var arr = ArrayPool<byte>.Shared.Rent(Config.BufferSize);
                         while (token.TargetSocket.Available > 0)
                         {
                             length = token.TargetSocket.Receive(arr);

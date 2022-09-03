@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-18 13:32:13
+ * @LastEditTime: 2022-09-02 23:00:32
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\socks5\Index.vue
@@ -42,9 +42,7 @@
                                     </el-select>
                                 </el-form-item>
                             </el-col>
-
                         </el-row>
-
                     </div>
                 </el-form-item>
                 <el-form-item label="" label-width="0">
@@ -59,8 +57,15 @@
                             </el-col>
                             <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                 <el-form-item label-width="0" prop="ConnectEnable">
-                                    <el-tooltip class="box-item" effect="dark" content="作为目标端时，是否允许被连接" placement="top-start">
-                                        <el-checkbox v-model="state.form.ConnectEnable" label="允许被连接" />
+                                    <el-tooltip class="box-item" effect="dark" content="作为目标端时，是否允许被访问" placement="top-start">
+                                        <el-checkbox v-model="state.form.ConnectEnable" label="允许访问" />
+                                    </el-tooltip>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                <el-form-item label-width="0" prop="LanConnectEnable">
+                                    <el-tooltip class="box-item" effect="dark" content="作为目标端时，是否允许被访问本地地址" placement="top-start">
+                                        <el-checkbox v-model="state.form.LanConnectEnable" label="允许访问本地" />
                                     </el-tooltip>
                                 </el-form-item>
                             </el-col>
@@ -81,17 +86,20 @@
                         </el-row>
                     </div>
                 </el-form-item>
-                <el-form-item label-width="0">
+                <!-- <el-form-item label-width="0">
                     <div class="w-100 t-c">
                         tcp udp地址均为 <strong>127.0.0.1:{{state.form.ListenPort}}</strong>
                     </div>
-                </el-form-item>
+                </el-form-item> -->
                 <el-form-item label-width="0">
                     <div class="w-100 t-c">
-                        <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
+                        <el-button type="primary" :loading="state.loading" @click="handleSubmit" class="m-r-1">确 定</el-button>
+                        <ConfigureModal className="Socks5ClientConfigure">
+                            <el-button>配置插件</el-button>
+                        </ConfigureModal>
                     </div>
                 </el-form-item>
-                <el-form-item label-width="0" class="hidden-xs-only">
+                <el-form-item label-width="0" class="hidden-xs-only" style="margin-bottom:0">
                     <div class="w-100">
                         <el-input v-model="state.pac" :rows="16" type="textarea" placeholder="写pac内容" resize="none" />
                     </div>
@@ -108,7 +116,9 @@ import { onMounted } from '@vue/runtime-core'
 import { ElMessage } from 'element-plus'
 import { injectClients } from '../../../states/clients'
 import { injectShareData } from '../../../states/shareData'
+import ConfigureModal from '../configure/ConfigureModal.vue'
 export default {
+    components: { ConfigureModal },
     setup () {
 
         const clientsState = injectClients();
@@ -119,6 +129,7 @@ export default {
                 state.form.ListenPort = res.ListenPort;
                 state.form.BufferSize = res.BufferSize;
                 state.form.ConnectEnable = res.ConnectEnable;
+                state.form.LanConnectEnable = res.LanConnectEnable;
                 state.form.IsCustomPac = res.IsCustomPac;
                 state.form.IsPac = res.IsPac;
                 state.form.TunnelType = res.TunnelType.toString();
@@ -153,6 +164,7 @@ export default {
                 ListenEnable: false,
                 ListenPort: 5412,
                 ConnectEnable: false,
+                LanConnectEnable: false,
                 IsPac: false,
                 IsCustomPac: false,
                 BufferSize: 8 * 1024,

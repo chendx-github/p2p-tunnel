@@ -66,9 +66,9 @@ namespace client.service
             serviceProvider.UseMiddleware(assemblys);
             PluginLoader.LoadAfter(plugins, serviceProvider, assemblys);
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Warning("没什么报红的，就说明运行成功了");
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
 
             Config config = serviceProvider.GetService<Config>();
             //自动注册

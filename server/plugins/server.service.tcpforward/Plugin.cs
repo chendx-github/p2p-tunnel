@@ -13,7 +13,7 @@ namespace server.service.tcpforward
             services.GetService<TcpForwardTransfer>();
             services.GetService<TcpForwardResolver>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Info($"tcp转发和http1.1代理已加载");
             var config = services.GetService<common.tcpforward.Config>();
             if (config.ConnectEnable)
@@ -32,7 +32,7 @@ namespace server.service.tcpforward
             {
                 Logger.Instance.Info($"tcp转发和http1.1代理未允许未允许本地连接");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
         public void LoadBefore(ServiceCollection services, Assembly[] assemblys)

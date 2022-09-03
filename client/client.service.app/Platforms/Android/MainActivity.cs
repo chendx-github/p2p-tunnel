@@ -2,6 +2,9 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using common.libs.extends;
+using System.Net.Sockets;
+using System.Net;
 
 namespace client.service.app
 {
@@ -22,9 +25,10 @@ namespace client.service.app
             }
 
             intent = new Intent(this, typeof(MyService));
-            this.StartService(intent);
+            StartService(intent);
 
             base.OnCreate(savedInstanceState);
+
         }
 
         static Intent intent;
@@ -34,6 +38,9 @@ namespace client.service.app
     [Service(IsolatedProcess = false, Exported = true, Name = "client.service.app.MyService", Process = "client.service.app.myservice_process")]
     public class MyService : Service
     {
+        public MyService()
+        {
+        }
         public override IBinder OnBind(Intent intent)
         {
             return null;
@@ -45,21 +52,11 @@ namespace client.service.app
         }
         public override void OnCreate()
         {
+            base.OnCreate();
+
             Startup.Start();
-
-
-            // Instantiate the builder and set notification elements:
-            //NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"test")
-            //    .SetContentTitle("Sample Notification")
-            //    .SetContentText("Hello World! This is my first notification!")
-            //    .SetSmallIcon(Resource.Drawable.appiconfg);
-            //Notification notification = builder.Build();
-            //NotificationManager notificationManager =
-            //    GetSystemService(Context.NotificationService) as NotificationManager;
-
-            //const int notificationId = 0;
-            //notificationManager.Notify(notificationId, notification);
         }
 
     }
+
 }

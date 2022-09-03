@@ -43,11 +43,11 @@ namespace server.service
             PluginLoader.LoadAfter(plugins, serviceProvider, assemblys);
 
             var config = serviceProvider.GetService<Config>();
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Info("没什么报红的，就说明运行成功了");
             Logger.Instance.Info($"UDP端口:{config.Udp}");
             Logger.Instance.Info($"TCP端口:{config.Tcp}");
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
 
             Console.ReadLine();
         }

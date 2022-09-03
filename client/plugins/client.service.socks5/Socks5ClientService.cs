@@ -51,7 +51,7 @@ namespace client.service.socks5
             config.TargetName = conf.TargetName;
             config.TunnelType = conf.TunnelType;
             config.LanConnectEnable = conf.LanConnectEnable;
-            config.NumConnections = conf.NumConnections;
+            //config.NumConnections = conf.NumConnections;
             
             config.SaveConfig().Wait();
 

@@ -13,7 +13,7 @@ namespace server.service.udpforward
             services.GetService<UdpForwardTransfer>();
             services.GetService<UdpForwardResolver>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Info($"udp转发已加载");
             var config = services.GetService<common.udpforward.Config>();
             if (config.ConnectEnable)
@@ -24,7 +24,7 @@ namespace server.service.udpforward
             {
                 Logger.Instance.Info($"udp转发未允许注册");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
         public void LoadBefore(ServiceCollection services, Assembly[] assemblys)

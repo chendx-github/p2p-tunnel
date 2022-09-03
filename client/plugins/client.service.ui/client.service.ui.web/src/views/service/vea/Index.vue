@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-09-02 17:24:11
+ * @LastEditTime: 2022-09-02 23:28:57
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
@@ -40,7 +40,7 @@
                                 </el-col>
                                 <el-col :xs="24" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label="目标端" prop="TargetName">
-                                        <el-tooltip class="box-item" effect="dark" content="当遇到不存在的ip时，目标端应该选择谁，为空服务器，不为空则为某个客户端" placement="top-start">
+                                        <el-tooltip class="box-item" effect="dark" content="当遇到不存在的ip时，目标端应该选择谁，为某个客户端" placement="top-start">
                                             <el-select v-model="state.form.TargetName" placeholder="选择目标">
                                                 <el-option v-for="(item,index) in targets" :key="index" :label="item.label" :value="item.Name">
                                                 </el-option>
@@ -54,33 +54,54 @@
                     <el-form-item label="" label-width="0">
                         <div class="w-100">
                             <el-row :gutter="10">
-                                <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label-width="0" prop="Enable">
                                         <el-tooltip class="box-item" effect="dark" content="不开启，则只修改配置信息，不安装虚拟网卡" placement="top-start">
                                             <el-checkbox v-model="state.form.Enable" label="开启网卡" />
                                         </el-tooltip>
                                     </el-form-item>
                                 </el-col>
-                                <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label-width="0" prop="ProxyAll">
                                         <el-tooltip class="box-item" effect="dark" content="是否由虚拟网卡代理所有，这种方式可以利用目标端上网，不代理所有，则只能通过目标ip访问其内网服务" placement="top-start">
                                             <el-checkbox v-model="state.form.ProxyAll" label="代理所有" />
                                         </el-tooltip>
                                     </el-form-item>
                                 </el-col>
-                                <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
-                                    <el-form-item label="本机IP" prop="IP">
-                                        <el-tooltip class="box-item" effect="dark" content="当前客户端的虚拟网卡ip，各个客户端之间设置不一样的ip，相同网段即可" placement="top-start">
-                                            <el-input :readonly="registerState.LocalInfo.connected" v-model="state.form.IP"></el-input>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label-width="0" prop="ConnectEnable">
+                                        <el-tooltip class="box-item" effect="dark" content="作为被访问端时，是否允许访问" placement="top-start">
+                                            <el-checkbox v-model="state.form.ConnectEnable" label="允许访问" />
+                                        </el-tooltip>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                    <el-form-item label-width="0" prop="LanConnectEnable">
+                                        <el-tooltip class="box-item" effect="dark" content="作为被访问端时，是否允许访问本地地址，虚拟IP为本地地址" placement="top-start">
+                                            <el-checkbox v-model="state.form.LanConnectEnable" label="允许访问本地" />
                                         </el-tooltip>
                                     </el-form-item>
                                 </el-col>
                             </el-row>
                         </div>
                     </el-form-item>
+                    <el-form-item label="本机IP" prop="IP">
+                        <div class="w-100">
+                            <el-row :gutter="10">
+                                <el-col :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                    <el-tooltip class="box-item" effect="dark" content="当前客户端的虚拟网卡ip，各个客户端之间设置不一样的ip，相同网段即可" placement="top-start">
+                                        <el-input :readonly="registerState.LocalInfo.connected" v-model="state.form.IP"></el-input>
+                                    </el-tooltip>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-form-item>
                     <el-form-item label-width="0">
                         <div class="w-100 t-c">
-                            <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
+                            <el-button type="primary" :loading="state.loading" @click="handleSubmit" class="m-r-1">确 定</el-button>
+                            <ConfigureModal className="VeaClientConfigure">
+                                <el-button>配置插件</el-button>
+                            </ConfigureModal>
                         </div>
                     </el-form-item>
                 </el-form>
@@ -112,7 +133,9 @@ import { injectClients } from '../../../states/clients'
 import { injectShareData } from '../../../states/shareData'
 import { injectRegister } from '../../../states/register'
 import { websocketState } from '../../../apis/request'
+import ConfigureModal from '../configure/ConfigureModal.vue'
 export default {
+    components: { ConfigureModal },
     setup () {
 
         const clientsState = injectClients();
@@ -126,15 +149,25 @@ export default {
         const state = reactive({
             loading: false,
             form: {
-                SocksPort: 5415,
                 Enable: false,
-                TunnelType: '8',
+                ProxyAll: false,
                 TargetName: '',
                 IP: '',
-                ProxyAll: false,
-                BufferSize: 8 * 1024
+                TunnelType: '8',
+                SocksPort: 5415,
+                BufferSize: 8 * 1024,
+                ConnectEnable: false,
+                LanConnectEnable: false,
             },
             rules: {
+                BufferSize: [
+                    { required: true, message: '必填', trigger: 'blur' },
+                    {
+                        type: 'number', min: 1024, max: 65536, message: '数字 1k-64k', trigger: 'blur', transform (value) {
+                            return Number(value)
+                        }
+                    }
+                ],
                 SocksPort: [
                     { required: true, message: '必填', trigger: 'blur' },
                     {
@@ -159,12 +192,15 @@ export default {
 
         const loadConfig = () => {
             getConfig().then((res) => {
-                state.form.SocksPort = res.SocksPort;
                 state.form.Enable = res.Enable;
-                state.form.TunnelType = res.TunnelType.toString();
+                state.form.ProxyAll = res.ProxyAll;
                 state.form.TargetName = res.TargetName;
                 state.form.IP = res.IP;
-                state.form.ProxyAll = res.ProxyAll;
+                state.form.TunnelType = res.TunnelType.toString();
+                state.form.SocksPort = res.SocksPort;
+                state.form.BufferSize = res.BufferSize;
+                state.form.ConnectEnable = res.ConnectEnable;
+                state.form.LanConnectEnable = res.LanConnectEnable;
             });
         }
 

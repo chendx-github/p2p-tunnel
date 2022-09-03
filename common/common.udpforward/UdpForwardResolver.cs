@@ -39,6 +39,11 @@ namespace common.udpforward
                 if (!connections.TryGetValue(key, out UdpToken token))
                 {
                     IPEndPoint endpoint = NetworkHelper.EndpointFromArray(arg.TargetEndpoint);
+                    if (!config.LanConnectEnable && endpoint.IsLan())
+                    {
+                        return;
+                    }
+
                     if (config.PortBlackList.Contains(endpoint.Port))
                     {
                         return;

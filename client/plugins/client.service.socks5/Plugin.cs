@@ -13,7 +13,7 @@ namespace client.service.socks5
             common.socks5.Config config = services.GetService<common.socks5.Config>();
             Socks5Transfer socks5Transfer = services.GetService<Socks5Transfer>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Debug($"socks5已加载");
             if (config.ListenEnable)
             {
@@ -44,7 +44,7 @@ namespace client.service.socks5
             {
                 Logger.Instance.Info($"socks5未允许本地连接");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
         public void LoadBefore(ServiceCollection services, Assembly[] assemblys)

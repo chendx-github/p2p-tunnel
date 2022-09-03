@@ -16,6 +16,7 @@ namespace common.udpforward
 
             Config config = ReadConfig().Result;
             ConnectEnable = config.ConnectEnable;
+            LanConnectEnable = config.LanConnectEnable;
             TunnelListenRange = config.TunnelListenRange;
             PortWhiteList = config.PortWhiteList;
             PortBlackList = config.PortBlackList;
@@ -25,6 +26,7 @@ namespace common.udpforward
         public int[] PortWhiteList { get; set; } = Array.Empty<int>();
         public int[] PortBlackList { get; set; } = Array.Empty<int>();
         public bool ConnectEnable { get; set; } = false;
+        public bool LanConnectEnable { get; set; } = false;
         public TunnelListenRangeInfo TunnelListenRange { get; set; } = new TunnelListenRangeInfo();
 
         public async Task<Config> ReadConfig()
@@ -36,6 +38,7 @@ namespace common.udpforward
         {
             Config config = await ReadConfig().ConfigureAwait(false);
             config.ConnectEnable = ConnectEnable;
+            config.LanConnectEnable = LanConnectEnable;
             config.TunnelListenRange = TunnelListenRange;
             config.PortWhiteList = PortWhiteList;
             config.PortBlackList = PortBlackList;

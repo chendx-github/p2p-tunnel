@@ -12,9 +12,9 @@ namespace client.service.vea
             var transfer = services.GetService<VirtualEthernetAdapterTransfer>();
             services.GetService<IVeaSocks5ClientHandler>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Debug("vea 虚拟网卡插件已加载");
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
 
             transfer.Run();
 

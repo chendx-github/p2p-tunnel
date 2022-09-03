@@ -2,21 +2,23 @@
 using common.libs.extends;
 using System.Threading.Tasks;
 
-namespace client.service.udpforward
+namespace client.service.vea
 {
-    public class UdpForwardClientConfigure : IClientConfigure
+    public class VeaClientConfigure : IClientConfigure
     {
-        private common.udpforward.Config config;
-        public UdpForwardClientConfigure(common.udpforward.Config config)
+        private Config config;
+        private IVeaSocks5ServerHandler veaSocks5ServerHandler;
+        public VeaClientConfigure(Config config, IVeaSocks5ServerHandler veaSocks5ServerHandler)
         {
             this.config = config;
+            this.veaSocks5ServerHandler = veaSocks5ServerHandler;
         }
 
-        public string Name => "Udp转发";
+        public string Name => "virtual adapter";
 
         public string Author => "snltty";
 
-        public string Desc => "白名单不为空时只允许白名单内端口";
+        public string Desc => "虚拟网卡";
 
         public bool Enable => config.ConnectEnable;
 
@@ -27,13 +29,19 @@ namespace client.service.udpforward
 
         public async Task<string> Save(string jsonStr)
         {
-            var _config = jsonStr.DeJson<common.udpforward.Config>();
+            var _config = jsonStr.DeJson<Config>();
 
+            config.Enable = _config.Enable;
+            config.ProxyAll = _config.ProxyAll;
+            config.TargetName = _config.TargetName;
+            config.IP = _config.IP;
+            config.TunnelType = _config.TunnelType;
+            config.SocksPort = _config.SocksPort;
+            config.BufferSize = _config.BufferSize;
             config.ConnectEnable = _config.ConnectEnable;
             config.LanConnectEnable = _config.LanConnectEnable;
-            config.TunnelListenRange = _config.TunnelListenRange;
-            config.PortWhiteList = _config.PortWhiteList;
-            config.PortBlackList = _config.PortBlackList;
+
+            veaSocks5ServerHandler.UpdateConfig();
 
             await config.SaveConfig().ConfigureAwait(false);
             return string.Empty;

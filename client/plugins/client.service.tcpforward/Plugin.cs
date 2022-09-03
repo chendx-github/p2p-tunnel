@@ -13,7 +13,7 @@ namespace client.service.tcpforward
             services.GetService<TcpForwardTransfer>();
             services.GetService<TcpForwardResolver>();
 
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
             Logger.Instance.Debug("tcp转发、http1.1代理已加载");
             Logger.Instance.Debug("tcp转发、http1.1代理已启动");
             var config = services.GetService<common.tcpforward.Config>();
@@ -34,7 +34,7 @@ namespace client.service.tcpforward
             {
                 Logger.Instance.Info($"http1.1代理未允许本地连接");
             }
-            Logger.Instance.Warning(string.Empty.PadRight(50, '='));
+            Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
         }
 
         public void LoadBefore(ServiceCollection services, Assembly[] assemblys)

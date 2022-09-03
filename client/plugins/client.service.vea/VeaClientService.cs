@@ -14,11 +14,13 @@ namespace client.service.vea
     {
         private readonly Config config;
         private readonly VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer;
+        private IVeaSocks5ServerHandler veaSocks5ServerHandler;
 
-        public VeaClientService(Config config, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer)
+        public VeaClientService(Config config, VirtualEthernetAdapterTransfer virtualEthernetAdapterTransfer, IVeaSocks5ServerHandler veaSocks5ServerHandler)
         {
             this.config = config;
             this.virtualEthernetAdapterTransfer = virtualEthernetAdapterTransfer;
+            this.veaSocks5ServerHandler = veaSocks5ServerHandler;
         }
 
         public Config Get(ClientServiceParamsInfo arg)
@@ -33,7 +35,13 @@ namespace client.service.vea
             config.ProxyAll = conf.ProxyAll;
             config.TargetName = conf.TargetName;
             config.IP = conf.IP;
+            config.TunnelType = conf.TunnelType;
             config.SocksPort = conf.SocksPort;
+            config.BufferSize = conf.BufferSize;
+            config.ConnectEnable = conf.ConnectEnable;
+            config.LanConnectEnable = conf.LanConnectEnable;
+
+            veaSocks5ServerHandler.UpdateConfig();
 
             try
             {

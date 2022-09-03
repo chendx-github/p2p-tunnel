@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-08-30 21:51:16
+ * @LastEditTime: 2022-09-02 22:59:29
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\httpproxy\Index.vue
@@ -10,7 +10,7 @@
 <template>
     <div class="proxy-wrap">
         <h3 class="title t-c">{{$route.meta.name}}</h3>
-        <el-alert class="alert" type="warning" show-icon :closable="false" title="http1.1代理，如果服务端开启，则也可以代理到服务端" />
+        <el-alert class="alert" type="warning" show-icon :closable="false" title="http1.1代理，如果服务端开启，则也可以代理到服务端，在TCP转发配置被访问权限" />
         <div class="form">
             <el-form ref="formDom" :model="state.form" :rules="state.rules" label-width="80px">
                 <el-form-item label="" label-width="0">
@@ -62,12 +62,15 @@
                                     </el-tooltip>
                                 </el-form-item>
                             </el-col>
-                            <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
-                                <el-form-item label-width="0">
-                                    <el-button type="primary" :loading="state.loading" @click="handleSubmit">确 定</el-button>
-                                </el-form-item>
-                            </el-col>
                         </el-row>
+                    </div>
+                </el-form-item>
+                <el-form-item label-width="0">
+                    <div class="w-100 t-c">
+                        <el-button type="primary" :loading="state.loading" @click="handleSubmit" class="m-r-1">确 定</el-button>
+                        <ConfigureModal className="TcpForwardClientConfigure">
+                            <el-button>配置插件</el-button>
+                        </ConfigureModal>
                     </div>
                 </el-form-item>
                 <el-form-item label-width="0" class="hidden-xs-only">
@@ -87,7 +90,9 @@ import { onMounted } from '@vue/runtime-core'
 import { ElMessage } from 'element-plus'
 import { injectClients } from '../../../states/clients'
 import { injectShareData } from '../../../states/shareData'
+import ConfigureModal from '../configure/ConfigureModal.vue'
 export default {
+    components: { ConfigureModal },
     setup () {
 
         const clientsState = injectClients();

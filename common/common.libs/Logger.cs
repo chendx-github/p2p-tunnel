@@ -12,6 +12,9 @@ namespace common.libs
         private readonly ConcurrentQueue<LoggerModel> queue = new ConcurrentQueue<LoggerModel>();
 
         public SimpleSubPushHandler<LoggerModel> OnLogger { get; } = new SimpleSubPushHandler<LoggerModel>();
+
+        public int PaddingWidth { get; set; } = 50;
+
         private Logger()
         {
             new Thread(() =>
