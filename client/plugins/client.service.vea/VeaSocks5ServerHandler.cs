@@ -14,6 +14,7 @@ namespace client.service.vea
             : base(socks5MessengerSender, socks5Config, wheelTimer)
         {
             this.config = config;
+            UpdateConfig();
         }
 
         public void UpdateConfig()
