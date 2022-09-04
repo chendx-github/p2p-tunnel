@@ -106,7 +106,7 @@ namespace client.service.vea
                 {
                     if (config.ProxyAll) //代理所有
                     {
-                        Command.Execute("cmd.exe", string.Empty, new string[] { $"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5 if {num}" });
+                        // Command.Execute("cmd.exe", string.Empty, new string[] { $"route add 0.0.0.0 mask 0.0.0.0 {config.IP} metric 5 if {num}" });
                     }
                     break;
                 }

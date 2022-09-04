@@ -2,7 +2,7 @@
  * @Author: snltty
  * @Date: 2022-05-14 19:17:29
  * @LastEditors: snltty
- * @LastEditTime: 2022-09-02 23:28:57
+ * @LastEditTime: 2022-09-04 13:04:50
  * @version: v1.0.0
  * @Descripttion: 功能说明
  * @FilePath: \client.service.ui.web\src\views\service\vea\Index.vue
@@ -63,8 +63,8 @@
                                 </el-col>
                                 <el-col :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
                                     <el-form-item label-width="0" prop="ProxyAll">
-                                        <el-tooltip class="box-item" effect="dark" content="是否由虚拟网卡代理所有，这种方式可以利用目标端上网，不代理所有，则只能通过目标ip访问其内网服务" placement="top-start">
-                                            <el-checkbox v-model="state.form.ProxyAll" label="代理所有" />
+                                        <el-tooltip class="box-item" effect="dark" content="是否由虚拟网卡代理所有，暂不可用" placement="top-start">
+                                            <el-checkbox disabled v-model="state.form.ProxyAll" label="代理所有" />
                                         </el-tooltip>
                                     </el-form-item>
                                 </el-col>
