@@ -1,0 +1,66 @@
+name: Publich
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore
+      run: 
+        dotnet restore ./client/client.service
+        dotnet restore ./server/server.service
+        
+    - name: publish
+      run: 
+        dotnet publish ./client/client.service -c release -f net6.0 --no-restore -o ./public/publish/client/default
+        dotnet publish ./server/server.service -c release -f net6.0 --no-restore -o ./public/publish/server/default
+        cd ./public/publish/client
+        tar -cvf ../../client.tgz ./default
+        cd ../../../
+        cd ./public/publish/client
+        tar -cvf ../../server.tgz ./default
+        cd ../../../
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.actions }} 
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+        
+    - name: Upload Client
+      id: upload-release-client
+      uses: actions/upload-release-asset@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.actions }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./public/client.tgz
+        asset_name: client.tgz
+        asset_content_type: application/x-tgz
+        
+    - name: Upload Server
+      id: upload-release-server
+      uses: actions/upload-release-asset@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.actions }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./public/server.tgz
+        asset_name: server.tgz
+        asset_content_type: application/x-tgz
