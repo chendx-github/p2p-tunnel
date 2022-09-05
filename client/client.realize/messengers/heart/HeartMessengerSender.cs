@@ -39,9 +39,9 @@ namespace client.realize.messengers.heart
             {
                 Logger.Instance.Debug("心跳发送失败 Disponse");
                 //connection.Disponse();
-                if (++udpServer.心跳发送失败次数 == 3)
+                if (++udpServer.心跳发送失败次数 >= 3)
                 {
-                Logger.Instance.Debug("心跳发送失败3次 Disponse");
+                    Logger.Instance.Debug("心跳发送失败3次 Disponse");
                     udpServer.心跳发送失败次数 = 0;
                     udpServer.OnDisconnect.Push(connection);
                 }
