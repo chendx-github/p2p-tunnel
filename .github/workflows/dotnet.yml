@@ -33,12 +33,13 @@ jobs:
       id: create_release
       uses: actions/create-release@master
       env:
-        repo_token: ${{ secrets.actions }} 
+        github_token: ${{ secrets.actions }} 
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+        github_token: ${{ secrets.actions }} 
         
     - name: Upload
       id: upload-release-server
@@ -46,7 +47,9 @@ jobs:
       env:
         repo_token: ${{ secrets.actions }}
       with:
+        github_token: ${{ secrets.actions }} 
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./public/publish.tgz
         asset_name: publish.tgz
         asset_content_type: application/x-tgz
+        
