@@ -197,12 +197,6 @@ namespace common.server
             {
                 try
                 {
-                    int index = 0;
-                    while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
-                    {
-                        System.Threading.Thread.Sleep(1);
-                        index++;
-                    }
                     lock (NetPeer)
                     {
                         NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
