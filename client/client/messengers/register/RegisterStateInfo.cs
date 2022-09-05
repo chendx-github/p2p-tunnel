@@ -120,6 +120,9 @@ namespace client.messengers.register
         public ulong ConnectId { get; set; } = 0;
 
         public bool Relay { get; set; } = false;
+        /// <summary>
+        /// 超时时间
+        /// </summary>
         public int TimeoutDelay { get; set; } = 20000;
     }
 

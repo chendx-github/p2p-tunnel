@@ -1,5 +1,4 @@
 ﻿using common.libs;
-using common.server.servers.defaults;
 using LiteNetLib;
 using System;
 using System.Net;
@@ -10,8 +9,9 @@ namespace common.server.servers.rudp
     public class UdpServer : IUdpServer
     {
         public SimpleSubPushHandler<IConnection> OnPacket { get; } = new SimpleSubPushHandler<IConnection>();
-        public SimpleSubPushHandler<IConnection> OnDisconnect => new SimpleSubPushHandler<IConnection>();
+        public SimpleSubPushHandler<IConnection> OnDisconnect { get; } = new SimpleSubPushHandler<IConnection>();
         public Action<IConnection> OnConnected { get; set; } = (IConnection connection) => { };
+        public int 心跳发送失败次数 { get; set; } = 0;
 
         Semaphore maxNumberConnectings = new Semaphore(1, 1);
         NumberSpaceDefault maxNumberConnectingNumberSpace = new NumberSpaceDefault();

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace client.messengers.punchHole
 {
+    /// <summary>
+    /// 打洞接口
+    /// </summary>
     public interface IPunchHole
     {
         PunchHoleTypes Type { get; }

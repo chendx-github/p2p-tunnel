@@ -9,7 +9,10 @@ namespace common.server.model
     public class MessageRequestWrap
     {
         public IConnection Connection { get; set; }
-        public int Timeout { get; set; } = 15000;
+        /// <summary>
+        /// 超时时间
+        /// </summary>
+        public int Timeout { get; set; } = 3000;
 
 
         public string Path
@@ -185,14 +188,29 @@ namespace common.server.model
     [Flags]
     public enum MessageResponeCodes : byte
     {
+        /// <summary>
+        /// 成功
+        /// </summary>
         [Description("成功")]
         OK = 0,
+        /// <summary>
+        /// 网络未连接
+        /// </summary>
         [Description("网络未连接")]
         NOT_CONNECT = 1,
+        /// <summary>
+        /// 网络资源未找到
+        /// </summary>
         [Description("网络资源未找到")]
         NOT_FOUND = 2,
+        /// <summary>
+        /// 网络超时
+        /// </summary>
         [Description("网络超时")]
         TIMEOUT = 3,
+        /// <summary>
+        /// 程序错误
+        /// </summary>
         [Description("程序错误")]
         ERROR = 4,
     }

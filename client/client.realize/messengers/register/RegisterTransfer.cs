@@ -71,12 +71,15 @@ namespace client.realize.messengers.register
             });
             udpServer.OnDisconnect.Sub((connection) =>
             {
+                    Logger.Instance.DebugDebug($"udp掉线事件");
                 if (registerState.UdpConnection != connection)
                 {
+                    Logger.Instance.DebugDebug($"udp对象不匹配");
                     return;
                 }
                 if (registerState.LocalInfo.IsConnecting)
                 {
+                    Logger.Instance.DebugDebug($"udp连接中");
                     return;
                 }
 
@@ -283,7 +286,7 @@ namespace client.realize.messengers.register
                     if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
                     {
                         Logger.Instance.Debug("Heart2");
-                        _ = heartMessengerSender.Heart(registerState.UdpConnection);
+                        _ = heartMessengerSender.Heart(registerState.UdpConnection, udpServer);
                     }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
                     {

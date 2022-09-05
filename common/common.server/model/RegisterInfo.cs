@@ -228,14 +228,29 @@ namespace common.server.model
         [Flags]
         public enum RegisterResultInfoCodes : byte
         {
+            /// <summary>
+            /// 成功
+            /// </summary>
             [Description("成功")]
             OK = 1,
+            /// <summary>
+            /// 存在同名
+            /// </summary>
             [Description("存在同名")]
             SAME_NAMES = 2,
+            /// <summary>
+            /// 验证未通过
+            /// </summary>
             [Description("验证未通过")]
             VERIFY = 4,
+            /// <summary>
+            /// key验证未通过
+            /// </summary>
             [Description("key验证未通过")]
             KEY_VERIFY = 8,
+            /// <summary>
+            /// 出错
+            /// </summary>
             [Description("出错")]
             UNKNOW = 16
         }

@@ -5,7 +5,13 @@ namespace common.libs
     public static class Helper
     {
         public static byte[] EmptyArray = Array.Empty<byte>();
+        /// <summary>
+        /// True 的命令数据
+        /// </summary>
         public static byte[] TrueArray = new byte[] { 1 };
+        /// <summary>
+        /// False 的命令数据
+        /// </summary>
         public static byte[] FalseArray = new byte[] { 0 };
 
         public static string SeparatorString = ",";

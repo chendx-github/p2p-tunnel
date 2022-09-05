@@ -75,6 +75,11 @@ namespace client.realize.messengers.clients
         {
             ConnectClient(info, TryReverseMinValue);
         }
+        /// <summary>
+        /// 打洞连接目标客户端
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="tryreverse"></param>
         public void ConnectClient(ClientInfo info, byte tryreverse)
         {
             if (info.Id == registerState.ConnectId)
@@ -109,6 +114,10 @@ namespace client.realize.messengers.clients
         {
             punchHoleMessengerSender.SendReverse(id, tryreverse).ConfigureAwait(false);
         }
+        /// <summary>
+        /// 反向连接处理
+        /// </summary>
+        /// <param name="arg"></param>
         private void OnReverse(OnPunchHoleArg arg)
         {
             if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))

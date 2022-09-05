@@ -117,7 +117,7 @@ namespace server.service.messengers.register
                 client = clientRegisterCache.GetBySameGroup(model.GroupId, model.Name).FirstOrDefault();
                 if (client != null)
                 {
-                    bool alive = await Alive(client.TcpConnection);
+                    bool alive = await Alive(client.UdpConnection);
                     if (!alive)
                     {
                         clientRegisterCache.Remove(client.Id);

@@ -24,12 +24,19 @@ namespace client.realize.messengers
 {
     public static class ServiceCollectionExtends
     {
+        /// <summary>
+        /// 接口注册
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="assemblys"></param>
+        /// <returns></returns>
         public static ServiceCollection AddServerPlugin(this ServiceCollection services, Assembly[] assemblys)
         {
             services.AddSingleton<Config>();
             services.AddTransient(typeof(IConfigDataProvider<>), typeof(ConfigDataFileProvider<>));
 
             //监听服务
+            
             services.AddSingleton<ITcpServer, TcpServer>();
             services.AddSingleton<IUdpServer, UdpServer>();
             services.AddSingleton<MessengerResolver>();

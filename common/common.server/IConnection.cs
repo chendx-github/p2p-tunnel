@@ -203,8 +203,11 @@ namespace common.server
                         System.Threading.Thread.Sleep(1);
                         index++;
                     }
-                    NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
-                    SendBytes += data.Length;
+                    lock (NetPeer)
+                    {
+                        NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
+                        SendBytes += data.Length;
+                    }
                     return new ValueTask<bool>(true);
                 }
                 catch (Exception ex)

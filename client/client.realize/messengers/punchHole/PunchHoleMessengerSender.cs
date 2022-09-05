@@ -79,6 +79,12 @@ namespace client.realize.messengers.punchHole
         }
 
         public SimpleSubPushHandler<OnPunchHoleArg> OnReverse { get; } = new SimpleSubPushHandler<OnPunchHoleArg>();
+        /// <summary>
+        /// 发送 连我
+        /// </summary>
+        /// <param name="toid"></param>
+        /// <param name="tryreverse"></param>
+        /// <returns></returns>
         public async Task SendReverse(ulong toid, byte tryreverse = 0)
         {
             await Send(new SendPunchHoleArg<PunchHoleReverseInfo>
@@ -88,7 +94,11 @@ namespace client.realize.messengers.punchHole
                 Data = new PunchHoleReverseInfo { TryReverse = tryreverse }
             }).ConfigureAwait(false);
         }
-
+        /// <summary>
+        /// 发送重启
+        /// </summary>
+        /// <param name="toid"></param>
+        /// <returns></returns>
         public async Task SendReset(ulong toid)
         {
             await Send(new SendPunchHoleArg<PunchHoleResetInfo>
