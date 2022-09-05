@@ -43,9 +43,14 @@ namespace client.realize.messengers.register
             //安卓注释
             //Console.CancelKeyPress += (s, e) => Exit();
 
-            tcpServer.OnDisconnect.Sub((connection) =>
+            tcpServer.OnDisconnect.Sub((connection) => Disconnect(connection, registerState.TcpConnection));
+            udpServer.OnDisconnect.Sub((connection) => Disconnect(connection, registerState.UdpConnection));
+        }
+        private void Disconnect(IConnection connection, IConnection regConnection)
+        {
+            lock (lockObject)
             {
-                if (registerState.TcpConnection != connection)
+                if (regConnection != connection)
                 {
                     return;
                 }
@@ -53,48 +58,8 @@ namespace client.realize.messengers.register
                 {
                     return;
                 }
-
-                lock (lockObject)
-                {
-                    if (registerState.TcpConnection != connection)
-                    {
-                        return;
-                    }
-                    if (registerState.LocalInfo.IsConnecting)
-                    {
-                        return;
-                    }
-                    Logger.Instance.DebugDebug($"tcp掉线");
-                    _ = Register(true).Result;
-                }
-
-            });
-            udpServer.OnDisconnect.Sub((connection) =>
-            {
-                if (registerState.UdpConnection != connection)
-                {
-                    return;
-                }
-                if (registerState.LocalInfo.IsConnecting)
-                {
-                    return;
-                }
-
-                lock (lockObject)
-                {
-                    if (registerState.UdpConnection != connection)
-                    {
-                        return;
-                    }
-                    if (registerState.LocalInfo.IsConnecting)
-                    {
-                        return;
-                    }
-                    Logger.Instance.DebugDebug($"udp掉线");
-                    _ = Register(true).Result;
-                }
-
-            });
+                _ = Register(true).Result;
+            }
         }
 
         public void Exit()
@@ -284,22 +249,28 @@ namespace client.realize.messengers.register
                 if (!registerState.LocalInfo.IsConnecting)
                 {
                     long time = DateTimeHelper.GetTimeStamp();
-                    if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                    if (registerState.UdpOnline)
                     {
-                        _ = heartMessengerSender.Heart(registerState.UdpConnection);
+                        if (registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
+                        {
+                            Exit();
+                            return;
+                        }
+                        else if (registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                        {
+                            _ = heartMessengerSender.Heart(registerState.UdpConnection);
+                        }
                     }
-                    if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
+                    if (registerState.TcpOnline)
                     {
-                        Exit();
-                    }
-
-                    if (registerState.TcpOnline && registerState.TcpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
-                    {
-                        _ = heartMessengerSender.Heart(registerState.TcpConnection);
-                    }
-                    if (registerState.TcpOnline && registerState.TcpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
-                    {
-                        Exit();
+                        if (registerState.TcpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
+                        {
+                            Exit();
+                        }
+                        else if (registerState.TcpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
+                        {
+                            _ = heartMessengerSender.Heart(registerState.TcpConnection);
+                        }
                     }
                 }
             }
