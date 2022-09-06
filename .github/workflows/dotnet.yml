@@ -28,15 +28,18 @@ jobs:
         dotnet publish ./client/client.service -c release -f net6.0 --no-restore -o ./public/publish/client/default &
         dotnet publish ./server/server.service -c release -f net6.0 --no-restore -o ./public/publish/server/default &
         tar -cvf ./public/publish.tgz ./public/publish &
-        
+    
+    - name: Get current date
+        id:datetime
+        run:echo "::set-output name=today::$(date +'%Y-%m-%d')"
+    
     - name: Create Release
       id: create_release
       uses: actions/create-release@master
       env:
           GITHUB_TOKEN: '${{ secrets.ACTIONS_TOKEN }}'
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: Release ${{ steps.date.outputs.today }}
         draft: false
         prerelease: false
         
