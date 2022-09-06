@@ -14,7 +14,7 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<Optimize>True</Optimize>
+		<Optimize>False</Optimize>
 		<DebugType>portable</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
@@ -24,7 +24,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<DebugType>none</DebugType>
 		<DebugSymbols>false</DebugSymbols>
-		<Optimize>True</Optimize>
+		<Optimize>False</Optimize>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -41,7 +41,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\common\common.libs\common.libs.csproj" />
 		<ProjectReference Include="..\..\..\common\common.tcpforward\common.tcpforward.csproj" />
-		<ProjectReference Include="..\..\client\client.csproj" />
 		<ProjectReference Include="..\client.service.ui\client.service.ui.api\client.service.ui.api.csproj" />
 	</ItemGroup>
 

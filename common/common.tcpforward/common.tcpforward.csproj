@@ -38,6 +38,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\client\client\client.csproj" />
 		<ProjectReference Include="..\common.server\common.server.csproj" />
 	</ItemGroup>
 

@@ -23,7 +23,9 @@ namespace common.tcpforward
         public ulong RequestId { get; set; }
         public Memory<byte> TargetEndpoint { get; set; }
         public Memory<byte> Buffer { get; set; }
-
+        /// <summary>
+        /// 线路socket链接对象
+        /// </summary>
         public IConnection Connection { get; set; }
 
         public byte[] ToBytes()

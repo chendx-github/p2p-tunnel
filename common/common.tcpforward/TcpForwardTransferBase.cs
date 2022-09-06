@@ -1,5 +1,7 @@
-﻿using common.libs;
+﻿using client.messengers.clients;
+using common.libs;
 using common.libs.extends;
+using common.server;
 using System;
 using System.Text;
 
@@ -10,8 +12,6 @@ namespace common.tcpforward
         private readonly ITcpForwardServer tcpForwardServer;
         private readonly TcpForwardMessengerSender tcpForwardMessengerSender;
         private readonly ITcpForwardTargetProvider tcpForwardTargetProvider;
-
-
         public TcpForwardTransferBase(ITcpForwardServer tcpForwardServer, TcpForwardMessengerSender tcpForwardMessengerSender, ITcpForwardTargetProvider tcpForwardTargetProvider)
         {
             this.tcpForwardServer = tcpForwardServer;
@@ -23,7 +23,10 @@ namespace common.tcpforward
             //A收到B的回复
             tcpForwardMessengerSender.OnResponseHandler.Sub(tcpForwardServer.Response);
         }
-
+        /// <summary>
+        /// 收到线路的数据
+        /// </summary>
+        /// <param name="request"></param>
         private void OnRequest(TcpForwardInfo request)
         {
             if (request.Connection == null || !request.Connection.Connected)
@@ -34,7 +37,7 @@ namespace common.tcpforward
             if (request.Connection == null)
             {
                 request.Buffer = HttpParseHelper.BuildMessage("未选择转发对象，或者未与转发对象建立连接");
-                tcpForwardServer.Response(request);
+                tcpForwardServer.Response(request);//关闭监听来的连接
             }
             else
             {
@@ -43,7 +46,10 @@ namespace common.tcpforward
                 tcpForwardMessengerSender.SendRequest(request).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
-
+        /// <summary>
+        /// 获取发送对象
+        /// </summary>
+        /// <param name="request"></param>
         private void GetTarget(TcpForwardInfo request)
         {
             request.ForwardType = TcpForwardTypes.FORWARD;

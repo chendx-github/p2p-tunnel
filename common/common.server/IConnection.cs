@@ -12,6 +12,9 @@ namespace common.server
     public interface IConnection
     {
         public ulong ConnectId { get; set; }
+        /// <summary>
+        /// 是否已经链接
+        /// </summary>
         public bool Connected { get; }
         public bool Relay { get; set; }
 
