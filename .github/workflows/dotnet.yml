@@ -30,8 +30,8 @@ jobs:
         tar -cvf ./public/publish.tgz ./public/publish &
     
     - name: Get current date
-        id:datetime
-        run:echo "::set-output name=today::$(date +'%Y-%m-%d')"
+      id: date
+      run: echo "::set-output name=today::$(date +'%Y-%m-%d')"
     
     - name: Create Release
       id: create_release
