@@ -27,9 +27,7 @@ jobs:
       run: 
         dotnet publish ./client/client.service -c release -f net6.0 --no-restore -o ./public/publish/client/default &
         dotnet publish ./server/server.service -c release -f net6.0 --no-restore -o ./public/publish/server/default &
-        cd ./public &
-        tar -cvf publish.tgz ./publish &
-        cd ../
+        tar -cvf ./public/publish.tgz ./public/publish &
         
     - name: Create Release
       id: create_release
