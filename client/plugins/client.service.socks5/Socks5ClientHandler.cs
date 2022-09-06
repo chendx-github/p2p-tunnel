@@ -9,6 +9,9 @@ using System.Collections.Generic;
 
 namespace client.service.socks5
 {
+    /// <summary>
+    /// socks5 客户端 处理者
+    /// </summary>
     public class Socks5ClientHandler : ISocks5ClientHandler
     {
         private readonly Socks5MessengerSender socks5MessengerSender;

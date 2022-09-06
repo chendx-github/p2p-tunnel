@@ -63,7 +63,10 @@ namespace client.realize.messengers.clients
             Logger.Instance.Info("获取外网距离ing...");
             registerState.LocalInfo.RouteLevel = NetworkHelper.GetRouteLevel();
         }
-
+        /// <summary>
+        /// 链接到指定id的客户端
+        /// </summary>
+        /// <param name="id"></param>
         public void ConnectClient(ulong id)
         {
             if (clientInfoCaching.Get(id, out ClientInfo client))
@@ -90,13 +93,22 @@ namespace client.realize.messengers.clients
             Task.Run(async () =>
             {
                 bool udp = false, tcp = false;
-                if (info.UdpConnecting == false && info.UdpConnected == false)
+                if (registerState.UdpConnection != null && info.UdpConnecting == false && info.UdpConnected == false)
                 {
                     udp = await ConnectUdp(info).ConfigureAwait(false);
                 }
-                if (info.TcpConnecting == false && info.TcpConnected == false)
+                else
                 {
-                    //tcp = await ConnectTcp(info).ConfigureAwait(false);
+                    Logger.Instance.Debug("udp 不打洞");
+                }
+                
+                if (registerState.TcpConnection != null && info.TcpConnecting == false && info.TcpConnected == false)
+                {
+                    tcp = await ConnectTcp(info).ConfigureAwait(false);
+                }
+                else
+                {
+                    Logger.Instance.Debug("tcp 不打洞");
                 }
 
                 if ((!udp || !tcp) && tryreverse < TryReverseMaxValue)
@@ -230,13 +242,13 @@ namespace client.realize.messengers.clients
                     clientInfoCaching.Add(client);
                     if (firstClients.Get() && config.Client.AutoPunchHole)
                     {
-                        if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort)
+                        if (registerState.LocalInfo.TcpPort == registerState.RemoteInfo.TcpPort)//正向链接
                         {
                             ConnectClient(client);
                         }
                         else
                         {
-                            ConnectReverse(client.Id, TryReverseMinValue);
+                            ConnectReverse(client.Id, TryReverseMinValue);//反向链接
                         }
                     }
                 }

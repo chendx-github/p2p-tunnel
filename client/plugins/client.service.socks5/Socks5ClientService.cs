@@ -5,6 +5,9 @@ using System;
 
 namespace client.service.socks5
 {
+    /// <summary>
+    /// Socks5Client服务者
+    /// </summary>
     public class Socks5ClientService : IClientService
     {
         private readonly common.socks5.Config config;

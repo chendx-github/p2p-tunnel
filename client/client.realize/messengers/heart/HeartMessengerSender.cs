@@ -22,7 +22,6 @@ namespace client.realize.messengers.heart
         {
 
 
-            Logger.Instance.Debug($"心跳发送 ping {(connection as RudpConnection).NetPeer.ConnectionState}");
             var resp = await messengerSender.SendReply(new MessageRequestWrap
             {
                 Connection = connection,
@@ -31,14 +30,11 @@ namespace client.realize.messengers.heart
             }).ConfigureAwait(false);
             if (resp.Code == MessageResponeCodes.OK)
             {
-                Logger.Instance.Debug("心跳发送成功");
                 udpServer.心跳发送失败次数 = 0;
                 return true;
             }
             else
             {
-                Logger.Instance.Debug("心跳发送失败 Disponse");
-                //connection.Disponse();
                 if (++udpServer.心跳发送失败次数 >= 3)
                 {
                     Logger.Instance.Debug("心跳发送失败3次 Disponse");

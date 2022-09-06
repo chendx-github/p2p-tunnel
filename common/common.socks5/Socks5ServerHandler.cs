@@ -40,7 +40,10 @@ namespace common.socks5
                 {Socks5EnumStep.ForwardUdp, HndleForwardUdp},
             };
         }
-
+        /// <summary>
+        /// 传入数据
+        /// </summary>
+        /// <param name="connection"></param>
         public void InputData(IConnection connection)
         {
             Socks5EnumStep step = (Socks5EnumStep)(byte)(connection.ReceiveRequestWrap.Memory.Span[0] >> 4);

@@ -1,4 +1,5 @@
-﻿using client.messengers.register;
+﻿using client.messengers.clients;
+using client.messengers.register;
 using client.realize.messengers.crypto;
 using client.realize.messengers.heart;
 using common.libs;
@@ -22,12 +23,12 @@ namespace client.realize.messengers.register
         private readonly HeartMessengerSender heartMessengerSender;
         private readonly CryptoSwap cryptoSwap;
         private readonly object lockObject = new();
-
+        IClientsTransfer clientsTransfer;
         public RegisterTransfer(
             RegisterMessengerSender registerMessageHelper, HeartMessengerSender heartMessengerSender,
             ITcpServer tcpServer, IUdpServer udpServer,
             Config config, RegisterStateInfo registerState,
-            CryptoSwap cryptoSwap, WheelTimer<object> wheelTimer
+            CryptoSwap cryptoSwap, WheelTimer<object> wheelTimer,IClientsTransfer clientsTransfer
         )
         {
             this.registerMessageHelper = registerMessageHelper;
@@ -37,6 +38,7 @@ namespace client.realize.messengers.register
             this.registerState = registerState;
             this.heartMessengerSender = heartMessengerSender;
             this.cryptoSwap = cryptoSwap;
+            this.clientsTransfer = clientsTransfer;
             wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 1000, true);
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit();
@@ -71,10 +73,12 @@ namespace client.realize.messengers.register
             });
             udpServer.OnDisconnect.Sub((connection) =>
             {
-                    Logger.Instance.DebugDebug($"udp掉线事件");
+                Logger.Instance.DebugDebug($"udp掉线事件");
                 if (registerState.UdpConnection != connection)
                 {
-                    Logger.Instance.DebugDebug($"udp对象不匹配");
+                    Logger.Instance.DebugDebug($"udp对象不匹配 {connection.ConnectId}");
+                    //clientsTransfer.ConnectClient(connection.ConnectId);
+                    //Logger.Instance.DebugDebug($"重连完成");
                     return;
                 }
                 if (registerState.LocalInfo.IsConnecting)
@@ -162,7 +166,7 @@ namespace client.realize.messengers.register
                         else
                         {
                             //绑定tcp
-                            TcpBind(serverAddress);
+                            //TcpBind(serverAddress);
 
                             //交换密钥
                             if (config.Server.Encode)
@@ -244,7 +248,8 @@ namespace client.realize.messengers.register
             {
                 throw new Exception("注册交换密钥失败，如果客户端设置了密钥，则服务器必须设置相同的密钥，如果服务器未设置密钥，则客户端必须留空");
             }
-            registerState.TcpConnection.EncodeEnable(crypto);
+            if (registerState.TcpConnection != null)
+                registerState.TcpConnection.EncodeEnable(crypto);
             registerState.UdpConnection.EncodeEnable(crypto);
 
 #if DEBUG
@@ -285,7 +290,6 @@ namespace client.realize.messengers.register
                     long time = DateTimeHelper.GetTimeStamp();
                     if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
                     {
-                        Logger.Instance.Debug("Heart2");
                         _ = heartMessengerSender.Heart(registerState.UdpConnection, udpServer);
                     }
                     if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))

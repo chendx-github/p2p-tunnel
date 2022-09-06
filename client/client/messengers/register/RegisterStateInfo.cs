@@ -44,8 +44,12 @@ namespace client.messengers.register
 
                 if (connectid > 0)
                 {
+                    if(UdpConnection != null)
                     UdpConnection.ConnectId = connectid;
-                    TcpConnection.ConnectId = connectid;
+                    if(TcpConnection !=null)
+                    {
+                        TcpConnection.ConnectId = connectid;
+                    }
                 }
             }
         }

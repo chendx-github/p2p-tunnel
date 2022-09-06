@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace client.service.socks5
 {
+    /// <summary>
+    /// 收集者 扩展
+    /// </summary>
     public static class ServiceCollectionExtends
     {
         public static ServiceCollection AddSocks5(this ServiceCollection services)
