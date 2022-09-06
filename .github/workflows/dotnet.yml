@@ -27,7 +27,9 @@ jobs:
       run: 
         dotnet publish ./client/client.service -c release -f net6.0 --no-restore -o ./public/publish/client/default &
         dotnet publish ./server/server.service -c release -f net6.0 --no-restore -o ./public/publish/server/default &
-        tar -cvf ./public/publish.tgz ./public/publish &
+        cd public
+        tar -cvf publish.tgz publish
+        cd ..
     
     - name: Get current date
       id: date
