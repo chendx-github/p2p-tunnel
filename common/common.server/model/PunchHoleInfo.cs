@@ -90,8 +90,14 @@ namespace common.server.model
     [Flags]
     public enum PunchForwardTypes : byte
     {
+        /// <summary>
+        /// 通知A的数据给B
+        /// </summary>
         [Description("通知A的数据给B")]
         NOTIFY,
+        /// <summary>
+        /// 原样转发
+        /// </summary>
         [Description("原样转发")]
         FORWARD
     }

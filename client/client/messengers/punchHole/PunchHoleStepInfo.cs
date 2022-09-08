@@ -8,14 +8,29 @@ namespace client.messengers.punchHole
     [Flags]
     public enum PunchHoleTypes : byte
     {
+        /// <summary>
+        /// UDP打洞
+        /// </summary>
         [Description("UDP打洞")]
         UDP,
+        /// <summary>
+        /// IP欺骗打洞
+        /// </summary>
         [Description("IP欺骗打洞")]
         TCP_NUTSSA,
+        /// <summary>
+        /// 端口复用打洞
+        /// </summary>
         [Description("端口复用打洞")]
         TCP_NUTSSB,
+        /// <summary>
+        /// 反向链接
+        /// </summary>
         [Description("反向链接")]
         REVERSE,
+        /// <summary>
+        /// 重启
+        /// </summary>
         [Description("重启")]
         RESET,
     }

@@ -82,7 +82,7 @@ namespace client.realize.messengers.clients
         /// 打洞连接目标客户端
         /// </summary>
         /// <param name="info"></param>
-        /// <param name="tryreverse"></param>
+        /// <param name="tryreverse">尝试次数</param>
         public void ConnectClient(ClientInfo info, byte tryreverse)
         {
             if (info.Id == registerState.ConnectId)
@@ -113,6 +113,7 @@ namespace client.realize.messengers.clients
 
                 if ((!udp || !tcp) && tryreverse < TryReverseMaxValue)
                 {
+                    //这里加一个如果打洞失败了  后面就不通过正向打洞了(一段时间之内 比如 一小时)  后面可以通过手动打动来重新启动
                     ConnectReverse(info.Id, tryreverse);
                 }
             });
