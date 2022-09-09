@@ -5,7 +5,7 @@ namespace client.messengers.clients
 {
     public interface IClientsTransfer
     {
-        public void ConnectClient(ulong id);
+        public void ConnectClient(ulong id,bool isset = false);
         public void ConnectClient(ClientInfo info);
         public void ConnectReverse(ulong id);
         public void Reset(ulong id);

@@ -13,6 +13,7 @@ using common.server.model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace client.realize.messengers.clients
@@ -67,13 +68,27 @@ namespace client.realize.messengers.clients
         /// 链接到指定id的客户端
         /// </summary>
         /// <param name="id"></param>
-        public void ConnectClient(ulong id)
+        public void ConnectClient(ulong id,bool isset = false)
         {
             if (clientInfoCaching.Get(id, out ClientInfo client))
             {
+                if(isset)
+                {
+                    if (datas.Default.canConnect.ContainsKey(client.Name))
+                    {
+                        datas.Default.canConnect[client.Name] = true;
+                    }
+                    else
+                    {
+                        datas.Default.canConnect.Add(client.Name, true);
+                    }
+                }
+                
                 ConnectClient(client);
             }
         }
+
+
         public void ConnectClient(ClientInfo info)
         {
             ConnectClient(info, TryReverseMinValue);
@@ -93,28 +108,57 @@ namespace client.realize.messengers.clients
             Task.Run(async () =>
             {
                 bool udp = false, tcp = false;
-                if (registerState.UdpConnection != null && info.UdpConnecting == false && info.UdpConnected == false)
+                if (datas.Default.canConnect.TryGetValue(info.Name, out bool flag1) && flag1)
                 {
-                    udp = await ConnectUdp(info).ConfigureAwait(false);
+                    if (registerState.UdpConnection != null && info.UdpConnecting == false && info.UdpConnected == false)
+                    {
+                        udp = await ConnectUdp(info).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.Instance.Debug("udp 不打洞");
+                    }
+
+                    if (registerState.TcpConnection != null && info.TcpConnecting == false && info.TcpConnected == false)
+                    {
+                        tcp = await ConnectTcp(info).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.Instance.Debug("tcp 不打洞");
+                    }
                 }
                 else
                 {
-                    Logger.Instance.Debug("udp 不打洞");
-                }
-                
-                if (registerState.TcpConnection != null && info.TcpConnecting == false && info.TcpConnected == false)
-                {
-                    tcp = await ConnectTcp(info).ConfigureAwait(false);
-                }
-                else
-                {
-                    Logger.Instance.Debug("tcp 不打洞");
+                    Logger.Instance.Debug("记录中方向失败");
                 }
 
-                if ((!udp || !tcp) && tryreverse < TryReverseMaxValue)
+                if (!(udp || tcp))
                 {
-                    //这里加一个如果打洞失败了  后面就不通过正向打洞了(一段时间之内 比如 一小时)  后面可以通过手动打动来重新启动
-                    ConnectReverse(info.Id, tryreverse);
+                    if (tryreverse < TryReverseMaxValue)
+                    {
+                        if (datas.Default.canConnect.ContainsKey(info.Name))
+                        {
+                            datas.Default.canConnect[info.Name] = false;
+                        }
+                        else
+                        {
+                            datas.Default.canConnect.Add(info.Name, false);
+                        }
+                        //这里加一个如果打洞失败了  后面就不通过正向打洞了(一段时间之内 比如 一小时)  后面可以通过手动打动来重新启动
+                        ConnectReverse(info.Id, tryreverse);
+                    }
+                }
+                else
+                {
+                    if (datas.Default.canConnect.ContainsKey(info.Name))
+                    {
+                        datas.Default.canConnect[info.Name] = true;
+                    }
+                    else
+                    {
+                        datas.Default.canConnect.Add(info.Name, true);
+                    }
                 }
             });
         }

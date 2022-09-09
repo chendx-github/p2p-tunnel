@@ -25,8 +25,8 @@ namespace common.server.servers.rudp
             server = new NetManager(listener);
             server.NatPunchEnabled = true;
             server.UnsyncedEvents = true;
-            server.PingInterval = 20000;
-            server.DisconnectTimeout = 60000;
+            server.PingInterval = 10000;
+            server.DisconnectTimeout = 12000;
             server.MaxConnectAttempts = 1;
             server.Start(port);
 

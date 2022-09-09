@@ -23,7 +23,8 @@ namespace server.service.messengers.register
 
         public ClientRegisterCaching(Config config, IUdpServer udpServer, ITcpServer tcpServer)
         {
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<IConnection> { Callback = TimeoutCallback, }, 1000, true);
+            //心跳检测timer
+            //wheelTimer.NewTimeout(new WheelTimerTimeoutTask<IConnection> { Callback = TimeoutCallback, }, 1000, true);
             this.config = config;
 
             tcpServer.OnDisconnect.Sub((IConnection connection) =>

@@ -5,6 +5,7 @@ using LiteNetLib;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace common.server
@@ -200,8 +201,14 @@ namespace common.server
             {
                 try
                 {
-                    lock (NetPeer)
+                    lock (this)
                     {
+                        int index = 0;
+                        while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
+                        {
+                            Thread.Sleep(1);
+                            index++;
+                        }
                         NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
                         SendBytes += data.Length;
                     }
@@ -221,9 +228,14 @@ namespace common.server
             base.Disponse();
             if (NetPeer != null)
             {
-                NetPeer.Disconnect();
-                NetPeer = null;
+                //var t1 = new Thread(() => { 
+                    NetPeer.Disconnect();
+                    NetPeer = null;
+                //});
+                //t1.Start();
+
             }
+            Logger.Instance.Debug("rudp 释放 OK");
         }
 
         public override IConnection Clone()

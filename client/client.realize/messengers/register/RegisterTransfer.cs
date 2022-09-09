@@ -9,6 +9,7 @@ using common.server.model;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace client.realize.messengers.register
@@ -22,13 +23,13 @@ namespace client.realize.messengers.register
         private readonly RegisterStateInfo registerState;
         private readonly HeartMessengerSender heartMessengerSender;
         private readonly CryptoSwap cryptoSwap;
-        private readonly object lockObject = new();
+        private int lockObject = new();
         IClientsTransfer clientsTransfer;
         public RegisterTransfer(
             RegisterMessengerSender registerMessageHelper, HeartMessengerSender heartMessengerSender,
             ITcpServer tcpServer, IUdpServer udpServer,
             Config config, RegisterStateInfo registerState,
-            CryptoSwap cryptoSwap, WheelTimer<object> wheelTimer,IClientsTransfer clientsTransfer
+            CryptoSwap cryptoSwap, WheelTimer<object> wheelTimer, IClientsTransfer clientsTransfer
         )
         {
             this.registerMessageHelper = registerMessageHelper;
@@ -39,7 +40,8 @@ namespace client.realize.messengers.register
             this.heartMessengerSender = heartMessengerSender;
             this.cryptoSwap = cryptoSwap;
             this.clientsTransfer = clientsTransfer;
-            wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 1000, true);
+            //发送心跳 timer
+            //wheelTimer.NewTimeout(new WheelTimerTimeoutTask<object> { Callback = Heart }, 1000, true);
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit();
             //安卓注释
@@ -56,7 +58,7 @@ namespace client.realize.messengers.register
                     return;
                 }
 
-                lock (lockObject)
+                if (Interlocked.CompareExchange(ref lockObject, 1, 0) == 0)
                 {
                     if (registerState.TcpConnection != connection)
                     {
@@ -67,6 +69,7 @@ namespace client.realize.messengers.register
                         return;
                     }
                     Logger.Instance.DebugDebug($"tcp掉线");
+                    Interlocked.Exchange(ref lockObject, 0);
                     //_ = Register(true).Result;
                 }
 
@@ -87,7 +90,7 @@ namespace client.realize.messengers.register
                     return;
                 }
 
-                lock (lockObject)
+                if (Interlocked.CompareExchange(ref lockObject, 1, 0) == 0)
                 {
                     if (registerState.UdpConnection != connection)
                     {
@@ -98,7 +101,10 @@ namespace client.realize.messengers.register
                         return;
                     }
                     Logger.Instance.DebugDebug($"udp掉线");
-                    _ = Register(true).Result;
+                    Register(true).ContinueWith((res) =>
+                    {
+                        Interlocked.Exchange(ref lockObject, 0);
+                    });
                 }
 
             });
@@ -279,25 +285,6 @@ namespace client.realize.messengers.register
                 throw new Exception($"注册失败:{result.Data.Code.GetDesc((byte)result.Data.Code)}");
             }
             return result;
-        }
-
-        private void Heart(object state)
-        {
-            lock (lockObject)
-            {
-                if (!registerState.LocalInfo.IsConnecting)
-                {
-                    long time = DateTimeHelper.GetTimeStamp();
-                    if (registerState.UdpOnline && registerState.UdpConnection.IsNeedHeart(time, registerState.RemoteInfo.TimeoutDelay))
-                    {
-                        _ = heartMessengerSender.Heart(registerState.UdpConnection, udpServer);
-                    }
-                    if (registerState.UdpOnline && registerState.UdpConnection.IsTimeout(time, registerState.RemoteInfo.TimeoutDelay))
-                    {
-                        Exit();
-                    }
-                }
-            }
         }
     }
 }

@@ -23,8 +23,10 @@ namespace client.service.ui.api.service.clientServer.services
 
         public void Connect(ClientServiceParamsInfo arg)
         {
+            
             ConnectParamsInfo model = arg.Content.DeJson<ConnectParamsInfo>();
-            clientsTransfer.ConnectClient(model.ID);
+            
+            clientsTransfer.ConnectClient(model.ID,true);
         }
 
         public void Stop(ClientServiceParamsInfo arg)

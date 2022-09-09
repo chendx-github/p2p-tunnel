@@ -94,6 +94,7 @@ namespace client.service.tcpforward
                 {
                     Thread.Sleep(100);
                 } while (i1++ < 10 && (client.UdpConnecting || client.TcpConnecting));
+                Thread.Sleep(500);
                 out1 = cacheInfo.TunnelType switch
                 {
                     TcpForwardTunnelTypes.TCP_FIRST => client.TcpConnection ?? client.UdpConnection,
