@@ -1,8 +1,12 @@
 ﻿using client.messengers.punchHole;
 using client.messengers.register;
+using common.libs;
 
 namespace client.realize.messengers.punchHole
 {
+    /// <summary>
+    /// 重启
+    /// </summary>
     public class PunchHoleReset : IPunchHole
     {
         private readonly IRegisterTransfer registerTransfer;

@@ -203,12 +203,12 @@ namespace common.server
                 {
                     lock (this)
                     {
-                        int index = 0;
-                        while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
-                        {
-                            Thread.Sleep(1);
-                            index++;
-                        }
+                        //int index = 0;
+                        //while (index < 100 && NetPeer.GetPacketsCountInReliableQueue(0, true) > 100)
+                        //{
+                        //    Thread.Sleep(1);
+                        //    index++;
+                        //}
                         NetPeer.Send(data, 0, length, DeliveryMethod.ReliableOrdered);
                         SendBytes += data.Length;
                     }

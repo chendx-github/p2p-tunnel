@@ -108,7 +108,7 @@ namespace client.realize.messengers.clients
             Task.Run(async () =>
             {
                 bool udp = false, tcp = false;
-                if (datas.Default.canConnect.TryGetValue(info.Name, out bool flag1) && flag1)
+                if (!datas.Default.canConnect.ContainsKey(info.Name)||datas.Default.canConnect.TryGetValue(info.Name, out bool flag1) && flag1)
                 {
                     if (registerState.UdpConnection != null && info.UdpConnecting == false && info.UdpConnected == false)
                     {
@@ -146,7 +146,7 @@ namespace client.realize.messengers.clients
                             datas.Default.canConnect.Add(info.Name, false);
                         }
                         //这里加一个如果打洞失败了  后面就不通过正向打洞了(一段时间之内 比如 一小时)  后面可以通过手动打动来重新启动
-                        ConnectReverse(info.Id, tryreverse);
+                        //ConnectReverse(info.Id, tryreverse);  打洞失败了 就算了  不反向打洞了
                     }
                 }
                 else
@@ -179,6 +179,15 @@ namespace client.realize.messengers.clients
         {
             if (clientInfoCaching.Get(arg.Data.FromId, out ClientInfo client))
             {
+                if (datas.Default.canConnect.ContainsKey(client.Name))
+                {
+                    datas.Default.canConnect[client.Name] = true;
+                }
+                else
+                {
+                    datas.Default.canConnect.Add(client.Name, true);
+                }
+                Logger.Instance.Info("反省");
                 PunchHoleReverseInfo model = new PunchHoleReverseInfo();
                 model.DeBytes(arg.Data.Data);
                 ConnectClient(client, (byte)(model.TryReverse + 1));
