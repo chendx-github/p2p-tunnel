@@ -5,6 +5,7 @@
 		<ApplicationIcon>logo.ico</ApplicationIcon>
 		<TieredCompilation>true</TieredCompilation>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<Platforms>AnyCPU;x86</Platforms>
 	</PropertyGroup>
 	<PropertyGroup>
 		<TargetFrameworks>net7.0-windows;net6.0-windows</TargetFrameworks>
@@ -15,6 +16,13 @@
 		<Optimize>True</Optimize>
 		<DebugType>portable</DebugType>
 		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+	  <DefineConstants>DEBUG;TRACE</DefineConstants>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <Optimize>True</Optimize>
+	  <DebugType>portable</DebugType>
+	  <DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Content Include="logo.ico" />
