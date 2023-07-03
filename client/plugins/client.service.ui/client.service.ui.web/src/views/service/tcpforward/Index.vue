@@ -14,6 +14,8 @@
             <div class="head flex">
                 <el-button type="primary" size="small" @click="handleAddListen">增加转发监听</el-button>
                 <el-button size="small" @click="getData">刷新列表</el-button>
+                <span class="flex-1 t-c">开启被访问</span>
+                <el-switch size="small" @change="isConnectEnablefun(ConnectEnable)" v-model="ConnectEnable" style="margin-top:-6px;"></el-switch>
                 <span class="flex-1"></span>
                 <ConfigureModal className="TcpForwardClientConfigure">
                     <el-button size="small">客户端配置</el-button>
@@ -78,7 +80,7 @@
 </template>
 <script>
 import { reactive, ref, toRefs } from '@vue/reactivity'
-import { getList, removeListen, startListen, stopListen, removeForward } from '../../../apis/tcp-forward'
+import { getList, removeListen, startListen, stopListen, removeForward,getConnectEnable,isConnectEnable } from '../../../apis/tcp-forward'
 import ConfigureModal from '../configure/ConfigureModal.vue'
 import { onMounted, provide } from '@vue/runtime-core'
 import AddForward from './AddForward.vue'
@@ -96,6 +98,7 @@ export default {
             currentLsiten: { Port: 0 },
             showAddListen: false,
             showAddForward: false,
+            ConnectEnable:false,
         });
 
         const expandKeys = ref([]);
@@ -151,14 +154,21 @@ export default {
             });
         }
 
+        const isConnectEnablefun = (s)=>{
+            isConnectEnable(s);
+        };
+
         onMounted(() => {
             getData();
+            getConnectEnable().then((res) => {
+                state.ConnectEnable = res;
+            });
         });
 
         return {
             ...toRefs(state), shareData, getData, expandKeys, onExpand,
             handleRemoveListen, handleAddListen, handleEditListen, onListeningChange,
-            handleAddForward, handleEditForward, handleRemoveForward,
+            handleAddForward, handleEditForward, handleRemoveForward,isConnectEnablefun
         }
     }
 }

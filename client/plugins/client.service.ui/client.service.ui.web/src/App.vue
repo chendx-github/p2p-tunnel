@@ -49,7 +49,6 @@ export default {
 </script>
 <style lang="stylus" scoped>
 .body
-    background-image: url('./assets/bg.png');
     background-size: 100% 100%;
     background-position: 0 0;
     background-repeat: no-repeat;

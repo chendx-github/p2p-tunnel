@@ -1,7 +1,10 @@
 ﻿using client.service.ui.api.clientServer;
 using common.libs.extends;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace client.service.tcpforward
@@ -12,13 +15,15 @@ namespace client.service.tcpforward
     public sealed class TcpForwardClientService : IClientService
     {
         private readonly TcpForwardTransfer tcpForwardTransfer;
+        ServiceProvider services;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="tcpForwardTransfer"></param>
-        public TcpForwardClientService(TcpForwardTransfer tcpForwardTransfer)
+        public TcpForwardClientService(ServiceProvider services,TcpForwardTransfer tcpForwardTransfer)
         {
             this.tcpForwardTransfer = tcpForwardTransfer;
+            this.services = services;
         }
         /// <summary>
         /// 添加监听
@@ -129,6 +134,25 @@ namespace client.service.tcpforward
             return true;
         }
 
+        public bool isConnectEnable(ClientServiceParamsInfo arg)
+        {
+            bool ConnectEnable = bool.Parse(arg.Content);
+            var config = services.GetService<common.tcpforward.Config>();
+            config.ConnectEnable = ConnectEnable;
+            config.SaveConfig(JsonSerializer.Serialize(config)).Wait();
+            //if (string.IsNullOrWhiteSpace(errmsg) == false)
+            //{
+            //    arg.SetCode(ClientServiceResponseCodes.Error, errmsg);
+            //}
+            return true;
+        }
+
+        public bool getConnectEnable(ClientServiceParamsInfo arg)
+        {
+            var config = services.GetService<common.tcpforward.Config>();
+            bool ConnectEnable = config.ConnectEnable;
+            return ConnectEnable;
+        }
 
         /// <summary>
         /// 服务器转发

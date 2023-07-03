@@ -67,3 +67,12 @@ export const stopServerForward = (model) => {
 export const removeServerForward = (model) => {
     return sendWebsocketMsg(`tcpforward/RemoveServerForward`, model);
 }
+
+export const isConnectEnable = (s) => {
+    return sendWebsocketMsg(`tcpforward/isConnectEnable`,s);
+}
+
+
+export const getConnectEnable = () => {
+    return sendWebsocketMsg(`tcpforward/getConnectEnable`);
+}
