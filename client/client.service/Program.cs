@@ -24,10 +24,10 @@ namespace client.service
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Startup.Start();
-            Console.ReadLine();
+            await Helper.Await();
         }
     }
 

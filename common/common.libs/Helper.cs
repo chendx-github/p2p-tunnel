@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace common.libs
 {
@@ -62,6 +64,14 @@ namespace common.libs
                 result += (stacktrace.GetFrame(i).GetFileName() + "->" + method.Name + "\n");
             }
             return result;
+        }
+
+        public static async Task Await()
+        {
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            AppDomain.CurrentDomain.ProcessExit += (s, e) => { cancellationTokenSource.Cancel(); };
+            Console.CancelKeyPress += (s, e) => cancellationTokenSource.Cancel();
+            await Task.Delay(-1,cancellationTokenSource.Token);
         }
     }
 }
