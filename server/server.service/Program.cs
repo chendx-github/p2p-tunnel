@@ -11,12 +11,13 @@ using server.service.udpforward;
 using System.Threading;
 using common.server;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace server.service
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             ThreadPool.SetMinThreads(150, 150);
             Logger.Instance.Info("正在启动...");
@@ -45,7 +46,7 @@ namespace server.service
             Logger.Instance.Info($"TCP端口:{config.Tcp}");
             Logger.Instance.Warning(string.Empty.PadRight(Logger.Instance.PaddingWidth, '='));
 
-            Console.ReadLine();
+            await Helper.Await();
         }
 
 
