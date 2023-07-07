@@ -51,12 +51,11 @@ namespace common.server.servers.rudp
             server = new NetManager(listener);
             server.ReconnectDelay = Math.Max(timeout / 5, 5000);
             server.UnsyncedEvents = true;
-            server.UpdateTime = 5;
             server.PingInterval = Math.Max(timeout / 5, 5000);
             server.DisconnectTimeout = timeout;
             server.MaxConnectAttempts = 10;
-            server.WindowSize = 1024;
-            server.MtuOverride = 1400;
+            server.WindowSize = 256;
+            //server.MtuOverride = 1400;
             server.Start(port);
 
             listener.ConnectionRequestEvent += request =>
